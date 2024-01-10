@@ -1,0 +1,21 @@
+---
+manifest_version: "1"
+name: asset_validator
+integrity:
+  network_seed: ~
+  properties: ~
+  origin_time: 1704851678629084
+  zomes:
+    - name: validation_claims_integrity
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/validation_claims_integrity.wasm"
+      dependencies: ~
+      dylib: ~
+coordinator:
+  zomes:
+    - name: validation_claims
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/validation_claims.wasm"
+      dependencies:
+        - name: validation_claims_integrity
+      dylib: ~

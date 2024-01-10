@@ -1,0 +1,13 @@
+.aider*
+node_modules
+/.cargo/
+/dist/
+/target/
+*.happ
+*.webhapp
+*.zip
+*.dna
+.hc*
+.hc
+.running
+tags
