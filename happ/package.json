@@ -22,10 +22,5 @@
   },
   "engines": {
     "npm": ">=7.0.0"
-  },
-  "dependencies": {
-    "@holochain/tryorama": "^0.15.2",
-    "@msgpack/msgpack": "3.0.0-beta2",
-    "vitest": "^1.1.3"
   }
 }
