@@ -1,0 +1,31 @@
+name: Holochain Tests
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y pkg-config libssl-dev
+
+    - name: Install Holochain
+      run: |
+        curl https://install.holochain.love | bash
+    - name: Install NPM dependencies
+      run: |
+        cd happ
+        npm install
+    - name: Run NPM tests
+      run: |
+        cd happ
+        npm test
+
