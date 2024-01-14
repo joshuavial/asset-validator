@@ -41,7 +41,7 @@ fn get_latest_generator(generator_hash: ActionHash) -> ExternResult<Option<Recor
     debug!("get_latest_generator - Details: {:?}", details);
     let record_details = match details {
         Details::Entry(_) => {
-            Err(wasm_error!(WasmErrorInner::Guest("Malformed details".into())))
+            return Err(wasm_error!(WasmErrorInner::Guest("Malformed details".into())));
         }
         Details::Record(record_details) => Ok(record_details),
     }?;
