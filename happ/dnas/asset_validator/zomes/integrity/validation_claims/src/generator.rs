@@ -18,7 +18,10 @@ pub fn validate_update_generator(
     _original_action: EntryCreationAction,
     _original_generator: Generator,
 ) -> ExternResult<ValidateCallbackResult> {
-    //TODO ensure that the agent creating the update is the owner of the generator
+    let agent_info = agent_info()?;
+    if _original_generator.owner != agent_info.agent_latest_pubkey {
+        return Ok(ValidateCallbackResult::Invalid("Agent is not the owner of this generator.".into()));
+    }
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_generator(
