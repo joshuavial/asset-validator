@@ -1,4 +1,7 @@
 use hdi::prelude::*;
+use hdk::prelude::agent_info;
+use validation_claims_integrity::*;
+
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct Generator {
