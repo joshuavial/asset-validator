@@ -1,5 +1,4 @@
 use hdi::prelude::*;
-use validation_claims_integrity::*;
 
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
