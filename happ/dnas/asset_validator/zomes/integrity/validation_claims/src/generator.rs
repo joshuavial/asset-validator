@@ -1,6 +1,5 @@
 use hdi::prelude::*;
-
-use hdk::prelude::debug;
+use hdi::prelude::debug;
 
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
@@ -24,6 +23,7 @@ pub fn validate_update_generator(
     // Debug the original generator and generator
     debug!("Original Generator: {:?}", _original_generator);
     debug!("Updated Generator: {:?}", _generator);
+    //TODO ensure original_generator and generator owner is the same
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_generator(
