@@ -20,7 +20,9 @@ pub fn validate_update_generator(
     _original_action: EntryCreationAction,
     _original_generator: Generator,
 ) -> ExternResult<ValidateCallbackResult> {
-    //TODO debug the original generator and generator
+    // Debug the original generator and generator
+    debug!("Original Generator: {:?}", _original_generator);
+    debug!("Updated Generator: {:?}", _generator);
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_generator(
