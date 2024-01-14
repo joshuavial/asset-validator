@@ -1,5 +1,4 @@
 use hdi::prelude::*;
-use hdk::prelude::agent_info;
 use validation_claims_integrity::*;
 
 #[hdk_entry_helper]
@@ -21,10 +20,7 @@ pub fn validate_update_generator(
     _original_action: EntryCreationAction,
     _original_generator: Generator,
 ) -> ExternResult<ValidateCallbackResult> {
-    let agent_info = agent_info()?;
-    if _original_generator.owner != agent_info.agent_latest_pubkey {
-        return Ok(ValidateCallbackResult::Invalid("Agent is not the owner of this generator.".into()));
-    }
+    //TODO debug the original generator and generator
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_generator(
