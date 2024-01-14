@@ -60,7 +60,7 @@ pub struct UpdateGeneratorInput {
 #[hdk_extern]
 pub fn update_generator(input: UpdateGeneratorInput) -> ExternResult<Record> {
     // Retrieve the original generator's details
-    let original_generator: Generator = get_typed_from_action_hash(input.previous_generator_hash.clone())?
+    let original_generator: Generator = try_get_typed::<Generator>(input.previous_generator_hash.clone())?
         .ok_or(wasm_error!(WasmErrorInner::Guest("Original Generator not found".into())))?;
 
     // Check if the updater is the owner of the generator
@@ -90,4 +90,16 @@ pub fn delete_generator(
     original_generator_hash: ActionHash,
 ) -> ExternResult<ActionHash> {
     delete_entry(original_generator_hash)
+}
+// Helper function to retrieve an entry of a specific type from the DHT using its action hash
+fn try_get_typed<E: EntryDefRegistration + TryFrom<SerializedBytes, Error = SerializedBytesError>>(
+    action_hash: ActionHash,
+) -> ExternResult<Option<E>> {
+    match get(action_hash, GetOptions::default())? {
+        Some(record) => {
+            let entry: E = E::try_from(record.entry().to_owned().into_sb())?;
+            Ok(Some(entry))
+        }
+        None => Ok(None),
+    }
 }
