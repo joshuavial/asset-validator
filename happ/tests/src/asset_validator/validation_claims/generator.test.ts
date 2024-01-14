@@ -96,6 +96,18 @@ test('create and update Generator', async () => {
       updated_generator: contentUpdate,
     };
 
+    // Assert that Bob trying to edit Alice's generator fails
+    try {
+      await bob.cells[0].callZome({
+        zome_name: "validation_claims",
+        fn_name: "update_generator",
+        payload: updateInput,
+      });
+      assert.fail("Bob should not be able to update Alice's generator");
+    } catch (e) {
+      assert.match(e.toString(), /.*Unauthorized.*/);
+    }
+
     // todo assert that bob trying to edit the generator fails
 
     let updatedRecord: Record = await alice.cells[0].callZome({
