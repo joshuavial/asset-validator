@@ -52,6 +52,7 @@ fn get_latest_generator(generator_hash: ActionHash) -> ExternResult<Option<Recor
         None => Ok(Some(record_details.record)),
     }
 }
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateGeneratorInput {
     pub previous_generator_hash: ActionHash,
