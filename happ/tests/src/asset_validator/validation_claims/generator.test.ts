@@ -90,10 +90,13 @@ test('create and update Generator', async () => {
  
     // Alice updates the Generator
     let contentUpdate: any = await sampleGenerator(alice.cells[0]);
+    delete contentUpdate.owner;
     let updateInput = {
       previous_generator_hash: originalActionHash,
       updated_generator: contentUpdate,
     };
+
+    // todo assert that bob trying to edit the generator fails
 
     let updatedRecord: Record = await alice.cells[0].callZome({
       zome_name: "validation_claims",
