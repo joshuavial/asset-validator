@@ -1,5 +1,7 @@
 use hdi::prelude::*;
 
+use hdk::prelude::debug;
+
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct Generator {
