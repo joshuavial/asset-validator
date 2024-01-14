@@ -23,7 +23,9 @@ pub fn validate_update_generator(
     // Debug the original generator and generator
     debug!("Original Generator: {:?}", _original_generator);
     debug!("Updated Generator: {:?}", _generator);
-    //TODO ensure original_generator and generator owner is the same
+    if _original_generator.owner != _generator.owner {
+        return Ok(ValidateCallbackResult::Invalid("Owners do not match".to_string()));
+    }
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_generator(
