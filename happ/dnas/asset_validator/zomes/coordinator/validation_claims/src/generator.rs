@@ -43,7 +43,7 @@ fn get_latest_generator(generator_hash: ActionHash) -> ExternResult<Option<Recor
         Details::Entry(_) => {
             return Err(wasm_error!(WasmErrorInner::Guest("Malformed details".into())));
         }
-        Details::Record(record_details) => Ok(record_details),
+        Details::Record(record_details) => Ok(record_details as RecordDetails),
     }?;
     if record_details.deletes.len() > 0 {
         return Ok(None);
