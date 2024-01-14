@@ -57,17 +57,10 @@ pub struct UpdateGeneratorInput {
     pub previous_generator_hash: ActionHash,
     pub updated_generator: CreateGeneratorInput,
 }
+
 #[hdk_extern]
 pub fn update_generator(input: UpdateGeneratorInput) -> ExternResult<Record> {
-    // Retrieve the original generator's details
-    let original_generator: Generator = try_get_typed::<Generator>(input.previous_generator_hash.clone())?
-        .ok_or(wasm_error!(WasmErrorInner::Guest("Original Generator not found".into())))?;
-
-    // Check if the updater is the owner of the generator
-    let agent_info = agent_info()?;
-    if original_generator.owner != agent_info.agent_latest_pubkey {
-        return Err(wasm_error!(WasmErrorInner::Guest("Unauthorized: Only the owner can update the generator".into())));
-    }
+    // TODO Retrieve the original generator's details
 
     // Create a new generator with the same owner and a new name from the input
     let updated_generator = Generator {
@@ -85,21 +78,10 @@ pub fn update_generator(input: UpdateGeneratorInput) -> ExternResult<Record> {
 
     Ok(updated_record)
 }
+
 #[hdk_extern]
 pub fn delete_generator(
     original_generator_hash: ActionHash,
 ) -> ExternResult<ActionHash> {
     delete_entry(original_generator_hash)
-}
-// Helper function to retrieve an entry of a specific type from the DHT using its action hash
-fn try_get_typed<E: EntryDefRegistration + TryFrom<SerializedBytes, Error = SerializedBytesError>>(
-    action_hash: ActionHash,
-) -> ExternResult<Option<E>> {
-    match get(action_hash, GetOptions::default())? {
-        Some(record) => {
-            let entry: E = E::try_from(record.entry().to_owned().into_sb())?;
-            Ok(Some(entry))
-        }
-        None => Ok(None),
-    }
 }
