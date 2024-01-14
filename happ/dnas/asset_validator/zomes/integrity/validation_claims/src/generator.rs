@@ -5,6 +5,7 @@ pub struct Generator {
     pub owner: AgentPubKey,
     pub name: String,
 }
+
 pub fn validate_create_generator(
     _action: EntryCreationAction,
     _generator: Generator,
@@ -17,6 +18,7 @@ pub fn validate_update_generator(
     _original_action: EntryCreationAction,
     _original_generator: Generator,
 ) -> ExternResult<ValidateCallbackResult> {
+    //TODO ensure that the agent creating the update is the owner of the generator
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_generator(
