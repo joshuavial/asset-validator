@@ -55,10 +55,12 @@ fn get_latest_generator(generator_hash: ActionHash) -> ExternResult<Option<Recor
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateGeneratorInput {
     pub previous_generator_hash: ActionHash,
-    pub updated_generator: Generator,
+    pub updated_generator: CreateGeneratorInput,
 }
 #[hdk_extern]
 pub fn update_generator(input: UpdateGeneratorInput) -> ExternResult<Record> {
+    //todo get the previous generator details
+    //create a new generator with the same owner and a new name from the input
     let updated_generator_hash = update_entry(
         input.previous_generator_hash,
         &input.updated_generator,
