@@ -71,11 +71,11 @@ pub fn update_generator(input: UpdateGeneratorInput) -> ExternResult<Record> {
         .ok_or(wasm_error!(WasmErrorInner::Guest("Original Generator entry missing".into())))?;
 
     // Create an updated generator with the same owner and a new name from the input
-    let updated_generator = Generator {
+    let mut updated_generator = Generator {
         owner: original_generator.owner,
         name: input.updated_generator.name,
     };
-    update_entry(input.previous_generator_hash, &EntryTypes::Generator(updated_generator))?;
+    update_entry(input.previous_generator_hash, &EntryTypes::Generator(updated_generator.clone()))?;
 
     // Retrieve the updated generator's hash
     let updated_generator_hash = hash_entry(&updated_generator)?;
