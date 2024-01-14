@@ -59,19 +59,31 @@ pub struct UpdateGeneratorInput {
 }
 #[hdk_extern]
 pub fn update_generator(input: UpdateGeneratorInput) -> ExternResult<Record> {
-    //todo get the previous generator details
-    //create a new generator with the same owner and a new name from the input
-    let updated_generator_hash = update_entry(
-        input.previous_generator_hash,
-        &input.updated_generator,
-    )?;
-    let record = get(updated_generator_hash.clone(), GetOptions::default())?
-        .ok_or(
-            wasm_error!(
-                WasmErrorInner::Guest(String::from("Could not find the newly updated Generator"))
-            ),
-        )?;
-    Ok(record)
+    // Retrieve the original generator's details
+    let original_generator: Generator = get_typed_from_action_hash(input.previous_generator_hash.clone())?
+        .ok_or(wasm_error!(WasmErrorInner::Guest("Original Generator not found".into())))?;
+
+    // Check if the updater is the owner of the generator
+    let agent_info = agent_info()?;
+    if original_generator.owner != agent_info.agent_latest_pubkey {
+        return Err(wasm_error!(WasmErrorInner::Guest("Unauthorized: Only the owner can update the generator".into())));
+    }
+
+    // Create a new generator with the same owner and a new name from the input
+    let updated_generator = Generator {
+        owner: original_generator.owner,
+        name: input.updated_generator.name,
+    };
+
+    // Update the generator entry
+    update_entry(input.previous_generator_hash, &EntryTypes::Generator(updated_generator.clone()))?;
+
+    // Retrieve the updated generator's record
+    let updated_generator_hash = hash_entry(&updated_generator)?;
+    let updated_record = get(updated_generator_hash, GetOptions::default())?
+        .ok_or(wasm_error!(WasmErrorInner::Guest("Could not find the newly updated Generator".into())))?;
+
+    Ok(updated_record)
 }
 #[hdk_extern]
 pub fn delete_generator(
