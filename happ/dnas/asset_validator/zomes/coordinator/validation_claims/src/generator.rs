@@ -38,6 +38,7 @@ pub fn get_generator(
 fn get_latest_generator(generator_hash: ActionHash) -> ExternResult<Option<Record>> {
     let details = get_details(generator_hash, GetOptions::default())?
         .ok_or(wasm_error!(WasmErrorInner::Guest("Generator not found".into())))?;
+    //TODO debug details
     let record_details = match details {
         Details::Entry(_) => {
             Err(wasm_error!(WasmErrorInner::Guest("Malformed details".into())))
