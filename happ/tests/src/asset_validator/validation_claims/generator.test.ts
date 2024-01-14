@@ -97,17 +97,18 @@ test('create and update Generator', async () => {
       updated_generator: contentUpdate,
     };
 
+    await pause(1200);
     // Assert that Bob trying to edit Alice's generator fails
-    //try {
-      //await bob.cells[0].callZome({
-        //zome_name: "validation_claims",
-        //fn_name: "update_generator",
-        //payload: updateInput,
-      //});
-      //assert.fail("Bob should not be able to update Alice's generator");
-    //} catch (e) {
-      //assert.match(e.toString(), /.*Unauthorized.*/);
-    //}
+    try {
+      let updatedRecord: Record = await bob.cells[0].callZome({
+        zome_name: "validation_claims",
+        fn_name: "update_generator",
+        payload: updateInput,
+      });
+      assert.fail("Bob should not be able to update Alice's generator");
+    } catch (e) {
+      assert.match(e.toString(), /.*InvalidCommit.*/);
+    }
 
     // todo assert that bob trying to edit the generator fails
 
@@ -128,10 +129,8 @@ test('create and update Generator', async () => {
       payload: updatedRecord.signed_action.hashed.hash,
     });
     const actual0 = decode((readUpdatedOutput0.entry as any).Present.entry);
-    console.log('actual0',actual0);
-    console.log(alice.cells[0].agentId);
     assert.equal(actual0.name, contentUpdate.name);
-    assert.equal(actual0.owner, alice.cells[0].agentId);
+    assert.deepEqual(actual0.owner, alice.agentPubKey);
 
     // Alice updates the Generator again
     contentUpdate = await sampleGenerator(alice.cells[0]);
@@ -158,7 +157,7 @@ test('create and update Generator', async () => {
     });
     const actual1 = decode((readUpdatedOutput1.entry as any).Present.entry);
     assert.equal(actual1.name, contentUpdate.name)
-    assert.equal(actual1.owner, alice.cells[0].agentId);
+    assert.deepEqual(actual1.owner, alice.agentPubKey);
   });
 });
 

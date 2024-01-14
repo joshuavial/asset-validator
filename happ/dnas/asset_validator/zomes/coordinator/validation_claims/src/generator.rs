@@ -35,13 +35,12 @@ pub fn get_generator(
 ) -> ExternResult<Option<Record>> {
     get_latest_generator(original_generator_hash)
 }
-fn get_latest_generator(generator_hash: ActionHash) -> Result<Option<Record>, WasmError> {
-    let details = get_details(generator_hash, GetOptions::default())?
+fn get_latest_generator(generator_hash: ActionHash) -> ExternResult<Option<Record>> {
+    let response = get_details(generator_hash, GetOptions::default())?
         .ok_or(wasm_error!(WasmErrorInner::Guest("Generator not found".into())))?;
-    debug!("get_latest_generator - Details: {:?}", details);
-    let record_details = match details {
+    let record_details = match response {
         Details::Entry(_) => {
-            return Err(wasm_error!(WasmErrorInner::Guest("Malformed details".into())));
+            Err(wasm_error!(WasmErrorInner::Guest("Malformed details".into())))
         }
         Details::Record(record_details) => Ok(record_details),
     }?;
