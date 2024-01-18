@@ -12,25 +12,18 @@ let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
 const dispatch = createEventDispatcher();
 
-export let creator!: AgentPubKey;
-
-
 let observedAt: number = Date.now();
 
 let errorSnackbar: Snackbar;
 
-$: creator, observedAt;
 $: isObservationValid = true && true;
 
 onMount(() => {
-  if (creator === undefined) {
-    throw new Error(`The creator input is required for the CreateObservation element`);
-  }
 });
 
 async function createObservation() {  
   const observationEntry: Observation = { 
-    creator: creator!,
+    creator: null,
     observed_at: observedAt!,
   };
   

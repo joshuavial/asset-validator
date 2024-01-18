@@ -43,12 +43,8 @@ export type EntryTypes =
 
 export interface Observation { 
   creator: AgentPubKey;
-
   observed_at: number;
 }
-
-
-
 
 export interface Generator { 
   name: string;
