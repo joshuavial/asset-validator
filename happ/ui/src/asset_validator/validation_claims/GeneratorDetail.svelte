@@ -18,6 +18,7 @@ export let generatorHash: ActionHash;
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
 let loading = true;
+let isAuthor = false;
 let error: any = undefined;
 
 let record: Record | undefined;
@@ -52,6 +53,7 @@ async function fetchGenerator() {
     });
     if (record) {
       generator = decode((record.entry as any).Present.entry) as Generator;
+      isAuthor = (record.signed_action.hashed.content.author === client.agentPubKey);
     }
   } catch (e) {
     error = e;
@@ -100,8 +102,10 @@ async function deleteGenerator() {
 <div style="display: flex; flex-direction: column">
   <div style="display: flex; flex-direction: row">
     <span style="flex: 1"></span>
+    {#if isAuthor}
     <mwc-icon-button style="margin-left: 8px" icon="edit" on:click={() => { editing = true; } }></mwc-icon-button>
     <mwc-icon-button style="margin-left: 8px" icon="delete" on:click={() => deleteGenerator()}></mwc-icon-button>
+    {/if}
   </div>
 
   <div style="display: flex; flex-direction: row; margin-bottom: 16px">

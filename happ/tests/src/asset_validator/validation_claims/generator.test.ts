@@ -100,17 +100,23 @@ test('create and update Generator', async () => {
     await pause(1200);
     // Assert that Bob trying to edit Alice's generator fails
     try {
-      let updatedRecord: Record = await bob.cells[0].callZome({
+      let contentUpdateBob: any = await sampleGenerator(bob.cells[0]);
+      contentUpdateBob.name = "apples!";
+      delete contentUpdateBob.owner;
+      let updateInputBob = {
+        previous_generator_hash: originalActionHash,
+        updated_generator: contentUpdateBob,
+      };
+      let updatedRecordBob: Record = await bob.cells[0].callZome({
         zome_name: "validation_claims",
         fn_name: "update_generator",
-        payload: updateInput,
+        payload: updateInputBob,
       });
       assert.fail("Bob should not be able to update Alice's generator");
     } catch (e) {
+      console.log(e)
       assert.match(e.toString(), /.*InvalidCommit.*/);
     }
-
-    // todo assert that bob trying to edit the generator fails
 
     let updatedRecord: Record = await alice.cells[0].callZome({
       zome_name: "validation_claims",
@@ -128,12 +134,11 @@ test('create and update Generator', async () => {
       fn_name: "get_generator",
       payload: updatedRecord.signed_action.hashed.hash,
     });
-    const actual0 = decode((readUpdatedOutput0.entry as any).Present.entry);
+    const actual0 = decode((readUpdatedOutput0.entry as any).Present.entry) as Generator;
     assert.equal(actual0.name, contentUpdate.name);
-    assert.deepEqual(actual0.owner, alice.agentPubKey);
 
     // Alice updates the Generator again
-    contentUpdate = await sampleGenerator(alice.cells[0]);
+    contentUpdate = await sampleGenerator();
     updateInput = { 
       previous_generator_hash: updatedRecord.signed_action.hashed.hash,
       updated_generator: contentUpdate,
