@@ -3,7 +3,6 @@ use hdi::prelude::*;
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct Generator {
-    pub owner: AgentPubKey,
     pub name: String,
 }
 
@@ -11,9 +10,6 @@ pub fn validate_create_generator(
     _action: EntryCreationAction,
     _generator: Generator,
 ) -> ExternResult<ValidateCallbackResult> {
-    if _action.author() != &_generator.owner {
-        return Ok(ValidateCallbackResult::Invalid("Author must match owner".to_string()));
-    }
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_update_generator(
@@ -22,11 +18,8 @@ pub fn validate_update_generator(
     _original_action: EntryCreationAction,
     _original_generator: Generator,
 ) -> ExternResult<ValidateCallbackResult> {
-    if _action.author != _generator.owner {
-        return Ok(ValidateCallbackResult::Invalid("Author must match owner".to_string()));
-    }
-    if _original_generator.owner != _generator.owner {
-        return Ok(ValidateCallbackResult::Invalid("Owners do not match".to_string()));
+    if _original_action.author() != &_action.author {
+        return Ok(ValidateCallbackResult::Invalid("Authors do not match".to_string()));
     }
     Ok(ValidateCallbackResult::Valid)
 }
@@ -35,8 +28,8 @@ pub fn validate_delete_generator(
     _original_action: EntryCreationAction,
     _original_generator: Generator,
 ) -> ExternResult<ValidateCallbackResult> {
-    if _action.author != _original_generator.owner {
-        return Ok(ValidateCallbackResult::Invalid("Author must match owner".to_string()));
+    if _original_action.author() != &_action.author {
+        return Ok(ValidateCallbackResult::Invalid("Authors do not match".to_string()));
     }
     Ok(ValidateCallbackResult::Valid)
 }

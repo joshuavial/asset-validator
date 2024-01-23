@@ -24,7 +24,6 @@ $: isGeneratorValid = true && name !== '';
 async function createGenerator() {  
   const generatorEntry: Generator = { 
     name: name!,
-    owner: null
   };
   console.log(generatorEntry)
   
@@ -50,8 +49,6 @@ async function createGenerator() {
 </mwc-snackbar>
 <div style="display: flex; flex-direction: column">
   <span style="font-size: 18px">Create Generator</span>
-  
-
   <div style="margin-bottom: 16px">
     <mwc-textfield outlined label="Name" value={ name } on:input={e => { name = e.target.value; } } required></mwc-textfield>          
   </div>

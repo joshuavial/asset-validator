@@ -23,10 +23,9 @@ export async function createObservation(cell: CallableCell, observation = undefi
 
 
 
-export async function sampleGenerator(cell: CallableCell, partialGenerator = {}) {
+export async function sampleGenerator(partialGenerator = {}) {
     return {
         ...{
-	  owner: cell.cell_id[1], // The pubkey of the creator
 	  name: "Lorem ipsum generator",
         },
         ...partialGenerator
@@ -34,12 +33,11 @@ export async function sampleGenerator(cell: CallableCell, partialGenerator = {})
 }
 
 export async function createGenerator(cell: CallableCell, generator = undefined): Promise<Record> {
-    const sample = generator || await sampleGenerator(cell);
-    const { owner, ...generatorWithoutOwner } = sample;
+    const payload = generator || await sampleGenerator();
     return cell.callZome({
       zome_name: "validation_claims",
       fn_name: "create_generator",
-      payload: generatorWithoutOwner,
+      payload,
     });
 }
 

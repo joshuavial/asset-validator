@@ -46,8 +46,7 @@ test('create and read Generator', async () => {
     // conductor of the scenario.
     await scenario.shareAllAgents();
 
-    const sample = await sampleGenerator(alice.cells[0]);
-
+    const sample = await sampleGenerator();
     // Alice creates a Generator
     const record: Record = await createGenerator(alice.cells[0], sample);
     assert.ok(record);
@@ -89,9 +88,8 @@ test('create and update Generator', async () => {
     const originalActionHash = record.signed_action.hashed.hash;
  
     // Alice updates the Generator
-    let contentUpdate: any = await sampleGenerator(alice.cells[0]);
+    let contentUpdate: any = await sampleGenerator();
     contentUpdate.name = "bananas";
-    delete contentUpdate.owner;
     let updateInput = {
       previous_generator_hash: originalActionHash,
       updated_generator: contentUpdate,
@@ -100,9 +98,8 @@ test('create and update Generator', async () => {
     await pause(1200);
     // Assert that Bob trying to edit Alice's generator fails
     try {
-      let contentUpdateBob: any = await sampleGenerator(bob.cells[0]);
+      let contentUpdateBob: any = await sampleGenerator();
       contentUpdateBob.name = "apples!";
-      delete contentUpdateBob.owner;
       let updateInputBob = {
         previous_generator_hash: originalActionHash,
         updated_generator: contentUpdateBob,
@@ -114,7 +111,6 @@ test('create and update Generator', async () => {
       });
       assert.fail("Bob should not be able to update Alice's generator");
     } catch (e) {
-      console.log(e)
       assert.match(e.toString(), /.*InvalidCommit.*/);
     }
 
@@ -162,7 +158,6 @@ test('create and update Generator', async () => {
     });
     const actual1 = decode((readUpdatedOutput1.entry as any).Present.entry);
     assert.equal(actual1.name, contentUpdate.name)
-    assert.deepEqual(actual1.owner, alice.agentPubKey);
   });
 });
 

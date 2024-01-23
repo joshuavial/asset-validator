@@ -53,7 +53,11 @@ async function fetchGenerator() {
     });
     if (record) {
       generator = decode((record.entry as any).Present.entry) as Generator;
-      isAuthor = (record.signed_action.hashed.content.author === client.agentPubKey);
+      const authorPubKey = record.signed_action.hashed.content.author;
+      const clientPubKey = client.myPubKey;
+
+      isAuthor = authorPubKey.length === clientPubKey.length &&
+                 authorPubKey.every((val, index) => val === clientPubKey[index]);
     }
   } catch (e) {
     error = e;
