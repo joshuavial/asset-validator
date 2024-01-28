@@ -14,7 +14,7 @@ pub enum EntryTypes {
 #[derive(Serialize, Deserialize)]
 #[hdk_link_types]
 pub enum LinkTypes {
-    CreatorToObservations,
+    AllObservations,
     AllGenerators,
 }
 #[hdk_extern]
@@ -140,8 +140,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             action,
         } => {
             match link_type {
-                LinkTypes::CreatorToObservations => {
-                    validate_create_link_creator_to_observations(
+                LinkTypes::AllObservations => {
+                    validate_create_link_all_observations(
                         action,
                         base_address,
                         target_address,
@@ -167,8 +167,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             action,
         } => {
             match link_type {
-                LinkTypes::CreatorToObservations => {
-                    validate_delete_link_creator_to_observations(
+                LinkTypes::AllObservations => {
+                    validate_delete_link_all_observations(
                         action,
                         original_action,
                         base_address,
@@ -366,8 +366,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     action,
                 } => {
                     match link_type {
-                        LinkTypes::CreatorToObservations => {
-                            validate_create_link_creator_to_observations(
+                        LinkTypes::AllObservations => {
+                            validate_create_link_all_observations(
                                 action,
                                 base_address,
                                 target_address,
@@ -407,8 +407,8 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                     };
                     match link_type {
-                        LinkTypes::CreatorToObservations => {
-                            validate_delete_link_creator_to_observations(
+                        LinkTypes::AllObservations => {
+                            validate_delete_link_all_observations(
                                 action,
                                 create_link.clone(),
                                 base_address,

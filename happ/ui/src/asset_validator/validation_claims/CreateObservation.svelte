@@ -2,7 +2,7 @@
 import { createEventDispatcher, getContext, onMount } from 'svelte';
 import type { AppAgentClient, Record, EntryHash, AgentPubKey, ActionHash, DnaHash } from '@holochain/client';
 import { clientContext } from '../../contexts';
-import type { Observation } from './types';
+import type { Observation, EnergyData } from './types';
 import '@material/mwc-button';
 import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
@@ -12,7 +12,10 @@ let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
 const dispatch = createEventDispatcher();
 
-let observedAt: number = Date.now();
+let observedAt: number = Math.floor(Date.now() / 1000);
+let from: number = observedAt;
+let to: number = observedAt + 3600; // default to one hour later
+let energy: number = 0;
 
 let errorSnackbar: Snackbar;
 
@@ -22,9 +25,17 @@ onMount(() => {
 });
 
 async function createObservation() {  
-  const observationEntry: Observation = { 
-    creator: null,
-    observed_at: observedAt!,
+  const energyData: EnergyData = {
+    from: from,
+    to: to,
+    energy: energy,
+  };
+
+  const observationEntry: Observation = {
+    observed_at: observedAt,
+    data: {
+      EnergyObservation: energyData,
+    },
   };
   
   try {
@@ -49,8 +60,17 @@ async function createObservation() {
   <span style="font-size: 18px">Create Observation</span>
   
 
-  <div style="margin-bottom: 16px">
-    <vaadin-date-time-picker label="Observed At" value={new Date(observedAt / 1000).toISOString()} on:change={e => { observedAt = new Date(e.target.value).valueOf() * 1000;} } required></vaadin-date-time-picker>          
+  <div style="margin-bottom: 16px;">
+    <vaadin-date-time-picker label="Observed At" value={new Date(observedAt * 1000).toISOString()} on:change={e => { observedAt = Math.floor(new Date(e.target.value).valueOf() / 1000);}} required></vaadin-date-time-picker>
+  </div>
+  <div style="margin-bottom: 16px;">
+    <vaadin-date-time-picker label="From" value={new Date(from * 1000).toISOString()} on:change={e => { from = Math.floor(new Date(e.target.value).valueOf() / 1000);}} required></vaadin-date-time-picker>
+  </div>
+  <div style="margin-bottom: 16px;">
+    <vaadin-date-time-picker label="To" value={new Date(to * 1000).toISOString()} on:change={e => { to = Math.floor(new Date(e.target.value).valueOf() / 1000);}} required></vaadin-date-time-picker>
+  </div>
+  <div style="margin-bottom: 16px;">
+    <mwc-textfield label="Energy (in joules)" type="number" min="0" step="any" value={energy.toString()} on:change={e => { energy = parseFloat(e.target.value);}} required></mwc-textfield>
   </div>
             
 

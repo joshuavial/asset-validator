@@ -9,7 +9,14 @@ pub fn create_observation(observation: Observation) -> ExternResult<Record> {
                 WasmErrorInner::Guest(String::from("Could not find the newly created Observation"))
             ),
         )?;
-    //TODO link to action author
+    //TODO think about better linking
+    let path = Path::from("all_observations");
+    create_link(
+        path.path_entry_hash()?,
+        observation_hash.clone(),
+        LinkTypes::AllObservations,
+        (),
+    )?;
     Ok(record)
 }
 #[hdk_extern]
@@ -54,9 +61,38 @@ pub fn update_observation(input: UpdateObservationInput) -> ExternResult<Record>
         )?;
     Ok(record)
 }
+//#[hdk_extern]
+//pub fn get_observations_for_creator(creator: AgentPubKey) -> ExternResult<Vec<Record>> {
+    //let links = get_links(creator, LinkTypes::CreatorToObservations, None)?;
+    //let get_input: Vec<GetInput> = links
+        //.into_iter()
+        //.map(|link| Ok(
+            //GetInput::new(
+                //link
+                    //.target
+                    //.into_action_hash()
+                    //.ok_or(
+                        //wasm_error!(
+                            //WasmErrorInner::Guest(String::from("No action hash associated with link"))
+                        //),
+                    //)?
+                    //.into(),
+                //GetOptions::default(),
+            //),
+        //))
+        //.collect::<ExternResult<Vec<GetInput>>>()?;
+    //let records: Vec<Record> = HDK
+        //.with(|hdk| hdk.borrow().get(get_input))?
+        //.into_iter()
+        //.filter_map(|r| r)
+        //.collect();
+    //Ok(records)
+//}
+
 #[hdk_extern]
-pub fn get_observations_for_creator(creator: AgentPubKey) -> ExternResult<Vec<Record>> {
-    let links = get_links(creator, LinkTypes::CreatorToObservations, None)?;
+pub fn get_all_observations(_: ()) -> ExternResult<Vec<Record>> {
+    let path = Path::from("all_observations");
+    let links = get_links(path.path_entry_hash()?, LinkTypes::AllObservations, None)?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| Ok(
@@ -74,10 +110,7 @@ pub fn get_observations_for_creator(creator: AgentPubKey) -> ExternResult<Vec<Re
             ),
         ))
         .collect::<ExternResult<Vec<GetInput>>>()?;
-    let records: Vec<Record> = HDK
-        .with(|hdk| hdk.borrow().get(get_input))?
-        .into_iter()
-        .filter_map(|r| r)
-        .collect();
+    let records = HDK.with(|hdk| hdk.borrow().get(get_input))?;
+    let records: Vec<Record> = records.into_iter().filter_map(|r| r).collect();
     Ok(records)
 }

@@ -4,7 +4,7 @@ import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
 import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
 import { clientContext } from '../../contexts';
-import type { Observation } from './types';
+import type { Observation, EnergyData } from './types';
 import '@material/mwc-circular-progress';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
@@ -25,6 +25,7 @@ let observation: Observation | undefined;
 
 let editing = false;
 
+
   
 $: editing,  error, loading, record, observation;
 
@@ -41,7 +42,9 @@ async function fetchObservation() {
   record = undefined;
   observation = undefined;
   
+
   try {
+  console.log(observationHash)
     record = await client.callZome({
       cap_secret: null,
       role_name: 'asset_validator',
@@ -50,6 +53,7 @@ async function fetchObservation() {
       payload: observationHash,
     });
     if (record) {
+    console.log(record)
       observation = decode((record.entry as any).Present.entry) as Observation;
     }
   } catch (e) {
@@ -80,16 +84,17 @@ async function fetchObservation() {
 {:else}
 
 <div style="display: flex; flex-direction: column">
-  <div style="display: flex; flex-direction: row">
-    <span style="flex: 1"></span>
-    <mwc-icon-button style="margin-left: 8px" icon="edit" on:click={() => { editing = true; } }></mwc-icon-button>
-  </div>
 
-  <div style="display: flex; flex-direction: row; margin-bottom: 16px">
-    <span style="margin-right: 4px"><strong>Observed At:</strong></span>
-    <span style="white-space: pre-line">{ new Date(observation.observed_at / 1000).toLocaleString() }</span>
+
+  {#if observation.data.EnergyObservation}
+  <div style="margin-bottom: 16px">
+    <span>
+      <strong>Energy Usage:</strong> { observation.data.EnergyObservation.energy } joules from
+      { new Date(observation.data.EnergyObservation.from * 1000).toLocaleString() } to
+      { new Date(observation.data.EnergyObservation.to * 1000).toLocaleString() }
+    </span>
   </div>
+  {/if}
 
 </div>
 {/if}
-

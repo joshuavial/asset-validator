@@ -46,7 +46,8 @@ pub fn validate_delete_observation(
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Invalid(String::from("Observations cannot be deleted")))
 }
-pub fn validate_create_link_creator_to_observations(
+
+pub fn validate_create_link_all_observations(
     _action: CreateLink,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
@@ -71,7 +72,7 @@ pub fn validate_create_link_creator_to_observations(
         )?;
     Ok(ValidateCallbackResult::Valid)
 }
-pub fn validate_delete_link_creator_to_observations(
+pub fn validate_delete_link_all_observations(
     _action: DeleteLink,
     _original_action: CreateLink,
     _base: AnyLinkableHash,
@@ -80,7 +81,7 @@ pub fn validate_delete_link_creator_to_observations(
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(
         ValidateCallbackResult::Invalid(
-            String::from("CreatorToObservations links cannot be deleted"),
+            String::from("AllObservations links cannot be deleted"),
         ),
     )
 }
