@@ -24,6 +24,8 @@ CAL = 0.00512 / (Current_LSB * R_SHUNT)
 #print(CAL)
 REG_CAL_VALUE = int(CAL)
 
+POWER_BUFFER_DURATION = 10  # Duration in seconds to accumulate power readings
+
 # Function to write to a register
 def write_register(reg, data):
     try:
@@ -67,6 +69,7 @@ def get_current():
     raw_current = read_register(REG_CURRENT)
     return raw_current * Current_LSB 
 
+
  # Function to get power
 #def get_power():
 #    raw_power = read_register(REG_POWER)
@@ -82,26 +85,46 @@ try:
     print(hex(REG_CONF_VALUE))
     print(format(REG_CONF_VALUE, '#018b'))
 
+    power_buffer = 0.0  # Initialize power buffer
+    last_power_reading = 0.0  # Store the last power reading
+    start_time = time.time()  # Start time for the power buffer
+
     while True:
         bus_voltage = get_bus_voltage()
         shunt_voltage = get_shunt_voltage()
         current = get_current()
+        bus_voltage = 2.5 or get_bus_voltage()
+        shunt_voltage = 25 or get_shunt_voltage()
+        current = 0.6 or get_current()
         #power = get_power()
-        power = bus_voltage * current 
+
+        current_power_reading = bus_voltage * current if bus_voltage and current else 0
+        if not last_power_reading == 0:
+            # Calculate the average power over the last second
+            average_power = (last_power_reading + current_power_reading) / 2
+            # Update the power buffer with the average power
+            power_buffer += average_power
+
+        last_power_reading = current_power_reading
 
         # If any reading fails, skip the iteration
-        if bus_voltage is None or shunt_voltage is None or current is None or power is None:
+        if bus_voltage is None or shunt_voltage is None or current is None:
             print("Failed to read sensor data. Skipping...")
             time.sleep(1)
             continue
 
-        print(f"Bus Voltage: {bus_voltage} V")
-        print(f"Shunt Voltage Drop: {shunt_voltage} mV")
-        print(f"Current: {current} A")
-        print(f"Power: {power} W")
-        print("---------------")
+        print(f"{bus_voltage}V @ {current} A = {current_power_reading}")
 
-        time.sleep(5)
+        # Check if 10 seconds have passed
+        if time.time() - start_time >= POWER_BUFFER_DURATION:
+            # Convert power buffer to milliwatt-hours (mWh)
+            power_consumed_mWh = (power_buffer / 3600) * 1000
+            print(f"Power measured in the last {POWER_BUFFER_DURATION} seconds: {power_consumed_mWh:.2f} mWh")
+            # Reset the power buffer and start time
+            power_buffer = 0.0
+            start_time = time.time()
+
+        time.sleep(1)
 
 except KeyboardInterrupt:
     print("Script stopped by user.")
