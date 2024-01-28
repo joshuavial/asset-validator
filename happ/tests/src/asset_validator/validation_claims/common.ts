@@ -3,13 +3,19 @@ import { NewEntryAction, ActionHash, Record, AppBundleSource, fakeActionHash, fa
 
 
 
-export async function sampleObservation(cell: CallableCell, partialObservation = {}) {
+export async function sampleObservation(partialObservation = {}) {
+    const now = Math.floor(Date.now());
+    const tenSecondsLater = now + 10000;
     return {
-        ...{
-          creator: cell.cell_id[1],
-	  observed_at: 1674053334548000,
+        observed_at: now, // Ensure this is an integer (i64)
+        data: {
+            EnergyObservation: {
+                from: now, // Ensure this is an integer (i64), in seconds
+                to: tenSecondsLater, // Ensure this is an integer (i64), in seconds
+                energy: 100
+            }
         },
-        ...partialObservation
+        ...partialObservation,
     };
 }
 
@@ -17,10 +23,9 @@ export async function createObservation(cell: CallableCell, observation = undefi
     return cell.callZome({
       zome_name: "validation_claims",
       fn_name: "create_observation",
-      payload: observation || await sampleObservation(cell),
+      payload: observation || await sampleObservation(),
     });
 }
-
 
 
 export async function sampleGenerator(partialGenerator = {}) {

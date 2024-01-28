@@ -46,7 +46,7 @@ test('create and read Observation', async () => {
     // conductor of the scenario.
     await scenario.shareAllAgents();
 
-    const sample = await sampleObservation(alice.cells[0]);
+    const sample = await sampleObservation();
 
     // Alice creates a Observation
     const record: Record = await createObservation(alice.cells[0], sample);
@@ -89,7 +89,7 @@ test('create and update Observation', async () => {
     const originalActionHash = record.signed_action.hashed.hash;
  
     // Alice updates the Observation
-    let contentUpdate: any = await sampleObservation(alice.cells[0]);
+    let contentUpdate: any = await sampleObservation();
     let updateInput = {
       previous_observation_hash: originalActionHash,
       updated_observation: contentUpdate,
@@ -114,7 +114,7 @@ test('create and update Observation', async () => {
     assert.deepEqual(contentUpdate, decode((readUpdatedOutput0.entry as any).Present.entry) as any);
 
     // Alice updates the Observation again
-    contentUpdate = await sampleObservation(alice.cells[0]);
+    contentUpdate = await sampleObservation();
     updateInput = { 
       previous_observation_hash: updatedRecord.signed_action.hashed.hash,
       updated_observation: contentUpdate,

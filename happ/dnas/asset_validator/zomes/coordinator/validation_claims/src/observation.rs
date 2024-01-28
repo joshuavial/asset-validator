@@ -3,18 +3,13 @@ use validation_claims_integrity::*;
 #[hdk_extern]
 pub fn create_observation(observation: Observation) -> ExternResult<Record> {
     let observation_hash = create_entry(&EntryTypes::Observation(observation.clone()))?;
-    create_link(
-        observation.creator.clone(),
-        observation_hash.clone(),
-        LinkTypes::CreatorToObservations,
-        (),
-    )?;
     let record = get(observation_hash.clone(), GetOptions::default())?
         .ok_or(
             wasm_error!(
                 WasmErrorInner::Guest(String::from("Could not find the newly created Observation"))
             ),
         )?;
+    //TODO link to action author
     Ok(record)
 }
 #[hdk_extern]
