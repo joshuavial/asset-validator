@@ -51,7 +51,7 @@ export interface EnergyData {
   energy: number; // joules, +ve = generation, -ve = consumption
 }
 
-export type ObservationData = ImageData | EnergyData;
+export type ObservationData = { ImageObservation: ImageData } | { EnergyObservation: EnergyData };
 
 export interface Observation {
   creator: AgentPubKey;
