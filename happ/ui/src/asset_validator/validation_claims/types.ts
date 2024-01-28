@@ -41,9 +41,22 @@ export type EntryTypes =
 
 
 
-export interface Observation { 
+export interface ImageData {
+  image_data: string;
+}
+
+export interface EnergyData {
+  from: number; // Timestamp in milliseconds
+  to: number; // Timestamp in milliseconds
+  energy: number; // joules, +ve = generation, -ve = consumption
+}
+
+export type ObservationData = ImageData | EnergyData;
+
+export interface Observation {
   creator: AgentPubKey;
   observed_at: number;
+  data: ObservationData;
 }
 
 export interface Generator { 
