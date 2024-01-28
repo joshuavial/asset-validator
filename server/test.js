@@ -1,8 +1,9 @@
 const { AppWebsocket } = require('@holochain/conductor-api');
+const { AppWebsocket } = require('@holochain/conductor-api');
 
 const WS_URL = 'ws://localhost:34783';
 
-const ws = new WebSocket(WS_URL);
+let appWebsocket;
 
 ws.on('open', function open() {
   console.log('Connected to the server.');
@@ -12,6 +13,10 @@ ws.on('open', function open() {
       payload: {
         observed_at: Math.floor(Date.now() / 1000),
         data: {
+AppWebsocket.connect(WS_URL).then(appWs => {
+  appWebsocket = appWs;
+  console.log('Connected to the Holochain conductor.');
+  const createObservationMessage = {
     type: 'create_observation',
     payload: {
       observed_at: Math.floor(Date.now() / 1000),
@@ -24,7 +29,7 @@ ws.on('open', function open() {
       }
     }
   };
-  ws.send(JSON.stringify(createObservationMessage));
+  appWebsocket.callZome(/* parameters for the zome call here */);
 });
 
 ws.on('message', function incoming(data) {
