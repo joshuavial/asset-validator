@@ -1,4 +1,3 @@
-WS_URL = 'ws://localhost:34783'
 const WebSocket = require('ws');
 
 const WS_URL = 'ws://localhost:34783';
@@ -7,13 +6,20 @@ const ws = new WebSocket(WS_URL);
 
 ws.on('open', function open() {
   console.log('Connected to the server.');
-  const createGeneratorMessage = {
-    type: 'create_generator',
+  const createObservationMessage = {
+    type: 'create_observation',
     payload: {
-      name: 'Example Generator Name'
+      observed_at: Math.floor(Date.now() / 1000),
+      data: {
+        EnergyObservation: {
+          from: Math.floor(Date.now() / 1000),
+          to: Math.floor(Date.now() / 1000) + 3600,
+          energy: 1000 // Example energy value in joules
+        }
+      }
     }
   };
-  ws.send(JSON.stringify(createGeneratorMessage));
+  ws.send(JSON.stringify(createObservationMessage));
 });
 
 ws.on('message', function incoming(data) {
