@@ -9,7 +9,7 @@ import '@material/mwc-circular-progress';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
-import EditObservation from './EditObservation.svelte'; 
+
 
 const dispatch = createEventDispatcher();
 
@@ -23,11 +23,11 @@ let error: any = undefined;
 let record: Record | undefined;
 let observation: Observation | undefined;
 
-let editing = false;
+
 
 
   
-$: editing,  error, loading, record, observation;
+$: error, loading, record, observation;
 
 onMount(async () => {
   if (observationHash === undefined) {
@@ -72,15 +72,6 @@ async function fetchObservation() {
 </div>
 {:else if error}
 <span>Error fetching the observation: {error}</span>
-{:else if editing}
-<EditObservation
-  currentRecord={record}
-  on:observation-updated={async () => {
-    editing = false;
-    await fetchObservation()
-  } }
-  on:edit-canceled={() => { editing = false; } }
-></EditObservation>
 {:else}
 
 <div style="display: flex; flex-direction: column">
