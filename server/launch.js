@@ -1,12 +1,15 @@
 import { AdminWebsocket, AppAgentWebsocket, CellType } from "@holochain/client";
-import fs from 'fs';
-import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import { readFileSync, writeFileSync } from 'fs';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const AGENT_PUB_KEY_PATH = path.join(__dirname, 'agent-pub-key.txt');
 
 async function loadAgentPubKey() {
   try {
-    return fs.readFileSync(AGENT_PUB_KEY_PATH, 'utf8');
+    return readFileSync(AGENT_PUB_KEY_PATH, 'utf8');
   } catch (error) {
     console.error('Error reading agent public key from file:', error);
     return null;
@@ -15,7 +18,7 @@ async function loadAgentPubKey() {
 
 async function saveAgentPubKey(agentPubKey) {
   try {
-    fs.writeFileSync(AGENT_PUB_KEY_PATH, agentPubKey, 'utf8');
+    writeFileSync(AGENT_PUB_KEY_PATH, agentPubKey, 'utf8');
     console.log('Agent public key saved to file.');
   } catch (error) {
     console.error('Error writing agent public key to file:', error);
