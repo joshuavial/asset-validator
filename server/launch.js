@@ -2,7 +2,10 @@ import { decode } from '@msgpack/msgpack';
 import {getAppAgentWs} from './lib.js'
 
 import express from 'express'
+import bodyParser from 'body-parser'
 const app = express()
+
+app.use(bodyParser.json())
 
 const {cell_id, appAgentWs} = await getAppAgentWs()
 
