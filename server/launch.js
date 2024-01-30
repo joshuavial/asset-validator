@@ -12,7 +12,6 @@ async function main() {
 
   let app;
   if (!isAppInstalled) {
-      const agent_key = await adminWs.generateAgentPubKey();
       appInfo = await adminWs.installApp({
         agent_key, 
         installed_app_id,
@@ -29,10 +28,10 @@ async function main() {
     appInfo = app;
   }
   await adminWs.enableApp({ installed_app_id });
-  if (!(CellType.Provisioned in appInfo.cell_info[role_name][0])) {
+  if (!(CellType.Provisioned in appInfo.cell_info.asset_validator[0])) {
     process.exit();
   }
-  const { cell_id } = appInfo.cell_info[role_name][0][CellType.Provisioned];
+  const { cell_id } = appInfo.cell_info.asset_validator[0][CellType.Provisioned];
   await adminWs.authorizeSigningCredentials(cell_id);
   await adminWs.attachAppInterface({ port: 2345 });
   const appAgentWs = await AppAgentWebsocket.connect(
