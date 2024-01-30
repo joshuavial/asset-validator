@@ -121,16 +121,17 @@ try:
             # Convert energy buffer to joules (J)
             energy_consumed_J = energy_buffer
             end_time = time.time()
-            post_data = {
-                'from': int(start_time * 1e6),
-                'to': int(end_time * 1e6),
-                'energy': energy_consumed_J
-            }
-            response = requests.post('http://192.168.1.99:3000/observation', json=post_data)
-            if response.status_code == 200:
-                print(f"Energy data posted successfully: {post_data}")
-            else:
-                print(f"Failed to post energy data: {response.status_code}")
+            if energy_consumed_J > 0:
+                post_data = {
+                    'from': int(start_time * 1e6),
+                    'to': int(end_time * 1e6),
+                    'energy': energy_consumed_J
+                }
+                response = requests.post('http://192.168.1.99:3000/observation', json=post_data)
+                if response.status_code == 200:
+                    print(f"Energy data posted successfully: {post_data}")
+                else:
+                    print(f"Failed to post energy data: {response.status_code}")
             # Reset the energy buffer and start time
             energy_buffer = 0.0
             start_time = time.time()
