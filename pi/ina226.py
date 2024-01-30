@@ -24,7 +24,7 @@ CAL = 0.00512 / (Current_LSB * R_SHUNT)
 #print(CAL)
 REG_CAL_VALUE = int(CAL)
 
-ENERGY_BUFFER_DURATION = 10  # Duration in seconds to accumulate energy readings
+POWER_BUFFER_DURATION = 10  # Duration in seconds to accumulate power readings
 
 # Function to write to a register
 def write_register(reg, data):
@@ -85,9 +85,9 @@ try:
     print(hex(REG_CONF_VALUE))
     print(format(REG_CONF_VALUE, '#018b'))
 
-    energy_buffer = 0.0  # Initialize energy buffer
+    power_buffer = 0.0  # Initialize power buffer
     last_power_reading = 0.0  # Store the last power reading
-    start_time = time.time()  # Start time for the energy buffer
+    start_time = time.time()  # Start time for the power buffer
 
     while True:
         bus_voltage = get_bus_voltage()
@@ -103,7 +103,7 @@ try:
             # Calculate the average power over the last second
             average_power = (last_power_reading + current_power_reading) / 2
             # Update the power buffer with the average power
-            energy_buffer += average_power
+            power_buffer += average_power
 
         last_power_reading = current_power_reading
 
@@ -116,12 +116,12 @@ try:
         print(f"{bus_voltage}V @ {current} A = {current_power_reading}")
 
         # Check if 10 seconds have passed
-        if time.time() - start_time >= ENERGY_BUFFER_DURATION:
-            # Convert energy buffer to joules (J)
-            energy_consumed_J = energy_buffer * 3600
-            print(f"Energy measured in the last {ENERGY_BUFFER_DURATION} seconds: {energy_consumed_J:.2f} J")
-            # Reset the energy buffer and start time
-            energy_buffer = 0.0
+        if time.time() - start_time >= POWER_BUFFER_DURATION:
+            # Convert power buffer to milliwatt-hours (mWh)
+            power_consumed_mWh = (power_buffer / 3600) * 1000
+            print(f"Power measured in the last {POWER_BUFFER_DURATION} seconds: {power_consumed_mWh:.2f} mWh")
+            # Reset the power buffer and start time
+            power_buffer = 0.0
             start_time = time.time()
 
         time.sleep(1)
