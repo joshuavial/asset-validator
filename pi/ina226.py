@@ -104,8 +104,8 @@ try:
         if not last_power_reading == 0:
             # Calculate the average power over the last second
             average_power = (last_power_reading + current_power_reading) / 2
-            # Update the power buffer with the average power
-            energy_buffer += average_power * (1 / 3600)  # Convert W to J by multiplying with time in hours (1/3600)
+            # Update the energy buffer with the energy consumed in joules (J)
+            energy_buffer += average_power * 1  # Energy in joules (W * s)
 
         last_power_reading = current_power_reading
 
