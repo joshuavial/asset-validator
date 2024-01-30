@@ -1,5 +1,6 @@
 import { AdminWebsocket, AppAgentWebsocket, CellType } from "@holochain/client";
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
+import * as path from 'path';
 import { dirname } from 'path';
 import { readFileSync, writeFileSync } from 'fs';
 
