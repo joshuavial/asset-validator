@@ -10,10 +10,8 @@ async function main() {
   const installedApps = await adminWs.listApps({ status_filter: "enabled" });
   const isAppInstalled = installedApps.some(app => app.installed_app_id === installed_app_id);
 
-  if (isAppInstalled) {
-    console.log(installedApps);
-    appInfo = await adminWs.getAppInfo({ installed_app_id });
-  } else {
+  let app;
+  if (!isAppInstalled) {
       const agent_key = await adminWs.generateAgentPubKey();
       appInfo = await adminWs.installApp({
         agent_key, 
@@ -22,6 +20,13 @@ async function main() {
         path: '/home/jv/clients/holo/asset-validator/happ/workdir/asset-validator.happ',
       }); 
       await adminWs.enableApp({ installed_app_id });
+  }
+  else {
+    app = installedApps.find(app => app.installed_app_id === installed_app_id);
+    if (!app) {
+      throw new Error(`Installed app with ID ${installed_app_id} not found.`);
+    }
+    appInfo = app;
   }
   await adminWs.enableApp({ installed_app_id });
   if (!(CellType.Provisioned in appInfo.cell_info[role_name][0])) {
