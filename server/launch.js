@@ -1,9 +1,34 @@
 import { AdminWebsocket, AppAgentWebsocket, CellType } from "@holochain/client";
-import { warn } from "console";
+import fs from 'fs';
+import path from 'path';
+
+const AGENT_PUB_KEY_PATH = path.join(__dirname, 'agent-pub-key.txt');
+
+async function loadAgentPubKey() {
+  try {
+    return fs.readFileSync(AGENT_PUB_KEY_PATH, 'utf8');
+  } catch (error) {
+    console.error('Error reading agent public key from file:', error);
+    return null;
+  }
+}
+
+async function saveAgentPubKey(agentPubKey) {
+  try {
+    fs.writeFileSync(AGENT_PUB_KEY_PATH, agentPubKey, 'utf8');
+    console.log('Agent public key saved to file.');
+  } catch (error) {
+    console.error('Error writing agent public key to file:', error);
+  }
+}
 
 async function main() {
   const adminWs = await AdminWebsocket.connect(new URL("ws://127.0.0.1:1234"));
-  const agent_key = await adminWs.generateAgentPubKey();
+  let agent_key = await loadAgentPubKey();
+  if (!agent_key) {
+    agent_key = await adminWs.generateAgentPubKey();
+    await saveAgentPubKey(agent_key);
+  }
   const role_name = "role";
   const installed_app_id = "asset-validator";
   let appInfo;
