@@ -103,7 +103,7 @@ try:
             # Calculate the average power over the last second
             average_power = (last_power_reading + current_power_reading) / 2
             # Update the power buffer with the average power
-            power_buffer += average_power
+            energy_buffer += average_power
 
         last_power_reading = current_power_reading
 
