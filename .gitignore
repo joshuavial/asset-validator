@@ -12,3 +12,7 @@ node_modules
 .running
 tags
 tags*
+data
+store_file store_file-shm store_file-wal
+pid_file
+store_file*

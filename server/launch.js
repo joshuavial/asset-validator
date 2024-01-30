@@ -23,7 +23,7 @@ app.post('/observation', async (req, res) => {
     fn_name: 'create_observation',
     payload,
   });
-  res.json((response.map(r => decode(r.entry.Present.entry))))
+  res.json(decode(response.entry.Present.entry))
 })
 
 app.get('/observations', async (_, res) => {
@@ -35,10 +35,6 @@ app.get('/observations', async (_, res) => {
     payload: null,
   });
   res.json((response.map(r => decode(r.entry.Present.entry))))
-})
-
-app.get('*', async (_, res) => {
-
 })
 
 app.listen(3000, '0.0.0.0', () => {

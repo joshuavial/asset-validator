@@ -5,7 +5,7 @@
 
 <div>
   <h1>Observations</h1>
-  <CreateObservation />
+  <!--<CreateObservation />-->
   <AllObservations />
 
 </div>

@@ -1,0 +1,17 @@
+environment_path: /home/jv/clients/holo/asset-validator/data
+signing_service_uri: ~
+encryption_service_uri: ~
+decryption_service_uri: ~
+dpki: ~
+network:
+  transport_pool:
+    - type: mem
+  network_type: quic_bootstrap
+  bootstrap_service: https://bootstrap.holo.host
+keystore:
+  type: lair_server
+  connection_url: unix:///home/jv/clients/holo/asset-validator/socket?k=kHEK9GRyNQJQYJb3jf-3FZnhl1hH04aHUPWZFIyfvE0
+admin_interfaces:
+  - driver:
+      type: websocket
+      port: 1234
