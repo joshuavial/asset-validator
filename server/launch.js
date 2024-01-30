@@ -1,16 +1,28 @@
-const { AdminWebsocket, AppAgentWebsocket, CellType } = require("@holochain/client");
+import { AdminWebsocket, AppAgentWebsocket, CellType } from "@holochain/client";
+import { warn } from "console";
 
 async function main() {
   const adminWs = await AdminWebsocket.connect(new URL("ws://127.0.0.1:1234"));
   const agent_key = await adminWs.generateAgentPubKey();
   const role_name = "role";
   const installed_app_id = "asset-validator";
-  const appInfo = await adminWs.installApp({
-    agent_key, 
-    installed_app_id,
-    membrane_proofs: {},
-    path: '/home/jv/clients/holo/asset-validator/happ/workdir/asset-validator.happ',
-  }); 
+  let appInfo;
+  const installedApps = await adminWs.listApps({ status_filter: "enabled" });
+  const isAppInstalled = installedApps.some(app => app.installed_app_id === installed_app_id);
+
+  if (isAppInstalled) {
+    console.log(installedApps);
+    appInfo = await adminWs.getAppInfo({ installed_app_id });
+  } else {
+      const agent_key = await adminWs.generateAgentPubKey();
+      appInfo = await adminWs.installApp({
+        agent_key, 
+        installed_app_id,
+        membrane_proofs: {},
+        path: '/home/jv/clients/holo/asset-validator/happ/workdir/asset-validator.happ',
+      }); 
+      await adminWs.enableApp({ installed_app_id });
+  }
   await adminWs.enableApp({ installed_app_id });
   if (!(CellType.Provisioned in appInfo.cell_info[role_name][0])) {
     process.exit();
