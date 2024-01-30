@@ -24,7 +24,7 @@ CAL = 0.00512 / (Current_LSB * R_SHUNT)
 #print(CAL)
 REG_CAL_VALUE = int(CAL)
 
-ENERGY_BUFFER_DURATION = 10  # Duration in seconds to accumulate energy readings
+ENERGY_BUFFER_DURATION = 20  # Duration in seconds to accumulate energy readings
 
 # Function to write to a register
 def write_register(reg, data):
@@ -93,9 +93,9 @@ try:
         bus_voltage = get_bus_voltage()
         shunt_voltage = get_shunt_voltage()
         current = get_current()
-        bus_voltage = 2.5 or get_bus_voltage()
-        shunt_voltage = 25 or get_shunt_voltage()
-        current = 0.6 or get_current()
+        bus_voltage = get_bus_voltage()
+        shunt_voltage = get_shunt_voltage()
+        current = get_current()
         #power = get_power()
 
         current_power_reading = bus_voltage * current if bus_voltage and current else 0
@@ -115,8 +115,7 @@ try:
 
         print(f"{bus_voltage}V @ {current} A = {current_power_reading}")
 
-        # Check if 10 seconds have passed
-        if time.time() - start_time >= POWER_BUFFER_DURATION:
+        if time.time() - start_time >= ENERGY_BUFFER_DURATION:
             # Convert energy buffer to joules (J)
             energy_consumed_J = energy_buffer
             print(f"Energy measured in the last {ENERGY_BUFFER_DURATION} seconds: {energy_consumed_J:.2f} J")
