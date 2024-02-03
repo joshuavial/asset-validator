@@ -6,9 +6,7 @@ import { dirname } from 'path';
 
 export async function getAppAgentWs() {
   const installed_app_id = "asset-validator";
-  console.log(installed_app_id)
   const adminWs = await AdminWebsocket.connect(new URL("ws://localhost:1234"));
-  console.log(adminWs)
   const appInfo = await findOrInstallHapp(adminWs, installed_app_id);
   const cell_id = await activateCell(appInfo, adminWs);
   const appAgentWs = await appAgentWebsocket(adminWs, installed_app_id);
@@ -18,6 +16,8 @@ export async function getAppAgentWs() {
 /*** internal functions **/
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+const HAPP_PATH = path.join(__dirname, '../happ/workdir/asset-validator.happ',
 const AGENT_PUB_KEY_PATH = path.join(__dirname, 'agent-pub-key.txt');
 
 async function loadAgentPubKey() {
@@ -55,7 +55,7 @@ async function findOrInstallHapp(adminWs, installed_app_id) {
         installed_app_id,
         membrane_proofs: {},
         //network_seed: 'test-1',
-        path: '/home/jv/clients/holo/asset-validator/happ/workdir/asset-validator.happ',
+        path: HAPP_PATH,
       }); 
       await adminWs.enableApp({ installed_app_id });
   }
