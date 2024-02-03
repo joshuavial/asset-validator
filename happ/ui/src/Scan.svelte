@@ -5,7 +5,7 @@
 
   async function setupCamera() {
     try {
-      videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
       const videoElement = document.querySelector('video');
       videoElement.srcObject = videoStream;
     } catch (error) {
