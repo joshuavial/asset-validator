@@ -2,8 +2,8 @@
   "name": "ui-user",
   "version": "0.1.0",
   "scripts": {
-    "start": "vite --clearScreen false --port $UI_PORT",
-    "build": "[ -z \"$WC_ADMIN_PORT\" ] && read -p \"Enter WC_ADMIN_PORT: \" WC_ADMIN_PORT && export WC_ADMIN_PORT; npm run check && vite build",
+    "start": "[ -z \"$VITE_WC_ADMIN_PORT\" ] && read -p \"Enter WC_ADMIN_PORT: \" VITE_WC_ADMIN_PORT && export VITE_WC_ADMIN_PORT; vite --clearScreen false --port $UI_PORT",
+    "build": "[ -z \"$VITE_WC_ADMIN_PORT\" ] && read -p \"Enter WC_ADMIN_PORT: \" VITE_WC_ADMIN_PORT && export VITE_WC_ADMIN_PORT; npm run check && vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "package": "npm run build && cd dist && bestzip ../dist.zip *"
   },

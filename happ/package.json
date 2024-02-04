@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "start": "AGENTS=2 BOOTSTRAP_PORT=$(port) SIGNAL_PORT=$(port) npm run network",
+    "start:user": "UI_PORT=8080 npm start -w ui-user",
     "network": "hc s clean && npm run build:happ && UI_PORT=8888 concurrently \"npm start -w ui-dev\" \"npm run launch:happ\" \"holochain-playground\"",
     "test": "npm run build:zomes && hc app pack workdir --recursive && npm t -w tests",
     "launch:happ": "concurrently \"hc run-local-services --bootstrap-port $BOOTSTRAP_PORT --signal-port $SIGNAL_PORT\" \"echo pass | RUST_LOG=warn hc launch --piped -n $AGENTS workdir/asset-validator.happ --ui-port $UI_PORT network --bootstrap http://127.0.0.1:\"$BOOTSTRAP_PORT\" webrtc ws://127.0.0.1:\"$SIGNAL_PORT\"\"",

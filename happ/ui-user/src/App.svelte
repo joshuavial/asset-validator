@@ -6,7 +6,7 @@
   import '@material/mwc-circular-progress';
 
   import { clientContext } from './contexts';
-  import {getWsURL} from '../getWs';
+  import {getWsURL} from './lib/getWs';
 
   import Generators from './Generators.svelte';
   import Observations from './Observations.svelte';
@@ -15,12 +15,11 @@
 
   let client: AppAgentClient | undefined;
   
-  let currentTab = writable('generators');
+  let currentTab = writable('scan');
 
   let loading = true; 
 
   onMount(async () => {
-    // We pass an unused string as the url because it will dynamically be replaced in launcher environments
     let url = ''
     if (process.env.NODE_ENV === 'development') {
       url = await getWsURL()
