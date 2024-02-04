@@ -12,16 +12,18 @@ async function getWs() {
     throw new Error(`App with ID ${INSTALLED_APP_ID} is not installed.`);
   }
 
-  const appAgentWs = await AppAgentWebsocket.connect(
-    new URL(`ws://localhost:${appInfo.cell_data[0].cell_id[1]}`),
-    INSTALLED_APP_ID
-  );
+  const appInterfaces = await adminWs.listAppInterfaces();
+  if (appInterfaces.length === 0) {
+    throw new Error('No app interfaces are available to connect to.');
+  }
+  const appPort = appInterfaces[0];
+
+  const appAgentWs = await AppAgentWebsocket.connect(new URL(`ws://localhost:${appPort}`));
 
   return { adminWs, appAgentWs };
 }
 
-// Example usage:
-// getWs().then(connections => {
-//   console.log('Admin WebSocket:', connections.adminWs);
-//   console.log('App Agent WebSocket:', connections.appAgentWs);
-// }).catch(console.error);
+ getWs().then(connections => {
+   console.log('Admin WebSocket:', connections.adminWs);
+   console.log('App Agent WebSocket:', connections.appAgentWs);
+ }).catch(console.error);
