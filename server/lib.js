@@ -10,14 +10,14 @@ export async function getAppAgentWs() {
   const appInfo = await findOrInstallHapp(adminWs, installed_app_id);
   const cell_id = await activateCell(appInfo, adminWs);
   const appAgentWs = await appAgentWebsocket(adminWs, installed_app_id);
-  return {cell_id, appAgentWs}
+  return {cell_id, appAgentWs, adminWs}
 }
 
 /*** internal functions **/
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const HAPP_PATH = path.join(__dirname, '../happ/workdir/asset-validator.happ')
+const HAPP_PATH = path.join(__dirname, '../asset-validator.happ.dist')
 const AGENT_PUB_KEY_PATH = path.join(__dirname, 'agent-pub-key.txt');
 
 async function loadAgentPubKey() {
@@ -54,7 +54,7 @@ async function findOrInstallHapp(adminWs, installed_app_id) {
         agent_key, 
         installed_app_id,
         membrane_proofs: {},
-        //network_seed: 'test-1',
+        network_seed: 'test-1',
         path: HAPP_PATH,
       }); 
       await adminWs.enableApp({ installed_app_id });
