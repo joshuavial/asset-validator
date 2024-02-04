@@ -1,5 +1,5 @@
 {
-  "name": "ui",
+  "name": "ui-dev",
   "version": "0.1.0",
   "scripts": {
     "start": "vite --clearScreen false --port $UI_PORT",

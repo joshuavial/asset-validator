@@ -9,6 +9,8 @@
 
   import Generators from './Generators.svelte';
   import Observations from './Observations.svelte';
+  import Scan from './Scan.svelte';
+  import Generate from './Generate.svelte';
 
   let client: AppAgentClient | undefined;
   
@@ -18,7 +20,8 @@
 
   onMount(async () => {
     // We pass an unused string as the url because it will dynamically be replaced in launcher environments
-    client = await AppAgentWebsocket.connect(new URL('https://UNUSED'), 'asset-validator');
+    client = await AppAgentWebsocket.connect(new URL('ws://127.0.0.1:2345'), 'asset-validator');
+    console.log(client)
     loading = false;
   });
 
@@ -32,8 +35,10 @@
 
 <nav>
   <ul>
+    <li><button on:click={(e) => setTab('generate', e)}>Generate</button></li>
     <li><button on:click={(e) => setTab('generators', e)}>Generators</button></li>
     <li><button on:click={(e) => setTab('observations', e)}>Observations</button></li>
+    <li><button on:click={(e) => setTab('scan', e)}>Scan</button></li>
   </ul>
 </nav>
 
@@ -48,6 +53,8 @@
         <Generators />
       {:else if $currentTab === 'observations'}
         <Observations />
+      {:else if $currentTab === 'scan'}
+        <Scan />
       {/if}
     </div>
   {/if}

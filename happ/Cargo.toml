@@ -14,6 +14,12 @@ hdk = "=0.2.5"
 holochain_integrity_types = "=0.2.5"
 serde = "=1.0.166"
 
+[workspace.dependencies.eth_user]
+path = "dnas/asset_validator/zomes/coordinator/eth_user"
+
+[workspace.dependencies.eth_user_integrity]
+path = "dnas/asset_validator/zomes/integrity/eth_user"
+
 [workspace.dependencies.validation_claims]
 path = "dnas/asset_validator/zomes/coordinator/validation_claims"
 

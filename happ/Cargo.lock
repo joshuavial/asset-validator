@@ -644,6 +644,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "eth_user"
+version = "0.0.1"
+dependencies = [
+ "eth_user_integrity",
+ "hdk",
+ "serde",
+]
+
+[[package]]
+name = "eth_user_integrity"
+version = "0.0.1"
+dependencies = [
+ "hdi",
+ "serde",
+]
+
+[[package]]
 name = "fallible-iterator"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

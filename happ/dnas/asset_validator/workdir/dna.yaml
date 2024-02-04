@@ -11,6 +11,11 @@ integrity:
       bundled: "../../../target/wasm32-unknown-unknown/release/validation_claims_integrity.wasm"
       dependencies: ~
       dylib: ~
+    - name: eth_user_integrity
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/eth_user_integrity.wasm"
+      dependencies: ~
+      dylib: ~
 coordinator:
   zomes:
     - name: validation_claims
@@ -18,4 +23,10 @@ coordinator:
       bundled: "../../../target/wasm32-unknown-unknown/release/validation_claims.wasm"
       dependencies:
         - name: validation_claims_integrity
+      dylib: ~
+    - name: eth_user
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/eth_user.wasm"
+      dependencies:
+        - name: eth_user_integrity
       dylib: ~

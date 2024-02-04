@@ -1,0 +1,15 @@
+[package]
+name = "eth_user"
+version = "0.0.1"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "eth_user"
+
+[dependencies]
+hdk = { workspace = true }
+
+serde = { workspace = true }
+
+eth_user_integrity = { workspace = true } 
