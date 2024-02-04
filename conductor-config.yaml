@@ -4,10 +4,14 @@ encryption_service_uri: ~
 decryption_service_uri: ~
 dpki: ~
 network:
-  transport_pool:
-    - type: mem
-  network_type: quic_bootstrap
   bootstrap_service: https://bootstrap.holo.host
+  transport_pool:
+    - type: webrtc
+      signal_url: wss://signal.holo.host
+  network_type: quic_bootstrap
+  tuning_params: 
+    tx5_min_ephemeral_udp_port: 40000
+    tx5_max_ephemeral_udp_port: 65535 
 keystore:
   type: lair_server
   connection_url: unix:///home/jv/clients/holo/asset-validator/socket?k=kHEK9GRyNQJQYJb3jf-3FZnhl1hH04aHUPWZFIyfvE0
