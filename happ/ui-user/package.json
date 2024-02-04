@@ -2,7 +2,7 @@
   "name": "ui-user",
   "version": "0.1.0",
   "scripts": {
-    "start": "[ -z \"$WC_ADMIN_PORT\" ] && read -p \"Enter WC_ADMIN_PORT: \" WC_ADMIN_PORT && echo \"VITE_WC_ADMIN_PORT=$WC_ADMIN_PORT\" > .env.local && export WC_ADMIN_PORT; vite --clearScreen false --port $UI_PORT",
+    "start": "vite --clearScreen false --port $UI_PORT",
     "build": "[ -z \"$WC_ADMIN_PORT\" ] && read -p \"Enter WC_ADMIN_PORT: \" WC_ADMIN_PORT && export WC_ADMIN_PORT; npm run check && vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "package": "npm run build && cd dist && bestzip ../dist.zip *"
