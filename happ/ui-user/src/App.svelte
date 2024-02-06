@@ -2,19 +2,16 @@
   import { onMount, setContext } from 'svelte';
   import { writable } from 'svelte/store';
   import type { AppAgentClient} from '@holochain/client';
-  import {AppAgentWebsocket, encodeHashToBase64, decodeHashFromBase64, generateSigningKeyPair, setSigningCredentials} from '@holochain/client';
+  import {AppAgentWebsocket, setSigningCredentials} from '@holochain/client';
   import '@material/mwc-circular-progress';
 
-  import {getSigningCredentials, createSigningCredentials} from './lib'
+  import {cellIdFromClient, getSigningCredentials, createSigningCredentials} from './lib'
 
-  import { clientContext } from './contexts';
-
-  import { writable } from 'svelte/store';
-  import type { AppAgentClient, SigningCredentials } from '@holochain/client';
-  import {AppAgentWebsocket, encodeHashToBase64, decodeHashFromBase64, generateSigningKeyPair} from '@holochain/client';
-  import {getSigningCredentials, createSigningCredentials} from './lib'
   import { clientContext } from './contexts';
   import Welcome from './Welcome.svelte';
+  import Login from './Login.svelte';
+  import Register from './Register.svelte';
+
   import Generators from './Generators.svelte';
   import Observations from './Observations.svelte';
   import Scan from './Scan.svelte';
@@ -31,16 +28,15 @@
     let data = await response.json();
     let url = data.agent_ws_url;
     client = await AppAgentWebsocket.connect(new URL(url), 'asset-validator');
-    const cellId = client.cachedAppInfo.cell_info.asset_validator[0].provisioned.cell_id;
+    const cellId = cellIdFromClient(client)
     let credentials = getSigningCredentials(cellId);
     if (credentials) {
-      console.log(credentials);
       signingCredentials.set(credentials);
+      setSigningCredentials(cellId, credentials)
     } else {
       loading = false;
       return;
     }
-
 
     loading = false;
   });
@@ -51,14 +47,28 @@
   let setTab = (newTab, e) => {
     currentTab.set(newTab);
   }
+  const handleRegistrationSuccess = (event) => {
+    const signingCredentials = event.detail;
+    setSigningCredentials(cellId, signingCredentials);
+    signingCredentials.set(signingCredentials);
+  }
+
+ <Register on:registrationSuccess={handleRegistrationSuccess} />
 </script>
 
 <nav>
   <ul>
+    {#if $signingCredentials}
     <li><button on:click={(e) => setTab('generate', e)}>Generate</button></li>
     <li><button on:click={(e) => setTab('generators', e)}>Generators</button></li>
     <li><button on:click={(e) => setTab('observations', e)}>Observations</button></li>
     <li><button on:click={(e) => setTab('scan', e)}>Scan</button></li>
+    {:else}
+    <li><button on:click={(e) => setTab('welcome', e)}>Welcome</button></li>
+    <li><button on:click={(e) => setTab('login', e)}>Login</button></li>
+    <li><button on:click={(e) => setTab('register', e)}>Register</button></li>
+
+    {/if}
   </ul>
 </nav>
 
@@ -79,7 +89,13 @@
       {/if}
     </div>
     {:else}
-      <Welcome />
+      {#if $currentTab === 'login'}
+        <Login />
+      {:else if $currentTab === 'register'}
+        <Register />
+      {:else}
+        <Welcome />
+      {/if}
     {/if}
   {/if}
 </main>

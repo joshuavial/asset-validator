@@ -1,7 +1,13 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, getContext } from 'svelte';
+  import type { AppAgentClient } from '@holochain/client';
   import { generateSigningKeyPair, encodeHashToBase64 } from '@holochain/client';
-  import { getAgentWsUrl } from './lib';
+
+  import {cellIdFromClient} from './lib'
+  import { clientContext } from './contexts';
+
+  let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+
   const dispatch = createEventDispatcher();
 
   let handle = '';
@@ -10,17 +16,8 @@
   let ethAddress = '';
   let keyPair;
   let signingKey;
-  let agentWsUrl = '';
   let errorMessage = '';
-
-  async function fetchAgentWsUrl() {
-    try {
-      const response = await getAgentWsUrl();
-      agentWsUrl = response.agent_ws_url;
-    } catch (error) {
-      errorMessage = 'Failed to fetch agent websocket URL.';
-    }
-  }
+  let cellId = cellIdFromClient(client);
 
   async function register() {
     if (password !== confirmPassword) {
@@ -28,10 +25,8 @@
       return;
     }
 
-    // Generate key pair and signing key
     try {
       [keyPair, signingKey] = await generateSigningKeyPair();
-      await fetchAgentWsUrl();
     } catch (error) {
       errorMessage = 'Failed to generate key pair.';
       return;
@@ -47,9 +42,9 @@
           handle,
           password,
           ethAddress,
-          signingKey: encodeHashToBase64(signingKey)
-          agentWsUrl
-      })
+          signingKey: encodeHashToBase64(signingKey),
+          cellId: [encodeHashToBase64(cellId[0]), encodeHashToBase64(cellId[1])]
+        })
       });
 
       if (!response.ok) {
@@ -57,14 +52,16 @@
       }
 
       // Handle successful registration here
+      const data = response.json()
+      const capSecret = decodeHashFromBase64(data.capSecret);
+      signingCredentials = { capSecret, keyPair, signingKey};
+      localStorage.setItem('signingCredentials', JSON.stringify(signingCredentials));
+      dispatch('registrationSuccess', signingCredentials);
       dispatch('registrationSuccess');
     } catch (error) {
       errorMessage = error.message;
     }
   }
-
-  // Fetch the agent websocket URL when the component is first rendered
-  fetchAgentWsUrl();
 </script>
 
 <form on:submit|preventDefault={register}>
