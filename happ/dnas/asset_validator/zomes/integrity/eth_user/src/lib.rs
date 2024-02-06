@@ -12,6 +12,8 @@ pub enum EntryTypes {
 #[hdk_link_types]
 pub enum LinkTypes {
     EthUsers,
+    EthUserByEthAddress,
+    EthUserByEthAddress,
 }
 #[hdk_extern]
 pub fn genesis_self_check(
@@ -114,6 +116,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
+                LinkTypes::EthUserByEthAddress => {
+                    // Add validation logic for EthUserByEthAddress if necessary
+                    Ok(ValidateCallbackResult::Valid)
+                }
+                LinkTypes::EthUserByEthAddress => {
+                    // Add validation logic for EthUserByEthAddress if necessary
+                    Ok(ValidateCallbackResult::Valid)
+                }
             }
         }
         FlatOp::RegisterDeleteLink {
@@ -133,6 +143,10 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         target_address,
                         tag,
                     )
+                }
+                LinkTypes::EthUserByEthAddress => {
+                    // Add validation logic for EthUserByEthAddress if necessary
+                    Ok(ValidateCallbackResult::Valid)
                 }
             }
         }
@@ -349,5 +363,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 _ => Ok(ValidateCallbackResult::Valid),
             }
         }
+        // ... other match arms ...
     }
 }

@@ -41,3 +41,25 @@ pub fn get_eth_user(eth_user_hash: ActionHash) -> ExternResult<Option<Record>> {
         }
     }
 }
+
+#[hdk_extern]
+pub fn get_eth_user_by_address(eth_address: String) -> ExternResult<Option<Record>> {
+    let eth_address_path = Path::from(eth_address);
+    let links = get_links(
+        eth_address_path.path_entry_hash()?,
+        Some(LinkTypes::EthUserByEthAddress.into()),
+        None
+    )?;
+    match links.into_inner().last() {
+        Some(link) => {
+            let record = get(link.target, GetOptions::default())?
+                .ok_or(
+                    wasm_error!(
+                        WasmErrorInner::Guest(String::from("Could not find the linked EthUser"))
+                    ),
+                )?;
+            Ok(Some(record))
+        },
+        None => Ok(None),
+    }
+}
