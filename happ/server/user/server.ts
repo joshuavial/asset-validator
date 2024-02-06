@@ -21,9 +21,11 @@ app.post('/grant', async (req, res) => {
       { [GrantedFunctionsType.All]: null },
       decodedSigningKey
     );
+    await adminWs.client.close()
     res.json({capSecret: encodeHashToBase64(capSecret)})
   } catch (e) {
     console.log(e)
+    await adminWs.client.close()
     res.status(500)
   }
 })
@@ -33,7 +35,24 @@ app.get('/agent_ws', async (_, res) => {
   const appInterfaces = await adminWs.listAppInterfaces();
   const agent_ws_url = `ws://127.0.0.1:${appInterfaces[0]}`;
   res.json({agent_ws_url})
+  await adminWs.client.close()
 })
+
+app.post('/register', async(req, res) => {
+  const { handle, password, ethAddress } = req.body;
+  // Here you would add the logic to handle the registration, e.g., storing the user data.
+  // This is a placeholder for the actual registration logic.
+  try {
+    // Placeholder for registration logic
+    // For example: await registerUser(handle, password, ethAddress);
+    res.status(200).send({ message: 'Registration successful' });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).send({ message: 'Registration failed' });
+  }
+})
+
+}
 
 
 export default app
