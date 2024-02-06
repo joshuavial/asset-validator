@@ -10,33 +10,32 @@ app.use(cors());
 app.use(express.json());
 app.options('*', cors()); 
 
-export async function getAgentWsURL() {
-  const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
-  const appInterfaces = await adminWs.listAppInterfaces();
-  return (`ws://127.0.0.1:${appInterfaces[0]}`);
-}
-
 app.post('/grant', async (req, res) => {
-  const {signingKey, keyPair} = req.body
-  const cell_id = ''
-  const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
-  const capSecret = await adminWs.grantSigningKey(
-    cell_id,
-    { [GrantedFunctionsType.All]: null },
-    signingKey
-  );
-  const signingCredentials = {
-    capSecret,
-    keyPair,
-    signingKey,
-  };
-  res.json({signingCredentials})
+  const {signingKey, cellId} = req.body
+  try {
+    const serializedSigningKey = serializeHash(signingKey);
+    const serializedCellId = serializeHash(cellId);
+    const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
+    const capSecret = await adminWs.grantSigningKey(
+      serializedCellId,
+      { [GrantedFunctionsType.All]: null },
+      serializedSigningKey
+    );
+    res.json({capSecret})
+  } catch (e) {
+    console.log(e)
+    res.status(500)
+  }
 })
 
 app.get('/agent_ws', async (_, res) => {
-  const agent_ws_url = await getAgentWsURL()
+  const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
+  const appInterfaces = await adminWs.listAppInterfaces();
+  const agent_ws_url = `ws://127.0.0.1:${appInterfaces[0]}`;
   res.json({agent_ws_url})
 })
 
 
 export default app
+import { serializeHash } from "@holochain/client";
+
