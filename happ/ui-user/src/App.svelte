@@ -12,7 +12,7 @@
   import Scan from './Scan.svelte';
 
   let client: AppAgentClient | undefined;
-  
+
   let currentTab = writable('generators');
 
   let loading = true; 
@@ -22,6 +22,9 @@
     let data = await response.json();
     let url = data.agent_ws_url;
     client = await AppAgentWebsocket.connect(new URL(url), 'asset-validator');
+    const cellId = client.cachedAppInfo.cell_info.asset_validator[0].provisioned.cell_id;
+    console.log(client)
+
     loading = false;
   });
 
