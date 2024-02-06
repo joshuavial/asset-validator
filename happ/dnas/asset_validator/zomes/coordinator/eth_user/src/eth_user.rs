@@ -52,7 +52,12 @@ pub fn get_eth_user_by_address(eth_address: String) -> ExternResult<Option<Recor
     )?;
     match links.last() {
         Some(link) => {
-            let record = get::<HoloHash<AnyDht>>(link.target.into(), GetOptions::default())?
+            let hash = link.target.clone().into_any_dht_hash().ok_or(
+                wasm_error!(
+                    WasmErrorInner::Guest(String::from("Could not convert link target to hash"))
+                ),
+            )?;
+            let record = get(hash, GetOptions::default())?
                 .ok_or(
                     wasm_error!(
                         WasmErrorInner::Guest(String::from("Could not find the linked EthUser"))
