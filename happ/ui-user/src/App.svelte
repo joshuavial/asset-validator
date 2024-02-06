@@ -9,6 +9,12 @@
 
   import { clientContext } from './contexts';
 
+  import { writable } from 'svelte/store';
+  import type { AppAgentClient, SigningCredentials } from '@holochain/client';
+  import {AppAgentWebsocket, encodeHashToBase64, decodeHashFromBase64, generateSigningKeyPair} from '@holochain/client';
+  import {getSigningCredentials, createSigningCredentials} from './lib'
+  import { clientContext } from './contexts';
+  import Welcome from './Welcome.svelte';
   import Generators from './Generators.svelte';
   import Observations from './Observations.svelte';
   import Scan from './Scan.svelte';
@@ -16,6 +22,7 @@
   let client: AppAgentClient | undefined;
 
   let currentTab = writable('generators');
+  let signingCredentials = writable<SigningCredentials | null>(null);
 
   let loading = true; 
 
@@ -24,10 +31,11 @@
     let data = await response.json();
     let url = data.agent_ws_url;
     client = await AppAgentWebsocket.connect(new URL(url), 'asset-validator');
-    let signingCredentials = getSigningCredentials(client);
-    if (signingCredentials) {
-      setSigningCredentials(cellId, signingCredentials);
-      console.log(signingCredentials);
+    const cellId = client.cachedAppInfo.cell_info.asset_validator[0].provisioned.cell_id;
+    let credentials = getSigningCredentials(cellId);
+    if (credentials) {
+      console.log(credentials);
+      signingCredentials.set(credentials);
     } else {
       loading = false;
       return;
@@ -60,7 +68,7 @@
       <mwc-circular-progress indeterminate />
     </div>
   {:else}
-    {#if signingCredentials}
+    {#if $signingCredentials}
     <div id="content" style="display: flex; flex-direction: column; flex: 1;">
       {#if $currentTab === 'generators'}
         <Generators />
