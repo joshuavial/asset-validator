@@ -2,7 +2,7 @@
   import { onMount, setContext } from 'svelte';
   import { writable } from 'svelte/store';
   import type { AppAgentClient,SigningCredentials } from '@holochain/client';
-  import {AppAgentWebsocket, encodeHashToBase64, generateSigningKeyPair} from '@holochain/client';
+  import {AppAgentWebsocket, encodeHashToBase64, decodeHashFromBase64, generateSigningKeyPair, setSigningCredentials} from '@holochain/client';
   import '@material/mwc-circular-progress';
 
   import { clientContext } from './contexts';
@@ -22,28 +22,32 @@
     let data = await response.json();
     let url = data.agent_ws_url;
     client = await AppAgentWebsocket.connect(new URL(url), 'asset-validator');
-    const cell_id = client.cachedAppInfo.cell_info.asset_validator[0].provisioned.cell_id;
-    const cellIdB64 = encodeHashToBase64(cell_id[0]) + encodeHashToBase64(cell_id[1]);
+    const cellId = client.cachedAppInfo.cell_info.asset_validator[0].provisioned.cell_id;
+
+    const cellIdB64 = encodeHashToBase64(cellId[0]) + encodeHashToBase64(cellId[1]);
     const signingCredentialsJson = localStorage.getItem(cellIdB64);
     let signingCredentials: SigningCredentials | null = signingCredentialsJson && JSON.parse(signingCredentialsJson);
-    console.log(signingCredentials)
     if (!signingCredentials) {
       const [keyPair, signingKey] = await generateSigningKeyPair();
+      console.log(cellId, signingKey)
       response = await fetch('http://127.0.0.1:5000/grant', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          signingKey: signingKey,
-          cellId: cell_id
+          signingKey: encodeHashToBase64(signingKey),
+          cellId: [encodeHashToBase64(cellId[0]), encodeHashToBase64(cellId[1])]
         })
       });
       data = await response.json();
-      const capSecret = data.capSecret;
-      signingCredentials = { signingKey, capSecret };
+      const capSecret = decodeHashFromBase64(data.capSecret);
+      console.log(capSecret)
+      signingCredentials = { capSecret, keyPair, signingKey};
       localStorage.setItem(cellIdB64, JSON.stringify(signingCredentials));
     }
+    setSigningCredentials(cellId, signingCredentials);
+    console.log(signingCredentials)
 
 
     loading = false;

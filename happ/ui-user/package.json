@@ -2,8 +2,8 @@
   "name": "ui-user",
   "version": "0.1.0",
   "scripts": {
-    "start": "[ -z \"$WC_ADMIN_PORT\" ] && echo \"Error: WC_ADMIN_PORT is not set.\" && exit 1 || vite --clearScreen false --port $UI_PORT",
-    "build": "[ -z \"$WC_ADMIN_PORT\" ] && echo \"Error: WC_ADMIN_PORT is not set.\" && exit 1 || npm run check && vite build",
+    "start": "[ -z \"$WC_ADMIN_PORT\" ] && echo \"Error: WC_ADMIN_PORT is not set.\" && exit 1 || VITE_WC_ADMIN_PORT=$WC_ADMIN_PORT vite --clearScreen false --port $UI_PORT",
+    "build": "[ -z \"$WC_ADMIN_PORT\" ] && echo \"Error: WC_ADMIN_PORT is not set.\" && exit 1 || VITE_WC_ADMIN_PORT=$WC_ADMIN_PORT npm run check && vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "package": "npm run build && cd dist && bestzip ../dist.zip *"
   },
