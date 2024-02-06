@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount, setContext } from 'svelte';
   import { writable } from 'svelte/store';
-  import type { AppAgentClient} from '@holochain/client';
-  import {AppAgentWebsocket, setSigningCredentials} from '@holochain/client';
+  import type { AppAgentClient, SigningCredentials} from '@holochain/client';
+  import {AppAgentWebsocket, setSigningCredentials, encodeHashToBase64} from '@holochain/client';
   import '@material/mwc-circular-progress';
 
-  import {cellIdFromClient, getSigningCredentials, createSigningCredentials} from './lib'
+  import {cellIdFromClient, getSigningCredentials, saveSigningCredentials} from './lib'
 
   import { clientContext } from './contexts';
   import Welcome from './Welcome.svelte';
@@ -33,27 +33,24 @@
     if (credentials) {
       signingCredentials.set(credentials);
       setSigningCredentials(cellId, credentials)
-    } else {
-      loading = false;
-      return;
-    }
-
+    } 
     loading = false;
   });
 
   setContext(clientContext, {
     getClient: () => client,
   });
-  let setTab = (newTab, e) => {
+  let setTab = (newTab:string) => {
     currentTab.set(newTab);
   }
   const handleRegistrationSuccess = (event) => {
-    const signingCredentials = event.detail;
-    setSigningCredentials(cellId, signingCredentials);
-    signingCredentials.set(signingCredentials);
+    const cellId = cellIdFromClient(client)
+    const credentials = event.detail;
+    setSigningCredentials(cellId, credentials); //update the writable
+    signingCredentials.set(credentials); //update the ws client
+    saveSigningCredentials(cellId, credentials); //save to local storage
   }
 
- <Register on:registrationSuccess={handleRegistrationSuccess} />
 </script>
 
 <nav>
@@ -92,7 +89,7 @@
       {#if $currentTab === 'login'}
         <Login />
       {:else if $currentTab === 'register'}
-        <Register />
+        <Register on:registrationSuccess={handleRegistrationSuccess} />
       {:else}
         <Welcome />
       {/if}
