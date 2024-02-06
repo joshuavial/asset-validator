@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { generateSigningKeyPair, encodeHashToBase64 } from '@holochain/client';
+  import { getAgentWsUrl } from './lib';
   const dispatch = createEventDispatcher();
 
   let handle = '';
@@ -9,7 +10,17 @@
   let ethAddress = '';
   let keyPair;
   let signingKey;
+  let agentWsUrl = '';
   let errorMessage = '';
+
+  async function fetchAgentWsUrl() {
+    try {
+      const response = await getAgentWsUrl();
+      agentWsUrl = response.agent_ws_url;
+    } catch (error) {
+      errorMessage = 'Failed to fetch agent websocket URL.';
+    }
+  }
 
   async function register() {
     if (password !== confirmPassword) {
@@ -20,6 +31,7 @@
     // Generate key pair and signing key
     try {
       [keyPair, signingKey] = await generateSigningKeyPair();
+      await fetchAgentWsUrl();
     } catch (error) {
       errorMessage = 'Failed to generate key pair.';
       return;
@@ -36,7 +48,8 @@
           password,
           ethAddress,
           signingKey: encodeHashToBase64(signingKey)
-        })
+          agentWsUrl
+      })
       });
 
       if (!response.ok) {
@@ -49,6 +62,9 @@
       errorMessage = error.message;
     }
   }
+
+  // Fetch the agent websocket URL when the component is first rendered
+  fetchAgentWsUrl();
 </script>
 
 <form on:submit|preventDefault={register}>
