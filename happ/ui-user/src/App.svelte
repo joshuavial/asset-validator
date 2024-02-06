@@ -6,24 +6,21 @@
   import '@material/mwc-circular-progress';
 
   import { clientContext } from './contexts';
-  import {getWsURL} from './lib/getWs';
 
   import Generators from './Generators.svelte';
   import Observations from './Observations.svelte';
   import Scan from './Scan.svelte';
-  import Generate from './Generate.svelte';
 
   let client: AppAgentClient | undefined;
   
-  let currentTab = writable('scan');
+  let currentTab = writable('generators');
 
   let loading = true; 
 
   onMount(async () => {
-    let url = ''
-    if (process.env.NODE_ENV === 'development') {
-      url = await getWsURL()
-    }
+    let response = await fetch('http://127.0.0.1:5000/agent_ws');
+    let data = await response.json();
+    let url = data.agent_ws_url;
     client = await AppAgentWebsocket.connect(new URL(url), 'asset-validator');
     loading = false;
   });
