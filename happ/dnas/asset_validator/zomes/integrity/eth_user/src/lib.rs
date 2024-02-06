@@ -108,8 +108,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     )
                 }
                 LinkTypes::EthUserByEthAddress => {
-                    // Add validation logic for EthUserByEthAddress if necessary
-                    Ok(ValidateCallbackResult::Valid)
+                    validate_create_link_eth_user_by_eth_address(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
                 }
             }
         }
@@ -132,8 +136,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     )
                 }
                 LinkTypes::EthUserByEthAddress => {
-                    // Add validation logic for EthUserByEthAddress if necessary
-                    Ok(ValidateCallbackResult::Valid)
+                    validate_delete_link_eth_user_by_eth_address(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
                 }
             }
         }
@@ -281,8 +290,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             )
                         }
                         LinkTypes::EthUserByEthAddress => {
-                            // Add validation logic for EthUserByEthAddress if necessary
-                            Ok(ValidateCallbackResult::Valid)
+                            validate_create_link_eth_user_by_eth_address(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
                         }
                     }
                 }
@@ -319,8 +332,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             )
                         }
                         LinkTypes::EthUserByEthAddress => {
-                            // Add validation logic for EthUserByEthAddress if necessary
-                            Ok(ValidateCallbackResult::Valid)
+                            validate_delete_link_eth_user_by_eth_address(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
                         }
                     }
                 }

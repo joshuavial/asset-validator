@@ -1,11 +1,47 @@
 import type { SigningCredentials, AppAgentClient} from '@holochain/client';
-import {encodeHashToBase64, decodeHashFromBase64, generateSigningKeyPair, setSigningCredentials} from '@holochain/client';
+import {AppAgentWebsocket, encodeHashToBase64, decodeHashFromBase64, generateSigningKeyPair, setSigningCredentials} from '@holochain/client';
+
+export function cellIdFromClient(client) {
+    return client.cachedAppInfo.cell_info.asset_validator[0].provisioned.cell_id;
+}
+
+export async function newAppAgentWebsocket() {
+    let response = await fetch('http://127.0.0.1:5000/agent_ws');
+    let data = await response.json();
+    let url = data.agent_ws_url;
+    return await AppAgentWebsocket.connect(new URL(url), 'asset-validator');
+}
+
+export function saveSigningCredentials(cellId, credentials) {
+    const cellIdB64 = encodeHashToBase64(cellId[0]) + encodeHashToBase64(cellId[1]);
+    const encodedCredentials = {
+      capSecret: encodeHashToBase64(credentials.capSecret),
+      signingKey: encodeHashToBase64(credentials.signingKey),
+      keyPair: {
+        publicKey: encodeHashToBase64(credentials.keyPair.publicKey),
+        privateKey: encodeHashToBase64(credentials.keyPair.privateKey),
+        keyType: credentials.keyPair.keyType,
+      }
+    }
+    localStorage.setItem(cellIdB64, JSON.stringify(encodedCredentials));
+}
 
 export function getSigningCredentials(cellId) {
     const cellIdB64 = encodeHashToBase64(cellId[0]) + encodeHashToBase64(cellId[1]);
     const signingCredentialsJson = localStorage.getItem(cellIdB64);
-    let signingCredentials: SigningCredentials | null = signingCredentialsJson && JSON.parse(signingCredentialsJson);
-    return signingCredentials;
+    let encodedCredentials = signingCredentialsJson && JSON.parse(signingCredentialsJson);
+    if (encodedCredentials) {
+      return {
+        capSecret: decodeHashFromBase64(encodedCredentials.capSecret),
+        signingKey: decodeHashFromBase64(encodedCredentials.signingKey),
+        keyPair: {
+          publicKey: decodeHashFromBase64(encodedCredentials.keyPair.publicKey),
+          privateKey: decodeHashFromBase64(encodedCredentials.keyPair.privateKey),
+          keyType: encodedCredentials.keyPair.keyType,
+        }
+      }
+    }
+    return null
 }
 
 export async function getAgentWsUrl() {

@@ -1,7 +1,17 @@
 # Asset Validator
 A proof of concept holochain application for validating data that can be referenced onchain using semi-fungible tokens
 
+## Installation
+- install nix
+- `nix flake update` to make sure you have most recent version of holochain
+- `nix develop` to launch a shell with holochain
 
+## Running
+- `npm run start` to launch holochain playground
+- `npm run start:user` to launch user facing application
+
+
+# Design notes
 - Generator creates generation claim
   - {start time, end time, power generated}
   - set of observations

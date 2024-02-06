@@ -2,11 +2,10 @@
   import { onMount, setContext } from 'svelte';
   import { writable } from 'svelte/store';
   import type { AppAgentClient, SigningCredentials} from '@holochain/client';
-  import {AppAgentWebsocket, setSigningCredentials, encodeHashToBase64} from '@holochain/client';
+  import {setSigningCredentials} from '@holochain/client';
   import '@material/mwc-circular-progress';
- import { browser } from '$app/env';
 
-  import {cellIdFromClient, getSigningCredentials, saveSigningCredentials} from './lib'
+  import {cellIdFromClient, getSigningCredentials, saveSigningCredentials, newAppAgentWebsocket} from './lib'
 
   import { clientContext } from './contexts';
   import Welcome from './Welcome.svelte';
@@ -23,12 +22,16 @@
   let signingCredentials = writable<SigningCredentials | null>(null);
 
   let loading = true; 
+  let logout = async () => {
+    localStorage.clear();
+    signingCredentials.set(null);
+    client = await newAppAgentWebsocket()
+
+    setTab('welcome', {});
+  };
 
   onMount(async () => {
-    let response = await fetch('http://127.0.0.1:5000/agent_ws');
-    let data = await response.json();
-    let url = data.agent_ws_url;
-    client = await AppAgentWebsocket.connect(new URL(url), 'asset-validator');
+    client = await newAppAgentWebsocket()
     const cellId = cellIdFromClient(client)
     let credentials = getSigningCredentials(cellId);
     if (credentials) {
@@ -41,7 +44,7 @@
   setContext(clientContext, {
     getClient: () => client,
   });
-  let setTab = (newTab:string) => {
+  let setTab = (newTab:string, e) => {
     currentTab.set(newTab);
   }
   const handleRegistrationSuccess = (event) => {

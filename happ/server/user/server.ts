@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import { GrantedFunctionsType, AdminWebsocket, CellType,  decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import { GrantedFunctionsType, AppAgentWebsocket, AdminWebsocket, CellType,  decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 
 const ADMIN_WS_PORT = process.env.WC_ADMIN_PORT
 const ADMIN_WS_URL = new URL(`ws://127.0.0.1:${ADMIN_WS_PORT}`);
@@ -15,11 +15,17 @@ async function appAgentWsURL(adminWs) {
   return `ws://127.0.0.1:${appInterfaces[0]}`;
 }
 
-function grantCapSecrets() {
+async function grantCapSecret(adminWs, signingKey, cellId) {
+  const capSecret = await adminWs.grantSigningKey(
+    cellId,
+    { [GrantedFunctionsType.All]: null },
+    signingKey
+  );
+  return capSecret
 
 }
 
-async function authoriseCell(adminWs, role) {
+async function getCellId(role, adminWs) {
   const appInterfaces = await adminWs.listApps({});
   const appInfo = appInterfaces[0];
   if (!(CellType.Provisioned in appInfo.cell_info[role][0])) {
@@ -27,16 +33,17 @@ async function authoriseCell(adminWs, role) {
     return
   }
   const { cell_id } = appInfo.cell_info[role][0][CellType.Provisioned];
-  await adminWs.authorizeSigningCredentials(cell_id);
+  return cell_id
 }
 
-async function authoriseCells(adminWs) {
-  await authoriseCell(adminWs, 'asset-validator');
+async function authoriseCell(role, adminWs) {
+  const cell_id = await getCellId(role, adminWs)
+  await adminWs.authorizeSigningCredentials(cell_id);
 }
 
 async function getAppAgentWS(adminWs) {
   return await AppAgentWebsocket.connect(
-    appAgentWsURL(adminWs),
+    await appAgentWsURL(adminWs),
     'asset-validator'
   )
 }
@@ -72,14 +79,14 @@ app.get('/agent_ws', async (_, res) => {
 app.post('/register', async(req, res) => {
   const { handle, password, ethAddress, signingKey, cellId } = req.body;
   const decodedSigningKey = decodeHashFromBase64(signingKey);
-  const decodedCellId = [decodeHashFromBase64(cellId[0]), decodeHashFromBase64(cellId[1])]
   try {
     const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
-    await authoriseCell(adminWs, 'asset_validator');
+    const cellId = await getCellId('asset_validator', adminWs);
+    await authoriseCell('asset_validator', adminWs);
     const appAgentWs = await getAppAgentWS(adminWs);
     const existingUser = await appAgentWs.callZome({
       cap: null,
-      cell_id: decodedCellId,
+      cell_id: cellId,
       zome_name: 'eth_user',
       fn_name: 'get_eth_user_by_address',
       provenance: decodedSigningKey,
@@ -92,13 +99,17 @@ app.post('/register', async(req, res) => {
       const ethUser = { handle, eth_address: ethAddress, current_pub_key: decodedSigningKey };
       await appAgentWs.callZome({
         cap: null,
-        cell_id: decodedCellId,
+        cell_id: cellId,
         zome_name: 'eth_user',
         fn_name: 'create_eth_user',
         provenance: decodedSigningKey,
         payload: ethUser,
       });
-      res.status(200).send({ message: 'Registration successful' });
+      const capSecret = await grantCapSecret(adminWs, decodedSigningKey, cellId);
+      res.status(200).send({ 
+        message: 'Registration successful',
+        capSecret: encodeHashToBase64(capSecret),
+      });
     }
     await adminWs.client.close()
   } catch (error) {

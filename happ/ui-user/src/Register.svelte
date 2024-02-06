@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, getContext } from 'svelte';
   import type { AppAgentClient } from '@holochain/client';
-  import { generateSigningKeyPair, encodeHashToBase64 } from '@holochain/client';
+  import { generateSigningKeyPair, encodeHashToBase64, decodeHashFromBase64 } from '@holochain/client';
 
   import {cellIdFromClient} from './lib'
   import { clientContext } from './contexts';
@@ -17,7 +17,6 @@
   let keyPair;
   let signingKey;
   let errorMessage = '';
-  let cellId = cellIdFromClient(client);
 
   async function register() {
     if (password !== confirmPassword) {
@@ -43,7 +42,6 @@
           password,
           ethAddress,
           signingKey: encodeHashToBase64(signingKey),
-          cellId: [encodeHashToBase64(cellId[0]), encodeHashToBase64(cellId[1])]
         })
       });
 
@@ -52,12 +50,10 @@
       }
 
       // Handle successful registration here
-      const data = response.json()
+      const data = await response.json()
       const capSecret = decodeHashFromBase64(data.capSecret);
-      signingCredentials = { capSecret, keyPair, signingKey};
-      localStorage.setItem('signingCredentials', JSON.stringify(signingCredentials));
+      const signingCredentials = { capSecret, keyPair, signingKey};
       dispatch('registrationSuccess', signingCredentials);
-      dispatch('registrationSuccess');
     } catch (error) {
       errorMessage = error.message;
     }
