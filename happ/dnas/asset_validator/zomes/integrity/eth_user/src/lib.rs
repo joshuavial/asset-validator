@@ -13,7 +13,6 @@ pub enum EntryTypes {
 pub enum LinkTypes {
     EthUsers,
     EthUserByEthAddress,
-    EthUserByEthAddress,
 }
 #[hdk_extern]
 pub fn genesis_self_check(
@@ -75,14 +74,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 original_eth_user,
                             )
                         }
-                        _ => {
-                            Ok(
-                                ValidateCallbackResult::Invalid(
-                                    "Original and updated entry types must be the same"
-                                        .to_string(),
-                                ),
-                            )
-                        }
                     }
                 }
                 _ => Ok(ValidateCallbackResult::Valid),
@@ -115,10 +106,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         target_address,
                         tag,
                     )
-                }
-                LinkTypes::EthUserByEthAddress => {
-                    // Add validation logic for EthUserByEthAddress if necessary
-                    Ok(ValidateCallbackResult::Valid)
                 }
                 LinkTypes::EthUserByEthAddress => {
                     // Add validation logic for EthUserByEthAddress if necessary
@@ -293,6 +280,10 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 tag,
                             )
                         }
+                        LinkTypes::EthUserByEthAddress => {
+                            // Add validation logic for EthUserByEthAddress if necessary
+                            Ok(ValidateCallbackResult::Valid)
+                        }
                     }
                 }
                 OpRecord::DeleteLink { original_action_hash, base_address, action } => {
@@ -326,6 +317,10 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 create_link.target_address,
                                 create_link.tag,
                             )
+                        }
+                        LinkTypes::EthUserByEthAddress => {
+                            // Add validation logic for EthUserByEthAddress if necessary
+                            Ok(ValidateCallbackResult::Valid)
                         }
                     }
                 }

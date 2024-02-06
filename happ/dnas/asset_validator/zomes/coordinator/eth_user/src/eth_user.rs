@@ -47,12 +47,12 @@ pub fn get_eth_user_by_address(eth_address: String) -> ExternResult<Option<Recor
     let eth_address_path = Path::from(eth_address);
     let links = get_links(
         eth_address_path.path_entry_hash()?,
-        Some(LinkTypes::EthUserByEthAddress.into()),
+        LinkTypes::EthUserByEthAddress,
         None
     )?;
-    match links.into_inner().last() {
+    match links.last() {
         Some(link) => {
-            let record = get(link.target, GetOptions::default())?
+            let record = get::<HoloHash<AnyDht>>(link.target.into(), GetOptions::default())?
                 .ok_or(
                     wasm_error!(
                         WasmErrorInner::Guest(String::from("Could not find the linked EthUser"))
