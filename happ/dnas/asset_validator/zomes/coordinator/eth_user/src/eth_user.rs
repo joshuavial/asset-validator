@@ -9,6 +9,20 @@ pub fn create_eth_user(eth_user: EthUser) -> ExternResult<Record> {
                 WasmErrorInner::Guest(String::from("Could not find the newly created EthUser"))
             ),
         )?;
+    let eth_users_path = Path::from("eth_users");
+    let eth_address_path = Path::from(eth_user.eth_address.clone());
+    create_link(
+        eth_users_path.path_entry_hash()?,
+        eth_user_hash.clone(),
+        LinkTypes::EthUsers,
+        (),
+    )?;
+    create_link(
+        eth_address_path.path_entry_hash()?,
+        eth_user_hash,
+        LinkTypes::EthUserByEthAddress,
+        (),
+    )?;
     Ok(record)
 }
 #[hdk_extern]
