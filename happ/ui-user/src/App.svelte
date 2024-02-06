@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount, setContext } from 'svelte';
   import { writable } from 'svelte/store';
-  import type { AppAgentClient,SigningCredentials } from '@holochain/client';
+  import type { AppAgentClient} from '@holochain/client';
   import {AppAgentWebsocket, encodeHashToBase64, decodeHashFromBase64, generateSigningKeyPair, setSigningCredentials} from '@holochain/client';
   import '@material/mwc-circular-progress';
+
+  import {getSigningCredentials, createSigningCredentials} from './lib'
 
   import { clientContext } from './contexts';
 
@@ -22,32 +24,14 @@
     let data = await response.json();
     let url = data.agent_ws_url;
     client = await AppAgentWebsocket.connect(new URL(url), 'asset-validator');
-    const cellId = client.cachedAppInfo.cell_info.asset_validator[0].provisioned.cell_id;
-
-    const cellIdB64 = encodeHashToBase64(cellId[0]) + encodeHashToBase64(cellId[1]);
-    const signingCredentialsJson = localStorage.getItem(cellIdB64);
-    let signingCredentials: SigningCredentials | null = signingCredentialsJson && JSON.parse(signingCredentialsJson);
-    if (!signingCredentials) {
-      const [keyPair, signingKey] = await generateSigningKeyPair();
-      console.log(cellId, signingKey)
-      response = await fetch('http://127.0.0.1:5000/grant', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          signingKey: encodeHashToBase64(signingKey),
-          cellId: [encodeHashToBase64(cellId[0]), encodeHashToBase64(cellId[1])]
-        })
-      });
-      data = await response.json();
-      const capSecret = decodeHashFromBase64(data.capSecret);
-      console.log(capSecret)
-      signingCredentials = { capSecret, keyPair, signingKey};
-      localStorage.setItem(cellIdB64, JSON.stringify(signingCredentials));
+    let signingCredentials = getSigningCredentials(client);
+    if (signingCredentials) {
+      setSigningCredentials(cellId, signingCredentials);
+      console.log(signingCredentials);
+    } else {
+      loading = false;
+      return;
     }
-    setSigningCredentials(cellId, signingCredentials);
-    console.log(signingCredentials)
 
 
     loading = false;
@@ -76,6 +60,7 @@
       <mwc-circular-progress indeterminate />
     </div>
   {:else}
+    {#if signingCredentials}
     <div id="content" style="display: flex; flex-direction: column; flex: 1;">
       {#if $currentTab === 'generators'}
         <Generators />
@@ -85,6 +70,9 @@
         <Scan />
       {/if}
     </div>
+    {:else}
+      <Welcome />
+    {/if}
   {/if}
 </main>
 
