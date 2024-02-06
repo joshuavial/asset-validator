@@ -4,6 +4,7 @@
   import type { AppAgentClient, SigningCredentials} from '@holochain/client';
   import {AppAgentWebsocket, setSigningCredentials, encodeHashToBase64} from '@holochain/client';
   import '@material/mwc-circular-progress';
+ import { browser } from '$app/env';
 
   import {cellIdFromClient, getSigningCredentials, saveSigningCredentials} from './lib'
 
@@ -60,6 +61,7 @@
     <li><button on:click={(e) => setTab('generators', e)}>Generators</button></li>
     <li><button on:click={(e) => setTab('observations', e)}>Observations</button></li>
     <li><button on:click={(e) => setTab('scan', e)}>Scan</button></li>
+   <li><button on:click={logout}>Logout</button></li>
     {:else}
     <li><button on:click={(e) => setTab('welcome', e)}>Welcome</button></li>
     <li><button on:click={(e) => setTab('login', e)}>Login</button></li>
