@@ -1,17 +1,18 @@
 import express from 'express'
 import cors from 'cors'
-import { CellType, GrantedFunctionsType, AdminWebsocket} from "@holochain/client";
+import { GrantedFunctionsType, AdminWebsocket} from "@holochain/client";
+
+const ADMIN_WS_PORT = process.env.WC_ADMIN_PORT
+const ADMIN_WS_URL = new URL(`ws://127.0.0.1:${ADMIN_WS_PORT}`);
 
 const app = express()
 app.use(cors({
-  origin: 'http://localhost:3000', // or the specific origin you want to allow
+  origin: 'http://localhost:8080', // or the specific origin you want to allow
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   optionsSuccessStatus: 204
 }));
-
-const ADMIN_WS_PORT = process.env.WC_ADMIN_PORT
-const ADMIN_WS_URL = new URL(`ws://127.0.0.1:${ADMIN_WS_PORT}`);
+app.options('*', cors()); // Enable preflight requests for all routes
 
 export async function getAgentWsURL() {
   const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
