@@ -69,16 +69,62 @@
   }
 </script>
 
+  .qr-code-container img {
+    border: 2px solid #141416;
+    border-radius: 12px;
+    width: 224px;
+    height: 224px;
+  }
+
+  .qr-code-header {
+    font-size: 21px;
+    font-weight: 700;
+    color: #141416;
+    margin-bottom: 20px;
+  }
+
+  .qr-code-footer {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2665FF;
+    margin-top: 20px;
+  }
+
+  .close-icon {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #98A1B0;
+    cursor: pointer;
+  }
+</style>
+
+<div class="qr-code-container">
+  <span class="close-icon">✕</span>
+  <div class="qr-code-header">Scan QR Code</div>
+  <img src={qrCodeImage} alt="QR Code" class="qr-code-image" />
+  <div class="qr-code-footer">Secured with tokenproof</div>
+</div>
+
+<style>
+  .qr-code-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 344px;
+    font-family: 'Montserrat', sans-serif;
+  }
+
 <form on:submit|preventDefault={register}>
   <div><input type="text" bind:value={handle} placeholder="Handle" required></div>
-  <div><input type="password" bind:value={password} placeholder="Password" required></div>
-  <div><input type="password" bind:value={confirmPassword} placeholder="Confirm Password" required></div>
+  <!--<div><input type="password" bind:value={password} placeholder="Password" required></div>-->
+  <!--<div><input type="password" bind:value={confirmPassword} placeholder="Confirm Password" required></div>-->
   <div><input type="text" bind:value={ethAddress} placeholder="Ethereum Address" required></div>
   {#if errorMessage}
     <p class="error">{errorMessage}</p>
-  {/if}
-  {#if qrCodeImage}
-    <img src={qrCodeImage} alt="QR Code" />
   {/if}
   <button type="submit">Register</button>
 </form>
