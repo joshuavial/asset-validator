@@ -2,7 +2,6 @@
   import { createEventDispatcher} from 'svelte';
   import { onMount } from 'svelte';
   import { generateSigningKeyPair, encodeHashToBase64, decodeHashFromBase64 } from '@holochain/client';
-  const tokenProofWhite = '/tp.png';
 
   const dispatch = createEventDispatcher();
 
@@ -29,9 +28,20 @@
       });
       const tokenProofData = await tokenProofResponse.json();
       qrCodeImage = tokenProofData.qrcode_image;
-      console.log('Token Proof Data:', tokenProofData);
+      const ws = new WebSocket('ws://127.0.0.1:5000?signingKey=' + encodeHashToBase64(signingKey));
+
+      ws.onopen = () => {
+        console.log('connection open')
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log(data)
+        ws.close();
+      };
+
     } catch (error) {
-      errorMessage = 'Failed to generate key pair.';
+      errorMessage = error.message;
     }
   });
 
@@ -72,12 +82,15 @@
 
 <div class="container">
   <div class="qr-code-container">
-    <span class="close-icon">✕</span>
-    <div class="qr-code-header">Scan QR Code</div>
-    <img src={qrCodeImage} alt="QR Code" class="qr-code-image" />
+    <div class='qr-code-inner'>
+      <div class="qr-code-header">Scan QR Code</div>
+      <div class='qr-code-text'>
+      To authenticate, please continue on your mobile device and scan with the tokenproof app
+      </div>
+      <img src={qrCodeImage} alt="QR Code" class="qr-code-image" />
+    </div>
     <div class="qr-code-footer">
-      <img src={tokenProofWhite} alt="Token Proof" class="token-proof-image" />
-      Secured with tokenproof
+      <img src='http://localhost:5000/tokenproofIconWhite.png' alt="" class="secured-token-proof" /> Secured with tokenproof
     </div>
   </div>
 </div>
@@ -114,9 +127,34 @@
     justify-content: center;
     width: 344px;
     font-family: 'Montserrat', sans-serif;
+    position: relative;
+    top:-20px;
   }
 
-  .qr-code-container img {
+  .qr-code-text {
+    margin-bottom: 10px;
+    text-align: left;
+    padding-left: 42px;
+    padding-right: 40px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #98A1B0;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .qr-code-inner {
+    border-radius: 12px;
+    position: relative;
+    top: 25px;
+    background-color: white;
+    width: 100%;
+    border: 1px solid lightgrey;
+    padding-bottom: 20px;
+    padding-top: 20px;
+    z-index: 100;
+  }
+
+  .qr-code-container img.qr-code-image{
     border-radius: 12px;
     width: 258px;
     height: 258px;
@@ -128,6 +166,8 @@
     font-weight: 700;
     color: #141416;
     margin-bottom: 20px;
+    text-align: left;
+    padding-left: 42px;
   }
 
   .qr-code-footer {
@@ -137,9 +177,22 @@
     font-weight: 500;
     text-align: center;
     width: 100%;
-    padding: 10px 0;
+    padding-top: 5px;
+    padding-bottom: 10px;
     border-radius: 0 0 12px 12px;
-    margin-top: 20px;
+    padding-top: 20px;
+    margin-top: 10px;
+    line-height: 20px;
+  }
+
+  .qr-code-footer img {
+    margin: 0px;
+    height: 20px;
+    width: 20px;
+    padding: 0px;
+    position: relative;
+    top: 4px;
+    left: -3px;
   }
 
   .close-icon {

@@ -1,14 +1,23 @@
+import url from 'url'
+import WebSocket from 'ws'
+
 const TOKENPROOF_APP_ID = '8f4c17b8-ec77-4cf2-9b1d-78e2832141de'
 
-export function addTokenProofRoutes(server, wsServer) {
-  server.post('/token-proof', (req, res) => {
+const keyToWs = new Map()
+
+export function addTokenProofRoutes(app, wss) {
+  app.post('/token-proof', (req, res) => {
     const { nonce, account } = req.body;
-    // Assuming there is a global map object to store nonce-account mappings
-    global.nonceToAccountMap.set(nonce, account);
-    res.status(200).send({ message: 'Nonce mapped to account successfully' });
+    const client = keyToWs.get(nonce);
+    if (client && client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({address: account}));
+    } else {
+      console.log(`Client with key ${nonce} not found or connection is not open.`);
+    }
+    res.sendStatus(200)
   })
 
-  server.post('/get-token-proof', async (req, res) => {
+  app.post('/get-token-proof', async (req, res) => {
     const { signingKey } = req.body;
     try {
       const response = await fetch(`https://auth.tokenproof.xyz/v1/simple/${TOKENPROOF_APP_ID}`, {
@@ -33,5 +42,25 @@ export function addTokenProofRoutes(server, wsServer) {
       res.status(500).send({ message: 'Tokenproof API request failed' });
     }
   })
+
+  wss.on('connection', (ws, request) => {
+    const { query } = url.parse(request.url, true);
+    const signingKey = query.signingKey;
+
+    if (!signingKey) {
+      ws.close();
+      return;
+    }
+    console.log('connected', signingKey)
+
+    keyToWs.set(signingKey, ws);
+
+    ws.on('close', () => {
+      keyToWs.delete(signingKey);
+      console.log(`Connection with client ${signingKey} closed`);
+    });
+  });
+
+  
 
 }
