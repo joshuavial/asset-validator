@@ -92,10 +92,10 @@
   }
 
   .qr-code-container img {
-    border: 2px solid #141416;
     border-radius: 12px;
-    width: 224px;
-    height: 224px;
+    width: 258px;
+    height: 258px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
   }
 
   .qr-code-header {
