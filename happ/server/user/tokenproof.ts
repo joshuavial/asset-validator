@@ -4,11 +4,13 @@ import WebSocket from 'ws'
 const TOKENPROOF_APP_ID = '8f4c17b8-ec77-4cf2-9b1d-78e2832141de'
 
 const keyToWs = new Map()
+const keyToAddress = new Map()
 
 export function addTokenProofRoutes(app, wss) {
   app.post('/token-proof', (req, res) => {
     const { nonce, account } = req.body;
     const client = keyToWs.get(nonce);
+    keyToAddress.set(nonce, account);
     if (client && client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({address: account}));
     } else {

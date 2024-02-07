@@ -36,7 +36,7 @@
 
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        console.log(data)
+        ethAddress = data.address;
         ws.close();
       };
 
@@ -80,6 +80,22 @@
   }
 </script>
 
+{#if ethAddress}
+
+<form on:submit|preventDefault={register}>
+  <p>
+  Welcome! What would you like us to call you?
+  </p>
+  <p><input type="text" bind:value={handle} placeholder="Handle" required></p>
+  <!--<div><input type="password" bind:value={password} placeholder="Password" required></div>-->
+  <!--<div><input type="password" bind:value={confirmPassword} placeholder="Confirm Password" required></div>-->
+  <!--<div><input type="text" bind:value={ethAddress} placeholder="Ethereum Address" required></div>-->
+  {#if errorMessage}
+    <p class="error">{errorMessage}</p>
+  {/if}
+  <button type="submit">Register</button>
+</form>
+{:else }
 <div class="container">
   <div class="qr-code-container">
     <div class='qr-code-inner'>
@@ -94,17 +110,7 @@
     </div>
   </div>
 </div>
-
-<form on:submit|preventDefault={register}>
-  <div><input type="text" bind:value={handle} placeholder="Handle" required></div>
-  <!--<div><input type="password" bind:value={password} placeholder="Password" required></div>-->
-  <!--<div><input type="password" bind:value={confirmPassword} placeholder="Confirm Password" required></div>-->
-  <div><input type="text" bind:value={ethAddress} placeholder="Ethereum Address" required></div>
-  {#if errorMessage}
-    <p class="error">{errorMessage}</p>
-  {/if}
-  <button type="submit">Register</button>
-</form>
+{/if}
 
 <style>
   .error {
