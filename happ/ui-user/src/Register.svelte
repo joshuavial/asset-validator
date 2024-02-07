@@ -1,12 +1,7 @@
 <script lang="ts">
-  import { createEventDispatcher, getContext } from 'svelte';
-  import type { AppAgentClient } from '@holochain/client';
+  import { createEventDispatcher} from 'svelte';
+  import { onMount } from 'svelte';
   import { generateSigningKeyPair, encodeHashToBase64, decodeHashFromBase64 } from '@holochain/client';
-
-  import {cellIdFromClient} from './lib'
-  import { clientContext } from './contexts';
-
-  let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
   const dispatch = createEventDispatcher();
 
@@ -17,17 +12,31 @@
   let keyPair;
   let signingKey;
   let errorMessage = '';
+  let qrCodeImage = '';
+
+  onMount(async () => {
+    try {
+      [keyPair, signingKey] = await generateSigningKeyPair();
+      const tokenProofResponse = await fetch('http://127.0.0.1:5000/get-token-proof', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          signingKey: encodeHashToBase64(signingKey),
+        })
+      });
+      const tokenProofData = await tokenProofResponse.json();
+      qrCodeImage = tokenProofData.qrcode_image;
+      console.log('Token Proof Data:', tokenProofData);
+    } catch (error) {
+      errorMessage = 'Failed to generate key pair.';
+    }
+  });
 
   async function register() {
     if (password !== confirmPassword) {
       errorMessage = 'Passwords do not match.';
-      return;
-    }
-
-    try {
-      [keyPair, signingKey] = await generateSigningKeyPair();
-    } catch (error) {
-      errorMessage = 'Failed to generate key pair.';
       return;
     }
 
@@ -68,11 +77,17 @@
   {#if errorMessage}
     <p class="error">{errorMessage}</p>
   {/if}
+  {#if qrCodeImage}
+    <img src={qrCodeImage} alt="QR Code" />
+  {/if}
   <button type="submit">Register</button>
 </form>
 
 <style>
   .error {
     color: red;
+  }
+  img {
+    margin-top: 10px;
   }
 </style>
