@@ -2,6 +2,7 @@
   import { createEventDispatcher} from 'svelte';
   import { onMount } from 'svelte';
   import { generateSigningKeyPair, encodeHashToBase64, decodeHashFromBase64 } from '@holochain/client';
+  const tokenProofWhite = '/tp.png';
 
   const dispatch = createEventDispatcher();
 
@@ -69,6 +70,29 @@
   }
 </script>
 
+<div class="container">
+  <div class="qr-code-container">
+    <span class="close-icon">✕</span>
+    <div class="qr-code-header">Scan QR Code</div>
+    <img src={qrCodeImage} alt="QR Code" class="qr-code-image" />
+    <div class="qr-code-footer">
+      <img src={tokenProofWhite} alt="Token Proof" class="token-proof-image" />
+      Secured with tokenproof
+    </div>
+  </div>
+</div>
+
+<form on:submit|preventDefault={register}>
+  <div><input type="text" bind:value={handle} placeholder="Handle" required></div>
+  <!--<div><input type="password" bind:value={password} placeholder="Password" required></div>-->
+  <!--<div><input type="password" bind:value={confirmPassword} placeholder="Confirm Password" required></div>-->
+  <div><input type="text" bind:value={ethAddress} placeholder="Ethereum Address" required></div>
+  {#if errorMessage}
+    <p class="error">{errorMessage}</p>
+  {/if}
+  <button type="submit">Register</button>
+</form>
+
 <style>
   .error {
     color: red;
@@ -80,6 +104,7 @@
     display: flex;
     justify-content: center;
     align-items: flex-start;
+    margin-bottom: 30px;
   }
 
   .qr-code-container {
@@ -127,23 +152,3 @@
     cursor: pointer;
   }
 </style>
-
-<div class="container">
-  <div class="qr-code-container">
-    <span class="close-icon">✕</span>
-    <div class="qr-code-header">Scan QR Code</div>
-    <img src={qrCodeImage} alt="QR Code" class="qr-code-image" />
-    <div class="qr-code-footer">Secured with tokenproof</div>
-  </div>
-</div>
-
-<form on:submit|preventDefault={register}>
-  <div><input type="text" bind:value={handle} placeholder="Handle" required></div>
-  <!--<div><input type="password" bind:value={password} placeholder="Password" required></div>-->
-  <!--<div><input type="password" bind:value={confirmPassword} placeholder="Confirm Password" required></div>-->
-  <div><input type="text" bind:value={ethAddress} placeholder="Ethereum Address" required></div>
-  {#if errorMessage}
-    <p class="error">{errorMessage}</p>
-  {/if}
-  <button type="submit">Register</button>
-</form>
