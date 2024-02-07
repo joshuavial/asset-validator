@@ -69,24 +69,6 @@
   }
 </script>
 
-<div class="qr-code-container">
-  <span class="close-icon">✕</span>
-  <div class="qr-code-header">Scan QR Code</div>
-  <img src={qrCodeImage} alt="QR Code" class="qr-code-image" />
-  <div class="qr-code-footer">Secured with tokenproof</div>
-</div>
-
-<form on:submit|preventDefault={register}>
-  <div><input type="text" bind:value={handle} placeholder="Handle" required></div>
-  <!--<div><input type="password" bind:value={password} placeholder="Password" required></div>-->
-  <!--<div><input type="password" bind:value={confirmPassword} placeholder="Confirm Password" required></div>-->
-  <div><input type="text" bind:value={ethAddress} placeholder="Ethereum Address" required></div>
-  {#if errorMessage}
-    <p class="error">{errorMessage}</p>
-  {/if}
-  <button type="submit">Register</button>
-</form>
-
 <style>
   .error {
     color: red;
@@ -124,9 +106,14 @@
   }
 
   .qr-code-footer {
+    background-color: #2665FF;
+    color: white;
     font-size: 14px;
-    font-weight: 600;
-    color: #2665FF;
+    font-weight: 500;
+    text-align: center;
+    width: 100%;
+    padding: 10px 0;
+    border-radius: 0 0 12px 12px;
     margin-top: 20px;
   }
 
@@ -142,11 +129,12 @@
 </style>
 
 <div class="container">
-<div class="qr-code-container">
-  <span class="close-icon">✕</span>
-  <div class="qr-code-header">Scan QR Code</div>
-  <img src={qrCodeImage} alt="QR Code" class="qr-code-image" />
-  <div class="qr-code-footer">Secured with tokenproof</div>
+  <div class="qr-code-container">
+    <span class="close-icon">✕</span>
+    <div class="qr-code-header">Scan QR Code</div>
+    <img src={qrCodeImage} alt="QR Code" class="qr-code-image" />
+    <div class="qr-code-footer">Secured with tokenproof</div>
+  </div>
 </div>
 
 <form on:submit|preventDefault={register}>
@@ -159,4 +147,3 @@
   {/if}
   <button type="submit">Register</button>
 </form>
-</div>
