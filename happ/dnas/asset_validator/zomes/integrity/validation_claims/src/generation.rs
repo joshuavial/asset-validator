@@ -3,13 +3,15 @@ use hdi::prelude::*;
 #[serde(tag = "type")]
 pub enum GenerationStatus {
     Active,
+    Complete,
+    Cancelled,
 }
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct Generation {
     pub user_address: String,
     pub status: GenerationStatus,
-    pub signature: String,
+    pub signature: Option<String>,
 }
 pub fn validate_create_generation(
     _action: EntryCreationAction,
