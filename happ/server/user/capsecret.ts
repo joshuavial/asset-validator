@@ -52,7 +52,19 @@ router.post('/register', async(req, res) => {
     });
 
     if (existingUser) {
-      res.status(400).send({ message: 'User already exists' });
+      const updateInput = {
+        original_eth_user_hash: existingUser.entry_hash,
+        updated_eth_user: { handle, eth_address: ethAddress, current_pub_key: decodedSigningKey }
+      };
+      await appAgentWs.callZome({
+        cap: null,
+        cell_id: cellId,
+        zome_name: 'eth_user',
+        fn_name: 'update_eth_user',
+        provenance: decodedSigningKey,
+        payload: updateInput,
+      });
+      res.status(200).send({ message: 'User updated successfully' });
     } else {
       const ethUser = { handle, eth_address: ethAddress, current_pub_key: decodedSigningKey };
       await appAgentWs.callZome({
