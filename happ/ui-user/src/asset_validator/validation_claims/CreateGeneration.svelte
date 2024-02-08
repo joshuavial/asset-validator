@@ -1,6 +1,7 @@
 <script lang="ts">
 import { createEventDispatcher, getContext, onMount } from 'svelte';
 import type { AppAgentClient, Record, EntryHash, AgentPubKey, ActionHash, DnaHash } from '@holochain/client';
+import {encodeHashToBase64} from '@holochain/client'
 import { clientContext, userContext } from '../../contexts';
 import type { Generation, GenerationStatus } from './types';
 import type { EthUser } from '../eth_user/types';
@@ -13,36 +14,16 @@ let user: EthUser = (getContext(userContext) as any).getUser();
 
 const dispatch = createEventDispatcher();
 
-const userAddress: string = user.eth_address;
-
-const status: GenerationStatus = 'Active';
-
-let signaturea = ''
-
-
-
 let errorSnackbar: Snackbar;
 
-$: userAddress, status, signature;
 $: isGenerationValid = true;
-
-onMount(() => {
-  if (userAddress === undefined) {
-    throw new Error(`The userAddress input is required for the CreateGeneration element`);
-  }
-  if (status === undefined) {
-    throw new Error(`The status input is required for the CreateGeneration element`);
-  }
-  if (signature === undefined) {
-    throw new Error(`The signature input is required for the CreateGeneration element`);
-  }
-});
 
 async function createGeneration() {  
   const generationEntry: Generation = { 
-    user_address: userAddress!,
-    status: status!,
-    signature: signature!,
+    user_handle: $user.handle,
+    user_address: $user.eth_address,
+    status: { type: 'Active'},
+    signature: null,
   };
   
   try {
@@ -53,9 +34,10 @@ async function createGeneration() {
       fn_name: 'create_generation',
       payload: generationEntry,
     });
+    console.log(record)
     dispatch('generation-created', { generationHash: record.signed_action.hashed.hash });
   } catch (e) {
-    errorSnackbar.labelText = `Error creating the generation: ${e.data.data}`;
+    errorSnackbar.labelText = `Error creating the generation: ${e}`;
     errorSnackbar.show();
   }
 }
@@ -83,6 +65,7 @@ async function createGeneration() {
     width: 300px;
     margin: auto;
     margin-top: 20px;
+    margin-bottom: 20px;
   }
 
 </style>

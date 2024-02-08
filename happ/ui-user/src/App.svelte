@@ -5,19 +5,20 @@
   import {setSigningCredentials} from '@holochain/client';
   import '@material/mwc-circular-progress';
 
+  import type {EthUser} from './asset_validator/eth_user/types';
   import {cellIdFromClient, getSigningCredentials, saveSigningCredentials, newAppAgentWebsocket, whoAmI} from './lib'
 
-  import { clientContext } from './contexts';
+  import { clientContext, userContext } from './contexts';
   import Welcome from './Welcome.svelte';
   import LoginOrRegister from './LoginOrRegister.svelte';
 
-  import Observations from './Observations.svelte';
+  import Generate from './Generate.svelte';
 
   let client: AppAgentClient | undefined;
 
-  let currentTab = writable('generations');
+  let currentTab = writable('generate');
   let signingCredentials = writable<SigningCredentials | null>(null);
-  let me = writable({handle: '', ethAddress: ''});
+  let me = writable<EthUser>({handle: '', eth_address: ''});
 
   let loading = true; 
   let logout = async () => {
@@ -37,7 +38,6 @@
       signingCredentials.set(credentials);
       setSigningCredentials(cellId, credentials)
       const maybeMe = await whoAmI(client, credentials.signingKey)
-      console.log(maybeMe)
       me.set(maybeMe)
     } 
     loading = false;
@@ -46,16 +46,20 @@
   setContext(clientContext, {
     getClient: () => client,
   });
-  let setTab = (newTab:string, e) => {
+  setContext(userContext, {
+    getUser: () => me
+  }); 
+  let setTab = (newTab:string, _e=null) => {
     currentTab.set(newTab);
   }
   const handleAuthSuccess = (event) => {
     const cellId = cellIdFromClient(client)
     const {signingCredentials: credentials, handle, ethAddress} = event.detail
-    me.set({handle, ethAddress});
+    me.set({handle, eth_address: ethAddress, current_pub_key: credentials.signingKey});
     setSigningCredentials(cellId, credentials); //update the writable
     signingCredentials.set(credentials); //update the ws client
     saveSigningCredentials(cellId, credentials); //save to local storage
+    setTab('generate')
   }
 
 </script>
@@ -63,7 +67,7 @@
 <nav>
   <ul>
     {#if $signingCredentials}
-    <li><button on:click={(e) => setTab('generations', e)}>Generations</button></li>
+    <li><button on:click={(e) => setTab('generate', e)}>Human Power</button></li>
     <li><button on:click={logout}>Logout</button></li>
     {:else}
     <li><button on:click={(e) => setTab('welcome', e)}>Welcome</button></li>
@@ -76,7 +80,7 @@
 <main>
 {#if $me.handle}
 <div>
-  Hello {$me.handle} : {$me.ethAddress}
+  Hello {$me.handle} : {$me.eth_address}
 </div>
 {/if}
   {#if loading}
@@ -86,10 +90,8 @@
   {:else}
     {#if $signingCredentials}
     <div id="content" style="display: flex; flex-direction: column; flex: 1;">
-      {#if $currentTab === 'generators'}
-        <Generators />
-      {:else if $currentTab === 'observations'}
-        <Observations />
+      {#if $currentTab === 'generate'}
+        <Generate />
       {/if}
     </div>
     {:else}

@@ -45,6 +45,6 @@ export interface EthUser {
 
   eth_address: string;
 
-  current_pub_key: AgentPubKey;
+  current_pub_key?: AgentPubKey;
 }
 

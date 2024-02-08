@@ -1,5 +1,6 @@
 use hdk::prelude::*;
 use validation_claims_integrity::*;
+
 #[hdk_extern]
 pub fn create_generation(generation: Generation) -> ExternResult<Record> {
     let generation_hash = create_entry(&EntryTypes::Generation(generation.clone()))?;

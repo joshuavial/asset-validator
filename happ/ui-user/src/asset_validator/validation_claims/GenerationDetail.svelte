@@ -100,8 +100,11 @@ async function deleteGeneration() {
 
 <div style="display: flex; flex-direction: column">
   <div style="display: flex; flex-direction: row">
-    <span style="flex: 1"></span>
-    <mwc-icon-button style="margin-left: 8px" icon="edit" on:click={() => { editing = true; } }></mwc-icon-button>
+    <span style="flex: 1">
+      {generation.user_handle}:
+      {generation.status.type}
+    </span>
+    <!--<mwc-icon-button style="margin-left: 8px" icon="edit" on:click={() => { editing = true; } }></mwc-icon-button>-->
     <mwc-icon-button style="margin-left: 8px" icon="delete" on:click={() => deleteGeneration()}></mwc-icon-button>
   </div>
 

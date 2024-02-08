@@ -9,6 +9,7 @@ pub enum GenerationStatus {
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct Generation {
+    pub user_handle: String,
     pub user_address: String,
     pub status: GenerationStatus,
     pub signature: Option<String>,

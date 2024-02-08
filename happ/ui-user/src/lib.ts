@@ -82,9 +82,7 @@ export async function whoAmI(client: AppAgentClient, signingKey) {
       }
     })
     if (record) {
-      const ethUser = decode((record.entry as any).Present.entry) as EthUser;
-      const {handle, eth_address: ethAddress} = ethUser;
-      return { handle, ethAddress };
+      return decode((record.entry as any).Present.entry) as EthUser;
     } else {
       console.error('Error calling whoAmI zome function:', response);
       return null;
