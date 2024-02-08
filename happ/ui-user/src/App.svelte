@@ -14,7 +14,6 @@
 
   import Generators from './Generators.svelte';
   import Observations from './Observations.svelte';
-  import Scan from './Scan.svelte';
 
   let client: AppAgentClient | undefined;
 
@@ -63,7 +62,6 @@
     <li><button on:click={(e) => setTab('generate', e)}>Generate</button></li>
     <li><button on:click={(e) => setTab('generators', e)}>Generators</button></li>
     <li><button on:click={(e) => setTab('observations', e)}>Observations</button></li>
-    <li><button on:click={(e) => setTab('scan', e)}>Scan</button></li>
    <li><button on:click={logout}>Logout</button></li>
     {:else}
     <li><button on:click={(e) => setTab('welcome', e)}>Welcome</button></li>
