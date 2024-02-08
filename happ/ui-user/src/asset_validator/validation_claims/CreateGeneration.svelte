@@ -15,7 +15,7 @@ const dispatch = createEventDispatcher();
 
 const userAddress: string = user.eth_address;
 
-const status: GenerationStatus = GenerationStatus.Active;
+const status: GenerationStatus = 'Active';
 
 let signaturea = ''
 
@@ -41,7 +41,7 @@ onMount(() => {
 async function createGeneration() {  
   const generationEntry: Generation = { 
     user_address: userAddress!,
-    status: status,
+    status: status!,
     signature: signature!,
   };
   
