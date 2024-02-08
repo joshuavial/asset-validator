@@ -75,7 +75,8 @@ async function createGeneration() {
 
 <style>
   .createGeneration {
-    width: 60%;
+    width: 300px;
+    width: 500px;
     margin: auto;
   }
 
