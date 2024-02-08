@@ -1,21 +1,23 @@
 <script lang="ts">
 import { createEventDispatcher, getContext, onMount } from 'svelte';
 import type { AppAgentClient, Record, EntryHash, AgentPubKey, ActionHash, DnaHash } from '@holochain/client';
-import { clientContext } from '../../contexts';
+import { clientContext, userContext } from '../../contexts';
 import type { Generation, GenerationStatus } from './types';
+import type { EthUser } from '../eth_user/types';
 import '@material/mwc-button';
 import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+let user: EthUser = (getContext(userContext) as any).getUser();
 
 const dispatch = createEventDispatcher();
 
-export let userAddress!: string;
+const userAddress: string = user.eth_address;
 
-export let status!: GenerationStatus;
+const status: GenerationStatus = GenerationStatus.Active;
 
-export let signature!: string;
+let signaturea = ''
 
 
 
@@ -39,7 +41,7 @@ onMount(() => {
 async function createGeneration() {  
   const generationEntry: Generation = { 
     user_address: userAddress!,
-    status: status!,
+    status: status,
     signature: signature!,
   };
   
@@ -61,14 +63,12 @@ async function createGeneration() {
 
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
-<div class='createGeneration' style="display: flex; flex-direction: column">
-  
 
 
 <div class='createGeneration' style="display: flex; flex-direction: column">
   <mwc-button class="generationButton"
     raised
-    label="Create Generation"
+    label="Start Pedalling"
     disabled={!isGenerationValid}
     on:click={() => createGeneration()}
   ></mwc-button>
@@ -81,6 +81,8 @@ async function createGeneration() {
   }
   .generationButton {
     width: 300px;
+    margin: auto;
+    margin-top: 20px;
   }
 
 </style>

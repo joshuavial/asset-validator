@@ -66,17 +66,17 @@ export interface Generator {
 
 
 
-export interface GenerationStatus {
-  type:  
-    | 'Active'
-    ;
+export enum GenerationStatus {
+  Active = 'Active',
+  Complete = 'Complete',
+  Cancelled = 'Cancelled',
+}
 }
 
 export interface Generation { 
   user_address: string;
 
-  status: GenerationStatus;
+  status: GenerationStatus.Active;
 
   signature: string;
 }
-
