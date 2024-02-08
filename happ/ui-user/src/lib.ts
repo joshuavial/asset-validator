@@ -71,7 +71,7 @@ export async function createSigningCredentials(cellId) {
 }
 
 export async function whoAmI(client: AppAgentClient, signingKey) {
-    const response = await client.callZome({
+    const record = await client.callZome({
       cap_secret: null,
       role_name: 'asset_validator',
       zome_name: 'eth_user', 
@@ -80,6 +80,7 @@ export async function whoAmI(client: AppAgentClient, signingKey) {
         agent_pub_key: signingKey
       }
     })
+    //todo fix to decode record like in generatordetail
     if (response.type === 'ok') {
         const ethUser = response.data;
         const handle = ethUser.fields.handle;
