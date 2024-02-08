@@ -1,13 +1,18 @@
-import type { SigningCredentials, AppAgentClient} from '@holochain/client';
-import {AppAgentWebsocket, encodeHashToBase64, decodeHashFromBase64, generateSigningKeyPair, setSigningCredentials} from '@holochain/client';
+import type { SigningCredentials, AppAgentClient } from '@holochain/client';
+import { AppAgentWebsocket, encodeHashToBase64, decodeHashFromBase64, generateSigningKeyPair } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
+
+const VITE_USER_URL = import.meta.env.VITE_USER_URL;
+if (!VITE_USER_URL) {
+  throw new Error('VITE_USER_URL is not defined');
+}
 
 export function cellIdFromClient(client) {
     return client.cachedAppInfo.cell_info.asset_validator[0].provisioned.cell_id;
 }
 
 export async function newAppAgentWebsocket() {
-    let response = await fetch('http://127.0.0.1:5000/agent_ws');
+    let response = await fetch(VITE_USER_URL + '/agent_ws');
     let data = await response.json();
     let url = data.agent_ws_url;
     return await AppAgentWebsocket.connect(new URL(url), 'asset-validator');
@@ -46,7 +51,7 @@ export function getSigningCredentials(cellId) {
 }
 
 export async function getAgentWsUrl() {
-  const response = await fetch('http://127.0.0.1:5000/agent_ws');
+  const response = await fetch(VITE_USER_URL + '/agent_ws');
   if (!response.ok) {
     throw new Error('Failed to fetch agent websocket URL');
   }
@@ -54,7 +59,7 @@ export async function getAgentWsUrl() {
 }
 export async function createSigningCredentials(cellId) {
     const [keyPair, signingKey] = await generateSigningKeyPair();
-    response = await fetch('http://127.0.0.1:5000/grant', {
+    response = await fetch(VITE_USER_URL + '/grant', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
