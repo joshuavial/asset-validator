@@ -83,17 +83,33 @@ test('create and update EthUser', async () => {
     // Wait for the created entry to be propagated to the other node.
     await dhtSync([alice], alice.cells[0].cell_id[0]);
 
-    // Alice updates the EthUser
-    let updatedSample = { ...sample, eth_address: "0xNEW_ETH_ADDRESS" };
+    // Alice attempts to update the EthUser's eth_address, which should fail
+    let updatedSampleWithNewAddress = { ...sample, eth_address: "0xNEW_ETH_ADDRESS" };
+    try {
+      await alice.cells[0].callZome({
+        zome_name: "eth_user",
+        fn_name: "update_eth_user",
+        payload: {
+          original_eth_user_hash: record.signed_action.hashed.hash,
+          updated_eth_user: updatedSampleWithNewAddress,
+        },
+      });
+      assert.fail("Updating the eth_address should not be allowed");
+    } catch (e) {
+      assert.match(e.toString(), /Changing eth_address is not allowed/);
+    }
+
+    // Alice successfully updates the EthUser's handle
+    let updatedSampleWithNewHandle = { ...sample, handle: "AliceNewHandle" };
     const updateRecord: Record = await alice.cells[0].callZome({
       zome_name: "eth_user",
       fn_name: "update_eth_user",
       payload: {
         original_eth_user_hash: record.signed_action.hashed.hash,
-        updated_eth_user: updatedSample,
+        updated_eth_user: updatedSampleWithNewHandle,
       },
     });
-    assert.ok(updateRecord);
+    assert.ok(updateRecord, "The EthUser should be successfully updated with a new handle");
 
     // Wait for the updated entry to be propagated to the other node.
     await dhtSync([alice], alice.cells[0].cell_id[0]);
@@ -104,6 +120,17 @@ test('create and update EthUser', async () => {
       fn_name: "get_eth_user",
       payload: updateRecord.signed_action.hashed.hash,
     });
-    assert.deepEqual(updatedSample, decode((updatedEthUser.entry as any).Present.entry) as any);
+    assert.deepEqual(updatedSampleWithNewHandle, decode((updatedEthUser.entry as any).Present.entry) as any, "The EthUser's handle should be updated");
+
+    // Wait for the updated entry to be propagated to the other node.
+    await dhtSync([alice], alice.cells[0].cell_id[0]);
+
+    // Alice gets the updated EthUser
+    const updatedEthUser: Record = await alice.cells[0].callZome({
+      zome_name: "eth_user",
+      fn_name: "get_eth_user",
+      payload: record.signed_action.hashed.hash,
+    });
+    assert.deepEqual(sample, decode((updatedEthUser.entry as any).Present.entry) as any, "The eth_address should remain unchanged");
   });
 });
