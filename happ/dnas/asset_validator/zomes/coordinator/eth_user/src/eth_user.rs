@@ -117,3 +117,25 @@ pub fn update_eth_user(input: UpdateEthUserInput) -> ExternResult<Record> {
 
     Ok(updated_record)
 }
+#[hdk_extern]
+pub fn who_am_i(agent_pub_key: AgentPubKey) -> ExternResult<Option<Record>> {
+    let eth_users_path = Path::from("eth_users");
+    let links = get_links(eth_users_path.path_entry_hash()?, None, None)?;
+    for link in links {
+        let eth_user_record = get(link.target.into(), GetOptions::default())?
+            .ok_or(
+                wasm_error!(
+                    WasmErrorInner::Guest(String::from("EthUser entry not found"))
+                ),
+            )?;
+        let eth_user: EthUser = eth_user_record.entry().to_app_option().map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?.ok_or(
+            wasm_error!(
+                WasmErrorInner::Guest(String::from("EthUser entry not found"))
+            ),
+        )?;
+        if eth_user.current_pub_key == agent_pub_key {
+            return Ok(Some(eth_user_record));
+        }
+    }
+    Ok(None)
+}
