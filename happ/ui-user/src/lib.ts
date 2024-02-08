@@ -1,5 +1,6 @@
 import type { SigningCredentials, AppAgentClient} from '@holochain/client';
 import {AppAgentWebsocket, encodeHashToBase64, decodeHashFromBase64, generateSigningKeyPair, setSigningCredentials} from '@holochain/client';
+import { decode } from '@msgpack/msgpack';
 
 export function cellIdFromClient(client) {
     return client.cachedAppInfo.cell_info.asset_validator[0].provisioned.cell_id;
@@ -80,15 +81,13 @@ export async function whoAmI(client: AppAgentClient, signingKey) {
         agent_pub_key: signingKey
       }
     })
-    //todo fix to decode record like in generatordetail
-    if (response.type === 'ok') {
-        const ethUser = response.data;
-        const handle = ethUser.fields.handle;
-        const ethAddress = ethUser.fields.eth_address;
-        return { handle, ethAddress };
+    if (record) {
+      const ethUser = decode((record.entry as any).Present.entry) as EthUser;
+      const {handle, eth_address: ethAddress} = ethUser;
+      return { handle, ethAddress };
     } else {
-        console.error('Error calling whoAmI zome function:', response);
-        return null;
+      console.error('Error calling whoAmI zome function:', response);
+      return null;
     }
 
 }

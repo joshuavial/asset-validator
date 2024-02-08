@@ -60,7 +60,7 @@ pub fn validate_create_link_eth_users(
 pub fn validate_create_link_eth_user_by_eth_address(
     _action: CreateLink,
     _base_address: AnyLinkableHash,
-    target_address: AnyLinkableHash,
+    _target_address: AnyLinkableHash,
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)

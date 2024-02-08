@@ -11,12 +11,11 @@
   import Welcome from './Welcome.svelte';
   import LoginOrRegister from './LoginOrRegister.svelte';
 
-  import Generators from './Generators.svelte';
   import Observations from './Observations.svelte';
 
   let client: AppAgentClient | undefined;
 
-  let currentTab = writable('generators');
+  let currentTab = writable('generations');
   let signingCredentials = writable<SigningCredentials | null>(null);
   let me = writable({handle: '', ethAddress: ''});
 
@@ -25,6 +24,7 @@
     localStorage.clear();
     signingCredentials.set(null);
     client = await newAppAgentWebsocket()
+    me.set({handle: '', ethAddress: ''});
 
     setTab('welcome', {});
   };
@@ -64,8 +64,6 @@
   <ul>
     {#if $signingCredentials}
     <li><button on:click={(e) => setTab('generations', e)}>Generations</button></li>
-    <li><button on:click={(e) => setTab('generators', e)}>Generators</button></li>
-    <li><button on:click={(e) => setTab('observations', e)}>Observations</button></li>
     <li><button on:click={logout}>Logout</button></li>
     {:else}
     <li><button on:click={(e) => setTab('welcome', e)}>Welcome</button></li>
