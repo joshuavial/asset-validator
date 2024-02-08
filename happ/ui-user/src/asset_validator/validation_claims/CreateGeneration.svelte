@@ -65,7 +65,8 @@ async function createGeneration() {
   
 
 
-  <mwc-button 
+<div class='createGeneration' style="display: flex; flex-direction: column">
+  <mwc-button class="generationButton"
     raised
     label="Create Generation"
     disabled={!isGenerationValid}
@@ -75,9 +76,11 @@ async function createGeneration() {
 
 <style>
   .createGeneration {
-    width: 300px;
     width: 500px;
     margin: auto;
+  }
+  .generationButton {
+    width: 300px;
   }
 
 </style>
