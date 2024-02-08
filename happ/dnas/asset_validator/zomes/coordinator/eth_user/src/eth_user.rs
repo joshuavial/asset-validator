@@ -126,8 +126,8 @@ pub struct WhoAmIInput {
 pub fn who_am_i(input: WhoAmIInput) -> ExternResult<Option<Record>> {
     let agent_pub_key = input.agent_pub_key;
     let eth_users_path = Path::from("eth_users");
-    let links = get_links(eth_users_path.path_entry_hash()?, LinkTypes::EthUsers, None)?;
-    for link in links {
+    let links = get_links(eth_users_path.path_entry_hash()?, LinkTypes::EthUsers, None)?.into_inner();
+    for link in links.into_iter().rev() {
         let hash = link.target.clone().into_any_dht_hash().ok_or(
             wasm_error!(
                 WasmErrorInner::Guest(String::from("Could not convert link target to hash"))

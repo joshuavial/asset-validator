@@ -134,3 +134,53 @@ test('create and update EthUser', async () => {
     assert.deepEqual(sample, decode((updatedEthUser.entry as any).Present.entry) as any, "The eth_address should remain unchanged");
   });
 });
+test('create user, test who am i, update user handle, test who am i again', async () => {
+  await runScenario(async scenario => {
+    const testAppPath = process.cwd() + '/../workdir/asset-validator.happ';
+    const appSource = { appBundleSource: { path: testAppPath } };
+    const [alice] = await scenario.addPlayersWithApps([appSource]);
+    await scenario.shareAllAgents();
+
+    const sample = await sampleEthUser(alice.cells[0]);
+
+    // Alice creates an EthUser
+    const record: Record = await createEthUser(alice.cells[0], sample);
+    assert.ok(record);
+
+    // Wait for the created entry to be propagated to the other node.
+    await dhtSync([alice], alice.cells[0].cell_id[0]);
+
+    // Alice checks who she is
+    const whoAmIRecord = await alice.cells[0].callZome({
+      zome_name: "eth_user",
+      fn_name: "who_am_i",
+      payload: { agent_pub_key: alice.cells[0].cell_id[1] },
+    });
+    assert.ok(whoAmIRecord, "Alice should be able to find herself with who_am_i");
+
+    // Alice updates her EthUser handle
+    const newHandle = "AliceNewHandle";
+    const updatedSample = { ...sample, handle: newHandle };
+    const updateRecord = await alice.cells[0].callZome({
+      zome_name: "eth_user",
+      fn_name: "update_eth_user",
+      payload: {
+        original_eth_user_hash: record.signed_action.hashed.hash,
+        updated_eth_user: updatedSample,
+      },
+    });
+    assert.ok(updateRecord, "Alice should be able to update her handle");
+
+    // Wait for the updated entry to be propagated to the other node.
+    await dhtSync([alice], alice.cells[0].cell_id[0]);
+
+    // Alice checks who she is again
+    const updatedWhoAmIRecord = await alice.cells[0].callZome({
+      zome_name: "eth_user",
+      fn_name: "who_am_i",
+      payload: { agent_pub_key: alice.cells[0].cell_id[1] },
+    });
+    assert.ok(updatedWhoAmIRecord, "Alice should still be able to find herself with who_am_i after updating her handle");
+    assert.equal(updatedSample.handle, decode((updatedWhoAmIRecord.entry as any).Present.entry).handle, "The handle in who_am_i should be updated");
+  });
+});
