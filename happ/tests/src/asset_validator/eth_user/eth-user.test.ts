@@ -101,7 +101,7 @@ test('create and update EthUser', async () => {
 
     // Alice successfully updates the EthUser's handle
     let updatedSampleWithNewHandle = { ...sample, handle: "AliceNewHandle" };
-    const updateRecord: Record = await alice.cells[0].callZome({
+    const updateRecord = await alice.cells[0].callZome({
       zome_name: "eth_user",
       fn_name: "update_eth_user",
       payload: {
@@ -115,7 +115,7 @@ test('create and update EthUser', async () => {
     await dhtSync([alice], alice.cells[0].cell_id[0]);
 
     // Alice gets the updated EthUser
-    const updatedEthUser: Record = await alice.cells[0].callZome({
+    let updatedEthUser = await alice.cells[0].callZome({
       zome_name: "eth_user",
       fn_name: "get_eth_user",
       payload: updateRecord.signed_action.hashed.hash,
@@ -126,7 +126,7 @@ test('create and update EthUser', async () => {
     await dhtSync([alice], alice.cells[0].cell_id[0]);
 
     // Alice gets the updated EthUser
-    const updatedEthUser: Record = await alice.cells[0].callZome({
+    updatedEthUser = await alice.cells[0].callZome({
       zome_name: "eth_user",
       fn_name: "get_eth_user",
       payload: record.signed_action.hashed.hash,
