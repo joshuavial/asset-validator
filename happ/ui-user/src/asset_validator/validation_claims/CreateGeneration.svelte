@@ -57,12 +57,11 @@ async function createGeneration() {
     errorSnackbar.show();
   }
 }
-
 </script>
+
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
-<div style="display: flex; flex-direction: column">
-  <span style="font-size: 18px">Create Generation</span>
+<div class='createGeneration' style="display: flex; flex-direction: column">
   
 
 
@@ -73,3 +72,11 @@ async function createGeneration() {
     on:click={() => createGeneration()}
   ></mwc-button>
 </div>
+
+<style>
+  .createGeneration {
+    width: 60%;
+    margin: auto;
+  }
+
+</style>
