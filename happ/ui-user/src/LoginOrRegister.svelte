@@ -52,7 +52,7 @@
     }
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/register', {
+      const response = await fetch('http://127.0.0.1:5000/login_or_register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -73,7 +73,7 @@
       const data = await response.json()
       const capSecret = decodeHashFromBase64(data.capSecret);
       const signingCredentials = { capSecret, keyPair, signingKey};
-      dispatch('registrationSuccess', {signingCredentials, handle, ethAddress});
+      dispatch('authSuccess', {signingCredentials, handle, ethAddress});
     } catch (error) {
       errorMessage = error.message;
     }

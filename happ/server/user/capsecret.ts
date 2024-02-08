@@ -34,8 +34,8 @@ router.get('/agent_ws', async (_, res) => {
   res.json({agent_ws_url})
 })
 
-router.post('/register', async(req, res) => {
-  const { handle, password, ethAddress, signingKey, cellId } = req.body;
+router.post('/login_or_register', async(req, res) => {
+  const { handle, ethAddress, signingKey } = req.body;
   const decodedSigningKey = decodeHashFromBase64(signingKey);
   try {
     const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
@@ -51,10 +51,12 @@ router.post('/register', async(req, res) => {
       payload: ethAddress,
     });
 
+    const ethUser = { handle, eth_address: ethAddress, current_pub_key: decodedSigningKey };
+
     if (existingUser) {
       const updateInput = {
-        original_eth_user_hash: existingUser.entry_hash,
-        updated_eth_user: { handle, eth_address: ethAddress, current_pub_key: decodedSigningKey }
+        original_eth_user_hash: existingUser.signed_action.hashed.hash,
+        updated_eth_user: ethUser 
       };
       await appAgentWs.callZome({
         cap: null,
@@ -64,9 +66,7 @@ router.post('/register', async(req, res) => {
         provenance: decodedSigningKey,
         payload: updateInput,
       });
-      res.status(200).send({ message: 'User updated successfully' });
     } else {
-      const ethUser = { handle, eth_address: ethAddress, current_pub_key: decodedSigningKey };
       await appAgentWs.callZome({
         cap: null,
         cell_id: cellId,
@@ -75,16 +75,16 @@ router.post('/register', async(req, res) => {
         provenance: decodedSigningKey,
         payload: ethUser,
       });
-      const capSecret = await grantCapSecret(adminWs, decodedSigningKey, cellId);
-      res.status(200).send({ 
-        message: 'Registration successful',
-        capSecret: encodeHashToBase64(capSecret),
-      });
     }
+    const capSecret = await grantCapSecret(adminWs, decodedSigningKey, cellId);
+    res.status(200).send({ 
+      message: 'Authentication successful',
+      capSecret: encodeHashToBase64(capSecret),
+    });
     await adminWs.client.close()
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).send({ message: 'Registration failed' });
+    console.error('Authentication error:', error);
+    res.status(500).send({ message: 'Authentication failed' });
   }
 })
 

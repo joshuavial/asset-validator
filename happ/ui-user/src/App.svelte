@@ -9,8 +9,7 @@
 
   import { clientContext } from './contexts';
   import Welcome from './Welcome.svelte';
-  import Login from './Login.svelte';
-  import Register from './Register.svelte';
+  import LoginOrRegister from './LoginOrRegister.svelte';
 
   import Generators from './Generators.svelte';
   import Observations from './Observations.svelte';
@@ -50,7 +49,7 @@
   let setTab = (newTab:string, e) => {
     currentTab.set(newTab);
   }
-  const handleRegistrationSuccess = (event) => {
+  const handleAuthSuccess = (event) => {
     const cellId = cellIdFromClient(client)
     const {signingCredentials: credentials, handle, ethAddress} = event.detail
     me.set({handle, ethAddress});
@@ -70,8 +69,7 @@
     <li><button on:click={logout}>Logout</button></li>
     {:else}
     <li><button on:click={(e) => setTab('welcome', e)}>Welcome</button></li>
-    <li><button on:click={(e) => setTab('login', e)}>Login</button></li>
-    <li><button on:click={(e) => setTab('register', e)}>Register</button></li>
+    <li><button on:click={(e) => setTab('loginOrRegister', e)}>Login</button></li>
 
     {/if}
   </ul>
@@ -94,15 +92,11 @@
         <Generators />
       {:else if $currentTab === 'observations'}
         <Observations />
-      {:else if $currentTab === 'scan'}
-        <Scan />
       {/if}
     </div>
     {:else}
-      {#if $currentTab === 'login'}
-        <Login />
-      {:else if $currentTab === 'register'}
-        <Register on:registrationSuccess={handleRegistrationSuccess} />
+      {#if $currentTab === 'loginOrRegister'}
+        <LoginOrRegister on:authSuccess={handleAuthSuccess} />
       {:else}
         <Welcome />
       {/if}
