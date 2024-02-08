@@ -72,13 +72,14 @@ export async function createSigningCredentials(cellId) {
 
 export async function whoAmI(client: AppAgentClient, signingKey) {
   console.log(signingKey)
-    res = await client.callZome({
+    const agentPubKey = decodeHashFromBase64(signingKey);
+    const res = await client.callZome({
       cap_secret: null,
       role_name: 'asset_validator',
       zome_name: 'eth_user', 
       fn_name: 'who_am_i',
       payload: {
-        signing_key: encodeHashToBase64(signingKey)
+        agent_pub_key: agentPubKey
       }
     })
     return Promise.resolve({handle: 'JV', ethAddress: 'bananas'})

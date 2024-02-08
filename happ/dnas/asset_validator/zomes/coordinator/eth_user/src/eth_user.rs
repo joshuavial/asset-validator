@@ -117,12 +117,23 @@ pub fn update_eth_user(input: UpdateEthUserInput) -> ExternResult<Record> {
 
     Ok(updated_record)
 }
+#[derive(Serialize, Deserialize, Debug)]
+pub struct WhoAmIInput {
+    pub agent_pub_key: AgentPubKey,
+}
+
 #[hdk_extern]
-pub fn who_am_i(agent_pub_key: AgentPubKey) -> ExternResult<Option<Record>> {
+pub fn who_am_i(input: WhoAmIInput) -> ExternResult<Option<Record>> {
+    let agent_pub_key = input.agent_pub_key;
     let eth_users_path = Path::from("eth_users");
-    let links = get_links(eth_users_path.path_entry_hash()?, None, None)?;
+    let links = get_links(eth_users_path.path_entry_hash()?, LinkTypes::EthUsers, None)?;
     for link in links {
-        let eth_user_record = get(link.target.into(), GetOptions::default())?
+        let hash = link.target.clone().into_any_dht_hash().ok_or(
+            wasm_error!(
+                WasmErrorInner::Guest(String::from("Could not convert link target to hash"))
+            ),
+        )?;
+        let eth_user_record = get(hash, GetOptions::default())?
             .ok_or(
                 wasm_error!(
                     WasmErrorInner::Guest(String::from("EthUser entry not found"))
