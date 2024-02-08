@@ -10,16 +10,13 @@ pub fn validate_create_eth_user(
     _action: EntryCreationAction,
     _eth_user: EthUser,
 ) -> ExternResult<ValidateCallbackResult> {
-    if eth_user.eth_address != original_eth_user.eth_address {
-        return Ok(ValidateCallbackResult::Invalid("eth_address cannot be changed".into()));
-    }
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_update_eth_user(
     _action: Update,
-    _eth_user: EthUser,
+    eth_user: EthUser,
     _original_action: EntryCreationAction,
-    _original_eth_user: EthUser,
+    original_eth_user: EthUser,
 ) -> ExternResult<ValidateCallbackResult> {
     if eth_user.eth_address != original_eth_user.eth_address {
         return Ok(ValidateCallbackResult::Invalid("eth_address cannot be changed".into()));
@@ -66,9 +63,6 @@ pub fn validate_create_link_eth_user_by_eth_address(
     target_address: AnyLinkableHash,
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    if eth_user.eth_address != original_eth_user.eth_address {
-        return Ok(ValidateCallbackResult::Invalid("eth_address cannot be changed".into()));
-    }
     Ok(ValidateCallbackResult::Valid)
 }
 
