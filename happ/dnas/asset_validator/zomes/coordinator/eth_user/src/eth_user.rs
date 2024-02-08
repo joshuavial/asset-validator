@@ -68,3 +68,52 @@ pub fn get_eth_user_by_address(eth_address: String) -> ExternResult<Option<Recor
         None => Ok(None),
     }
 }
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UpdateEthUserInput {
+    pub original_eth_user_hash: ActionHash,
+    pub updated_eth_user: EthUser,
+}
+
+#[hdk_extern]
+pub fn update_eth_user(input: UpdateEthUserInput) -> ExternResult<Record> {
+    let UpdateEthUserInput {
+        original_eth_user_hash: original_eth_user_hash_clone,
+        updated_eth_user,
+    } = input;
+
+    // Retrieve the original EthUser record to compare eth_addresses
+    let old_record = get(original_eth_user_hash_clone.clone(), GetOptions::default())?
+        .ok_or(
+            wasm_error!(
+                WasmErrorInner::Guest(String::from("Could not find the original EthUser"))
+            ),
+        )?;
+    let old_eth_user: EthUser = old_record.entry().to_app_option().map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?.ok_or(
+        wasm_error!(
+            WasmErrorInner::Guest(String::from("Original EthUser entry not found"))
+        ),
+    )?;
+
+    // Prevent changing the eth_address
+    if old_eth_user.eth_address != updated_eth_user.eth_address {
+        return Err(
+            wasm_error!(
+                WasmErrorInner::Guest(String::from("Changing eth_address is not allowed"))
+            ),
+        );
+    }
+
+    // Update the EthUser entry
+    let updated_eth_user_hash = update_entry(original_eth_user_hash_clone.clone(), &updated_eth_user)?;
+
+    // Retrieve the updated record to return
+    let updated_record = get(updated_eth_user_hash.clone(), GetOptions::default())?
+        .ok_or(
+            wasm_error!(
+                WasmErrorInner::Guest(String::from("Could not find the updated EthUser"))
+            ),
+        )?;
+
+
+    Ok(updated_record)
+}

@@ -67,3 +67,43 @@ test('create and read EthUser', async () => {
 });
 
 
+test('create and update EthUser', async () => {
+  await runScenario(async scenario => {
+    const testAppPath = process.cwd() + '/../workdir/asset-validator.happ';
+    const appSource = { appBundleSource: { path: testAppPath } };
+    const [alice] = await scenario.addPlayersWithApps([appSource]);
+    await scenario.shareAllAgents();
+
+    const sample = await sampleEthUser(alice.cells[0]);
+
+    // Alice creates an EthUser
+    const record: Record = await createEthUser(alice.cells[0], sample);
+    assert.ok(record);
+
+    // Wait for the created entry to be propagated to the other node.
+    await dhtSync([alice], alice.cells[0].cell_id[0]);
+
+    // Alice updates the EthUser
+    let updatedSample = { ...sample, eth_address: "0xNEW_ETH_ADDRESS" };
+    const updateRecord: Record = await alice.cells[0].callZome({
+      zome_name: "eth_user",
+      fn_name: "update_eth_user",
+      payload: {
+        original_eth_user_hash: record.signed_action.hashed.hash,
+        updated_eth_user: updatedSample,
+      },
+    });
+    assert.ok(updateRecord);
+
+    // Wait for the updated entry to be propagated to the other node.
+    await dhtSync([alice], alice.cells[0].cell_id[0]);
+
+    // Alice gets the updated EthUser
+    const updatedEthUser: Record = await alice.cells[0].callZome({
+      zome_name: "eth_user",
+      fn_name: "get_eth_user",
+      payload: updateRecord.signed_action.hashed.hash,
+    });
+    assert.deepEqual(updatedSample, decode((updatedEthUser.entry as any).Present.entry) as any);
+  });
+});
