@@ -1,7 +1,8 @@
+import 'dotenv/config'
 import url from 'url'
 import WebSocket from 'ws'
 
-const TOKENPROOF_APP_ID = '8f4c17b8-ec77-4cf2-9b1d-78e2832141de'
+const TOKENPROOF_APP_ID = process.env.TOKENPROOF_APP_ID
 
 const keyToWs = new Map()
 const keyToAddress = new Map()
