@@ -73,7 +73,7 @@
       const data = await response.json()
       const capSecret = decodeHashFromBase64(data.capSecret);
       const signingCredentials = { capSecret, keyPair, signingKey};
-      dispatch('registrationSuccess', signingCredentials);
+      dispatch('registrationSuccess', {signingCredentials, handle, ethAddress});
     } catch (error) {
       errorMessage = error.message;
     }

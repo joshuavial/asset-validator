@@ -1,30 +1,25 @@
 use hdi::prelude::*;
-
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct Observation {
     pub observed_at: Timestamp,
     pub data: ObservationType,
 }
-
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub enum ObservationType {
     ImageObservation(ImageData),
     EnergyObservation(EnergyData),
 }
-
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub struct ImageData {
     pub image_data: String,
 }
-
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub struct EnergyData {
     pub from: Timestamp,
     pub to: Timestamp,
-    pub energy: f64, //joules, +ve = generation, -ve = consumption
+    pub energy: f64,
 }
-
 pub fn validate_create_observation(
     _action: EntryCreationAction,
     _observation: Observation,
@@ -46,7 +41,6 @@ pub fn validate_delete_observation(
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Invalid(String::from("Observations cannot be deleted")))
 }
-
 pub fn validate_create_link_all_observations(
     _action: CreateLink,
     _base_address: AnyLinkableHash,

@@ -69,3 +69,18 @@ export async function createSigningCredentials(cellId) {
     localStorage.setItem(cellIdB64, JSON.stringify(signingCredentials));
     return signingCredentials
 }
+
+export async function whoAmI(client: AppAgentClient, signingKey) {
+  console.log(signingKey)
+    res = await client.callZome({
+      cap_secret: null,
+      role_name: 'asset_validator',
+      zome_name: 'eth_user', 
+      fn_name: 'who_am_i',
+      payload: {
+        signing_key: encodeHashToBase64(signingKey)
+      }
+    })
+    return Promise.resolve({handle: 'JV', ethAddress: 'bananas'})
+
+}

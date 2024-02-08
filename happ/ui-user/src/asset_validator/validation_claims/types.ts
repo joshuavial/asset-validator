@@ -36,6 +36,7 @@ export type ValidationClaimsSignal = {
 };
 
 export type EntryTypes =
+ | ({ type: 'Generation'; } & Generation)
  | ({ type: 'Generator'; } & Generator)
  | ({  type: 'Observation'; } & Observation);
 
@@ -61,5 +62,21 @@ export interface Observation {
 
 export interface Generator { 
   name: string;
+}
+
+
+
+export interface GenerationStatus {
+  type:  
+    | 'Active'
+    ;
+}
+
+export interface Generation { 
+  user_address: string;
+
+  status: GenerationStatus;
+
+  signature: string;
 }
 

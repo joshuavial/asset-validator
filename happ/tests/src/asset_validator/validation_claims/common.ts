@@ -46,3 +46,24 @@ export async function createGenerator(cell: CallableCell, generator = undefined)
     });
 }
 
+
+
+export async function sampleGeneration(cell: CallableCell, partialGeneration = {}) {
+    return {
+        ...{
+	  user_address: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+	  status: { type: 'Active' },
+	  signature: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        },
+        ...partialGeneration
+    };
+}
+
+export async function createGeneration(cell: CallableCell, generation = undefined): Promise<Record> {
+    return cell.callZome({
+      zome_name: "validation_claims",
+      fn_name: "create_generation",
+      payload: generation || await sampleGeneration(cell),
+    });
+}
+

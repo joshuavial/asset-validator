@@ -5,7 +5,7 @@
   import {setSigningCredentials} from '@holochain/client';
   import '@material/mwc-circular-progress';
 
-  import {cellIdFromClient, getSigningCredentials, saveSigningCredentials, newAppAgentWebsocket} from './lib'
+  import {cellIdFromClient, getSigningCredentials, saveSigningCredentials, newAppAgentWebsocket, whoAmI} from './lib'
 
   import { clientContext } from './contexts';
   import Welcome from './Welcome.svelte';
@@ -19,6 +19,7 @@
 
   let currentTab = writable('generators');
   let signingCredentials = writable<SigningCredentials | null>(null);
+  let me = writable({handle: '', ethAddress: ''});
 
   let loading = true; 
   let logout = async () => {
@@ -36,6 +37,9 @@
     if (credentials) {
       signingCredentials.set(credentials);
       setSigningCredentials(cellId, credentials)
+      const maybeMe = await whoAmI(client, credentials.signingKey)
+      console.log(maybeMe)
+      me.set(maybeMe)
     } 
     loading = false;
   });
@@ -48,7 +52,8 @@
   }
   const handleRegistrationSuccess = (event) => {
     const cellId = cellIdFromClient(client)
-    const credentials = event.detail;
+    const {signingCredentials: credentials, handle, ethAddress} = event.detail
+    me.set({handle, ethAddress});
     setSigningCredentials(cellId, credentials); //update the writable
     signingCredentials.set(credentials); //update the ws client
     saveSigningCredentials(cellId, credentials); //save to local storage
@@ -59,10 +64,10 @@
 <nav>
   <ul>
     {#if $signingCredentials}
-    <li><button on:click={(e) => setTab('generate', e)}>Generate</button></li>
+    <li><button on:click={(e) => setTab('generations', e)}>Generations</button></li>
     <li><button on:click={(e) => setTab('generators', e)}>Generators</button></li>
     <li><button on:click={(e) => setTab('observations', e)}>Observations</button></li>
-   <li><button on:click={logout}>Logout</button></li>
+    <li><button on:click={logout}>Logout</button></li>
     {:else}
     <li><button on:click={(e) => setTab('welcome', e)}>Welcome</button></li>
     <li><button on:click={(e) => setTab('login', e)}>Login</button></li>
@@ -73,6 +78,11 @@
 </nav>
 
 <main>
+{#if $me.handle}
+<div>
+  Hello {$me.handle} : {$me.ethAddress}
+</div>
+{/if}
   {#if loading}
     <div style="display: flex; flex: 1; align-items: center; justify-content: center">
       <mwc-circular-progress indeterminate />

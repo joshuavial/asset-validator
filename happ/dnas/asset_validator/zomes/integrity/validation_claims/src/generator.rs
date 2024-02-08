@@ -1,11 +1,9 @@
 use hdi::prelude::*;
-
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct Generator {
     pub name: String,
 }
-
 pub fn validate_create_generator(
     _action: EntryCreationAction,
     _generator: Generator,
@@ -39,7 +37,6 @@ pub fn validate_create_link_all_generators(
     target_address: AnyLinkableHash,
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    // Check the entry type for the given action hash
     let action_hash = target_address
         .into_action_hash()
         .ok_or(
@@ -57,7 +54,6 @@ pub fn validate_create_link_all_generators(
                 WasmErrorInner::Guest(String::from("Linked action must reference an entry"))
             ),
         )?;
-    // TODO: add the appropriate validation rules
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_link_all_generators(
