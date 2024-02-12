@@ -1,9 +1,8 @@
 <script lang="ts">
 import { createEventDispatcher, getContext, onMount } from 'svelte';
-import type { AppAgentClient, Record, EntryHash, AgentPubKey, ActionHash, DnaHash } from '@holochain/client';
-import {encodeHashToBase64} from '@holochain/client'
+import type { AppAgentClient, Record } from '@holochain/client';
 import { clientContext, userContext } from '../../contexts';
-import type { Generation, GenerationStatus } from './types';
+import type { Generation } from './types';
 import type { EthUser } from '../eth_user/types';
 import '@material/mwc-button';
 import '@material/mwc-snackbar';
