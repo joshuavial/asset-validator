@@ -2,14 +2,18 @@
 import CreateGeneration from './asset_validator/validation_claims/CreateGeneration.svelte'
 import Generations from './asset_validator/validation_claims/Generations.svelte'
 import { writable } from 'svelte/store';
+import { createEventDispatcher } from 'svelte';
 
-</script>
+const activeGeneration = writable(null);
+const dispatch = createEventDispatcher();
 
-<script>
-  export const activeGeneration = writable(null);
+function setActiveGeneration(event) {
+  activeGeneration.set(event.detail.activeGeneration);
+}
+
 </script>
 
 <div>
   <CreateGeneration />
-  <Generations />
+  <Generations on:setActiveGeneration={setActiveGeneration} />
 </div>
