@@ -106,6 +106,24 @@ pub fn update_eth_user(input: UpdateEthUserInput) -> ExternResult<Record> {
     // Update the EthUser entry
     let updated_eth_user_hash = update_entry(original_eth_user_hash_clone.clone(), &updated_eth_user)?;
 
+    // Delete the existing link to the original entry
+    let eth_users_path = Path::from("eth_users");
+    let links = get_links(eth_users_path.path_entry_hash()?, LinkTypes::EthUsers, None)?;
+    for link in links {
+        if link.target == original_eth_user_hash_clone.clone().into() {
+            delete_link(link.create_link_hash)?;
+            break;
+        }
+    }
+
+    // Create a new link to the updated entry
+    create_link(
+        eth_users_path.path_entry_hash()?,
+        updated_eth_user_hash.clone(),
+        LinkTypes::EthUsers,
+        (),
+    )?;
+
     // Retrieve the updated record to return
     let updated_record = get(updated_eth_user_hash.clone(), GetOptions::default())?
         .ok_or(
@@ -113,7 +131,6 @@ pub fn update_eth_user(input: UpdateEthUserInput) -> ExternResult<Record> {
                 WasmErrorInner::Guest(String::from("Could not find the updated EthUser"))
             ),
         )?;
-
 
     Ok(updated_record)
 }
@@ -126,8 +143,9 @@ pub struct WhoAmIInput {
 pub fn who_am_i(input: WhoAmIInput) -> ExternResult<Option<Record>> {
     let agent_pub_key = input.agent_pub_key;
     let eth_users_path = Path::from("eth_users");
-    let links = get_links(eth_users_path.path_entry_hash()?, LinkTypes::EthUsers, None)?.into_inner();
-    for link in links.into_iter().rev() {
+    let mut links = get_links(eth_users_path.path_entry_hash()?, LinkTypes::EthUsers, None)?;
+    links.reverse();
+    for link in links {
         let hash = link.target.clone().into_any_dht_hash().ok_or(
             wasm_error!(
                 WasmErrorInner::Guest(String::from("Could not convert link target to hash"))
