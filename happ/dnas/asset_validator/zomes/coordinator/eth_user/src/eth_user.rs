@@ -106,6 +106,14 @@ pub fn update_eth_user(input: UpdateEthUserInput) -> ExternResult<Record> {
     // Update the EthUser entry
     let updated_eth_user_hash = update_entry(original_eth_user_hash_clone.clone(), &updated_eth_user)?;
 
+    // Retrieve the updated record to return
+    let updated_record = get(updated_eth_user_hash.clone(), GetOptions::default())?
+        .ok_or(
+            wasm_error!(
+                WasmErrorInner::Guest(String::from("Could not find the updated EthUser"))
+            ),
+        )?;
+
     // Delete the existing link to the original entry
     let eth_users_path = Path::from("eth_users");
     let links = get_links(eth_users_path.path_entry_hash()?, LinkTypes::EthUsers, None)?;
@@ -123,14 +131,6 @@ pub fn update_eth_user(input: UpdateEthUserInput) -> ExternResult<Record> {
         LinkTypes::EthUsers,
         (),
     )?;
-
-    // Retrieve the updated record to return
-    let updated_record = get(updated_eth_user_hash.clone(), GetOptions::default())?
-        .ok_or(
-            wasm_error!(
-                WasmErrorInner::Guest(String::from("Could not find the updated EthUser"))
-            ),
-        )?;
 
     Ok(updated_record)
 }

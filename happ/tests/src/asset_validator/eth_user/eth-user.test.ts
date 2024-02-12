@@ -154,7 +154,7 @@ test('create user, test who am i, update user handle, test who am i again', asyn
     const whoAmIRecord = await alice.cells[0].callZome({
       zome_name: "eth_user",
       fn_name: "who_am_i",
-      payload: { agent_pub_key: alice.cells[0].cell_id[1] },
+      payload: { agent_pub_key: sample.current_pub_key },
     });
     assert.ok(whoAmIRecord, "Alice should be able to find herself with who_am_i");
 
@@ -178,7 +178,7 @@ test('create user, test who am i, update user handle, test who am i again', asyn
     const updatedWhoAmIRecord = await alice.cells[0].callZome({
       zome_name: "eth_user",
       fn_name: "who_am_i",
-      payload: { agent_pub_key: alice.cells[0].cell_id[1] },
+      payload: { agent_pub_key: sample.current_pub_key },
     });
     assert.ok(updatedWhoAmIRecord, "Alice should still be able to find herself with who_am_i after updating her handle");
     assert.equal(updatedSample.handle, decode((updatedWhoAmIRecord.entry as any).Present.entry).handle, "The handle in who_am_i should be updated");

@@ -6,8 +6,8 @@ import { NewEntryAction, ActionHash, Record, AppBundleSource, fakeActionHash, fa
 export async function sampleEthUser(cell: CallableCell, partialEthUser = {}) {
     return {
         ...{
-	  handle: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-	  eth_address: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+	  handle: "handle",
+	  eth_address: "0xeth",
 	  current_pub_key: (await fakeAgentPubKey()),
         },
         ...partialEthUser

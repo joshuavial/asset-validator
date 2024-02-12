@@ -2,9 +2,9 @@ import type { SigningCredentials, AppAgentClient } from '@holochain/client';
 import { AppAgentWebsocket, encodeHashToBase64, decodeHashFromBase64, generateSigningKeyPair } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 
-const VITE_USER_URL = import.meta.env.VITE_USER_URL;
-if (!VITE_USER_URL) {
-  throw new Error('VITE_USER_URL is not defined');
+const VITE_USER_DOMAIN = import.meta.env.VITE_USER_DOMAIN;
+if (!VITE_USER_DOMAIN) {
+  throw new Error('VITE_USER_DOMAIN is not defined');
 }
 
 export function cellIdFromClient(client) {
@@ -12,7 +12,7 @@ export function cellIdFromClient(client) {
 }
 
 export async function newAppAgentWebsocket() {
-    let response = await fetch(VITE_USER_URL + '/agent_ws');
+    let response = await fetch('http://' + VITE_USER_DOMAIN + '/agent_ws');
     let data = await response.json();
     let url = data.agent_ws_url;
     return await AppAgentWebsocket.connect(new URL(url), 'asset-validator');
@@ -51,7 +51,7 @@ export function getSigningCredentials(cellId) {
 }
 
 export async function getAgentWsUrl() {
-  const response = await fetch(VITE_USER_URL + '/agent_ws');
+  const response = await fetch('http://' + VITEUSER_DOMAIN + '/agent_ws');
   if (!response.ok) {
     throw new Error('Failed to fetch agent websocket URL');
   }
@@ -59,7 +59,7 @@ export async function getAgentWsUrl() {
 }
 export async function createSigningCredentials(cellId) {
     const [keyPair, signingKey] = await generateSigningKeyPair();
-    response = await fetch(VITE_USER_URL + '/grant', {
+    response = await fetch('http://' + VITEUSER_DOMAIN + '/grant', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -77,6 +77,7 @@ export async function createSigningCredentials(cellId) {
 }
 
 export async function whoAmI(client: AppAgentClient, signingKey) {
+  try {
     const record = await client.callZome({
       cap_secret: null,
       role_name: 'asset_validator',
@@ -88,9 +89,10 @@ export async function whoAmI(client: AppAgentClient, signingKey) {
     })
     if (record) {
       return decode((record.entry as any).Present.entry) as EthUser;
-    } else {
-      console.error('Error calling whoAmI zome function:', response);
-      return null;
     }
-
+      throw new Error('User not found')
+  } catch (e) {
+    console.log(e)
+    return null
+  }
 }
