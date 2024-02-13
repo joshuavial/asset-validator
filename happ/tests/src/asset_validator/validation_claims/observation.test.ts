@@ -145,3 +145,37 @@ test.skip('create and update Observation', async () => {
   });
 });
 
+test('get observations for generation', async () => {
+  await runScenario(async scenario => {
+    const testAppPath = process.cwd() + '/../workdir/asset-validator.happ';
+    const appSource = { appBundleSource: { path: testAppPath } };
+    const [alice] = await scenario.addPlayersWithApps([appSource]);
+    await scenario.shareAllAgents();
+
+    // Alice creates a Generation
+    const generationRecord: Record = await createGeneration(alice.cells[0]);
+    assert.ok(generationRecord);
+
+    // Alice creates multiple Observations linked to the Generation
+    const observationSample1 = await sampleObservation(generationRecord.signed_action.hashed.hash);
+    const observationRecord1: Record = await createObservation(alice.cells[0], observationSample1);
+    assert.ok(observationRecord1);
+
+    const observationSample2 = await sampleObservation(generationRecord.signed_action.hashed.hash);
+    const observationRecord2: Record = await createObservation(alice.cells[0], observationSample2);
+    assert.ok(observationRecord2);
+
+    // Wait for the created entries to be propagated in the DHT
+    await pause(1200);
+
+    // Alice retrieves Observations for the Generation
+    const observations: Vec<Record> = await alice.cells[0].callZome({
+      zome_name: "validation_claims",
+      fn_name: "get_observation_for_generation",
+      payload: generationRecord.signed_action.hashed.hash,
+    });
+    assert.equal(observations.length, 2);
+    assert.ok(observations.find(obs => obs.signed_action.hashed.hash === observationRecord1.signed_action.hashed.hash));
+    assert.ok(observations.find(obs => obs.signed_action.hashed.hash === observationRecord2.signed_action.hashed.hash));
+  });
+});

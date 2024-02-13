@@ -25,6 +25,26 @@ pub fn create_observation(input: CreateObservationInput) -> ExternResult<Record>
     )?;
     Ok(record)
 }
+
+pub fn get_observation_for_generation(generation_hash: ActionHash) -> ExternResult<Vec<Record>> {
+    let links = get_links(
+        generation_hash,
+        LinkTypes::GenerationToObservation,
+        None,
+    )?;
+    let records: ExternResult<Vec<Record>> = links
+        .into_iter()
+        .map(|link| {
+            let action_hash: ActionHash = link.target.into();
+            get(action_hash, GetOptions::default())
+        })
+        .collect::<Result<Vec<Option<Record>>, WasmError>>()?
+        .into_iter()
+        .filter_map(|record_option| record_option)
+        .collect::<Vec<Record>>();
+    Ok(records)
+}
+
 #[hdk_extern]
 pub fn get_observation(
     original_observation_hash: ActionHash,
