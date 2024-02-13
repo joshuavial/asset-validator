@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:user": "tsx watch user/index.ts"
+    "start:user": "tsx watch user/index.ts",
+    "start:agent": "tsx watch agent/index.ts"
   },
   "author": "",
   "license": "ISC",

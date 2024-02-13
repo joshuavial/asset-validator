@@ -1,44 +1,63 @@
 <script lang="ts">
   import { onMount, setContext } from 'svelte';
   import { writable } from 'svelte/store';
-  import type { ActionHash, AppAgentClient } from '@holochain/client';
-  import { AppAgentWebsocket } from '@holochain/client';
+  import type { AppAgentClient, SigningCredentials} from '@holochain/client';
+  import {setSigningCredentials} from '@holochain/client';
   import '@material/mwc-circular-progress';
 
-  import { clientContext } from './contexts';
+  import {cellIdFromClient, getSigningCredentials, createSigningCredentials, saveSigningCredentials, newAppAgentWebsocket} from './lib'
 
-  import Generators from './Generators.svelte';
-  import Observations from './Observations.svelte';
-  import Scan from './Scan.svelte';
-  import Generate from './Generate.svelte';
+  import { clientContext } from './contexts';
+  import Welcome from './Welcome.svelte';
 
   let client: AppAgentClient | undefined;
-  
-  let currentTab = writable('generators');
+
+  let currentTab = writable('overview');
+  let signingCredentials = writable<SigningCredentials | null>(null);
 
   let loading = true; 
+  let logout = async () => {
+    localStorage.clear();
+    signingCredentials.set(null);
+    client = await newAppAgentWebsocket()
+
+    setTab('welcome', {});
+  };
 
   onMount(async () => {
-    // We pass an unused string as the url because it will dynamically be replaced in launcher environments
-    client = await AppAgentWebsocket.connect(new URL('ws://127.0.0.1:2345'), 'asset-validator');
-    console.log(client)
+    client = await newAppAgentWebsocket()
+    const cellId = cellIdFromClient(client)
+    let credentials = getSigningCredentials(cellId);
+    if (!credentials) {
+      credentials = await createSigningCredentials(cellId);
+    }
+    signingCredentials.set(credentials);
+    setSigningCredentials(cellId, credentials)
     loading = false;
   });
 
   setContext(clientContext, {
     getClient: () => client,
   });
-  let setTab = (newTab, e) => {
+  let setTab = (newTab:string, _e=null) => {
     currentTab.set(newTab);
   }
+  const handleAuthSuccess = (event) => {
+    const cellId = cellIdFromClient(client)
+    const {signingCredentials: credentials, handle, ethAddress} = event.detail
+    setSigningCredentials(cellId, credentials); //update the writable
+    signingCredentials.set(credentials); //update the ws client
+    saveSigningCredentials(cellId, credentials); //save to local storage
+    setTab('overview')
+  }
+
 </script>
 
 <nav>
   <ul>
-    <li><button on:click={(e) => setTab('generate', e)}>Generate</button></li>
-    <li><button on:click={(e) => setTab('generators', e)}>Generators</button></li>
-    <li><button on:click={(e) => setTab('observations', e)}>Observations</button></li>
-    <li><button on:click={(e) => setTab('scan', e)}>Scan</button></li>
+    {#if $signingCredentials}
+      <li><button on:click={(e) => setTab('overview', e)}>Human Power</button></li>
+    {/if}
   </ul>
 </nav>
 
@@ -48,15 +67,15 @@
       <mwc-circular-progress indeterminate />
     </div>
   {:else}
+    {#if $signingCredentials}
     <div id="content" style="display: flex; flex-direction: column; flex: 1;">
-      {#if $currentTab === 'generators'}
-        <Generators />
-      {:else if $currentTab === 'observations'}
-        <Observations />
-      {:else if $currentTab === 'scan'}
-        <Scan />
+      {#if $currentTab === 'overview'}
+        Overview
       {/if}
     </div>
+    {:else}
+      <Welcome />
+    {/if}
   {/if}
 </main>
 

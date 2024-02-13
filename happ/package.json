@@ -11,6 +11,8 @@
   "scripts": {
     "start": "AGENTS=2 BOOTSTRAP_PORT=$(port) SIGNAL_PORT=$(port) npm run network",
     "start:user": "[ -z \"$WC_ADMIN_PORT\" ] && read -p \"Enter WC_ADMIN_PORT: \" WC_ADMIN_PORT && export WC_ADMIN_PORT; UI_PORT=8080 concurrently \"npm start -w ui-user\" \"npm run serve:user\"",
+    "start:agent": "[ -z \"$WC_ADMIN_PORT\" ] && read -p \"Enter WC_ADMIN_PORT: \" WC_ADMIN_PORT && export WC_ADMIN_PORT; UI_PORT=9090 concurrently \"npm start -w ui-agent\" \"npm run serve:agent\"",
+    "serve:agent": "npm run start:agent -w server",
     "serve:user": "npm run start:user -w server",
     "network": "hc s clean && npm run build:happ && UI_PORT=8888 concurrently \"npm start -w ui-dev\" \"npm run launch:happ\" \"holochain-playground\"",
     "test": "npm run build:zomes && hc app pack workdir --recursive && npm t -w tests",

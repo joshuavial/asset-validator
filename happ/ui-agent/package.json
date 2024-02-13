@@ -2,8 +2,8 @@
   "name": "ui-agent",
   "version": "0.1.0",
   "scripts": {
-    "start": "vite --clearScreen false --port $UI_PORT",
-    "build": "npm run check && vite build",
+    "start": "[ -z \"$WC_ADMIN_PORT\" ] && echo \"Error: WC_ADMIN_PORT is not set.\" && exit 1 || VITE_WC_ADMIN_PORT=$WC_ADMIN_PORT vite --clearScreen false --port $UI_PORT",
+    "build": "[ -z \"$WC_ADMIN_PORT\" ] && echo \"Error: WC_ADMIN_PORT is not set.\" && exit 1 || VITE_WC_ADMIN_PORT=$WC_ADMIN_PORT npm run check && vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "package": "npm run build && cd dist && bestzip ../dist.zip *"
   },
@@ -21,7 +21,9 @@
     "@material/mwc-textfield": "^0.27.0",
     "@msgpack/msgpack": "^2.7.2",
     "@vaadin/date-time-picker": "^23.2.8",
-    "node-fetch": "^3.3.2"
+    "date-fns": "^3.3.1",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.7.0"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.2",
@@ -30,7 +32,7 @@
     "svelte": "^3.55.1",
     "svelte-check": "^2.10.3",
     "tslib": "^2.4.1",
-    "typescript": "^4.9.3",
+    "typescript": "^4.9.5",
     "vite": "^4.0.4"
   },
   "type": "module"

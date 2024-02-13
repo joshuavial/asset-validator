@@ -3,36 +3,41 @@ import { createEventDispatcher, getContext, onMount } from 'svelte';
 import type { AppAgentClient, Record, EntryHash, AgentPubKey, DnaHash, ActionHash } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 import { clientContext } from '../../contexts';
-import type { Generator } from './types';
+import type { Generation, GenerationStatus } from './types';
 import '@material/mwc-button';
 import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
 
-import '@material/mwc-textfield';
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
 const dispatch = createEventDispatcher();
 
-export let currentRecord!: Record;
-let currentGenerator: Generator = decode((currentRecord.entry as any).Present.entry) as Generator;
+export let originalGenerationHash!: ActionHash;
 
-let name: string | undefined = currentGenerator.name;
+export let currentRecord!: Record;
+let currentGeneration: Generation = decode((currentRecord.entry as any).Present.entry) as Generation;
+
 
 let errorSnackbar: Snackbar;
 
-$: name;
-$: isGeneratorValid = true && name !== '';
+$: ;
+$: isGenerationValid = true;
 
 onMount(() => {
   if (currentRecord === undefined) {
-    throw new Error(`The currentRecord input is required for the EditGenerator element`);
+    throw new Error(`The currentRecord input is required for the EditGeneration element`);
+  }
+  if (originalGenerationHash === undefined) {
+    throw new Error(`The originalGenerationHash input is required for the EditGeneration element`);
   }
 });
 
-async function updateGenerator() {
+async function updateGeneration() {
 
-  const generator: Generator = { 
-    name: name!,
+  const generation: Generation = { 
+    user_address: currentGeneration.user_address,
+    status: currentGeneration.status,
+    signature: currentGeneration.signature,
   };
 
   try {
@@ -40,16 +45,17 @@ async function updateGenerator() {
       cap_secret: null,
       role_name: 'asset_validator',
       zome_name: 'validation_claims',
-      fn_name: 'update_generator',
+      fn_name: 'update_generation',
       payload: {
-        previous_generator_hash: currentRecord.signed_action.hashed.hash,
-        updated_generator: generator
+        original_generation_hash: originalGenerationHash,
+        previous_generation_hash: currentRecord.signed_action.hashed.hash,
+        updated_generation: generation
       }
     });
   
-    dispatch('generator-updated', { actionHash: updateRecord.signed_action.hashed.hash });
+    dispatch('generation-updated', { actionHash: updateRecord.signed_action.hashed.hash });
   } catch (e) {
-    errorSnackbar.labelText = `Error updating the generator: ${e}`;
+    errorSnackbar.labelText = `Error updating the generation: ${e.data.data}`;
     errorSnackbar.show();
   }
 }
@@ -58,12 +64,8 @@ async function updateGenerator() {
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
 <div style="display: flex; flex-direction: column">
-  <span style="font-size: 18px">Edit Generator</span>
+  <span style="font-size: 18px">Edit Generation</span>
   
-  <div style="margin-bottom: 16px">
-    <mwc-textfield outlined label="Name" value={ name } on:input={e => { name = e.target.value; } } required></mwc-textfield>    
-  </div>
-
 
   <div style="display: flex; flex-direction: row">
     <mwc-button
@@ -75,8 +77,8 @@ async function updateGenerator() {
     <mwc-button 
       raised
       label="Save"
-      disabled={!isGeneratorValid}
-      on:click={() => updateGenerator()}
+      disabled={!isGenerationValid}
+      on:click={() => updateGeneration()}
       style="flex: 1;"
     ></mwc-button>
   </div>
