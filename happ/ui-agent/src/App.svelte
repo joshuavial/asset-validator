@@ -5,24 +5,18 @@
   import {setSigningCredentials} from '@holochain/client';
   import '@material/mwc-circular-progress';
 
-  import {cellIdFromClient, getSigningCredentials, createSigningCredentials, saveSigningCredentials, newAppAgentWebsocket} from './lib'
+  import {cellIdFromClient, getSigningCredentials, createSigningCredentials, newAppAgentWebsocket} from './lib'
+  import Generations from './Generations.svelte';
 
   import { clientContext } from './contexts';
   import Welcome from './Welcome.svelte';
 
   let client: AppAgentClient | undefined;
 
-  let currentTab = writable('overview');
+  let currentTab = writable('generations');
   let signingCredentials = writable<SigningCredentials | null>(null);
 
   let loading = true; 
-  let logout = async () => {
-    localStorage.clear();
-    signingCredentials.set(null);
-    client = await newAppAgentWebsocket()
-
-    setTab('welcome', {});
-  };
 
   onMount(async () => {
     client = await newAppAgentWebsocket()
@@ -42,21 +36,13 @@
   let setTab = (newTab:string, _e=null) => {
     currentTab.set(newTab);
   }
-  const handleAuthSuccess = (event) => {
-    const cellId = cellIdFromClient(client)
-    const {signingCredentials: credentials, handle, ethAddress} = event.detail
-    setSigningCredentials(cellId, credentials); //update the writable
-    signingCredentials.set(credentials); //update the ws client
-    saveSigningCredentials(cellId, credentials); //save to local storage
-    setTab('overview')
-  }
 
 </script>
 
 <nav>
   <ul>
     {#if $signingCredentials}
-      <li><button on:click={(e) => setTab('overview', e)}>Human Power</button></li>
+      <li><button on:click={(e) => setTab('generations', e)}>Human Power</button></li>
     {/if}
   </ul>
 </nav>
@@ -69,8 +55,8 @@
   {:else}
     {#if $signingCredentials}
     <div id="content" style="display: flex; flex-direction: column; flex: 1;">
-      {#if $currentTab === 'overview'}
-        Overview
+      {#if $currentTab === 'generations'}
+        <Generations />
       {/if}
     </div>
     {:else}

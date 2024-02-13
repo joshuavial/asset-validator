@@ -27,7 +27,7 @@ onMount(async () => {
     const payload = signal.payload as ValidationClaimsSignal;
     if (payload.type !== 'EntryCreated') return;
     if (payload.app_entry.type !== 'Generation') return;
-    hashes = [...hashes, payload.action.hashed.hash];
+    hashes = [payload.action.hashed.hash, ...hashes];
     checkAndSetActiveGeneration([{generation: payload.app_entry, hash: payload.action.hashed.hash, action: payload.action} as GenerationWithHash]);
   });
 });

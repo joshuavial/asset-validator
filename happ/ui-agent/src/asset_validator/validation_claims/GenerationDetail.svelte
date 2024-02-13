@@ -9,6 +9,7 @@ import '@material/mwc-circular-progress';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
+import { formatDistanceToNow } from 'date-fns';
 
 export let generationHash: ActionHash;
 
@@ -19,12 +20,13 @@ let error: any = undefined;
 
 let record: Record | undefined;
 let generation: Generation | undefined;
+let timeAgo: string | undefined;
 
 let editing = false;
 
 let errorSnackbar: Snackbar;
   
-$: editing,  error, loading, record, generation;
+$: editing,  error, loading, record, generation, timeAgo;
 
 onMount(async () => {
   if (generationHash === undefined) {
@@ -38,6 +40,7 @@ async function fetchGeneration() {
   error = undefined;
   record = undefined;
   generation = undefined;
+  timeAgo = undefined;
   
   try {
     record = await client.callZome({
@@ -49,6 +52,8 @@ async function fetchGeneration() {
     });
     if (record) {
       generation = decode((record.entry as any).Present.entry) as Generation;
+      let timestamp = new Date(record.signed_action.hashed.content.timestamp / 1000);
+      timeAgo = formatDistanceToNow(timestamp, { addSuffix: true });
     }
   } catch (e) {
     error = e;
@@ -67,14 +72,15 @@ async function fetchGeneration() {
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the generation: {error.data.data}</span>
+<span>Error fetching the generation: {error}</span>
 {:else}
 
 <div style="display: flex; flex-direction: column">
   <div style="display: flex; flex-direction: row">
     <span style="flex: 1">
       {generation.user_handle}:
-      {generation.status.type}
+      {generation.status.type}:
+      {timeAgo}
     </span>
   </div>
 
