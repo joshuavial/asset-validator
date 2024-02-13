@@ -79,3 +79,61 @@ pub fn validate_delete_link_all_observations(
         ),
     )
 }
+pub fn validate_create_link_generator_to_observation(
+    _action: CreateLink,
+    base_address: AnyLinkableHash,
+    target_address: AnyLinkableHash,
+    _tag: LinkTag,
+) -> ExternResult<ValidateCallbackResult> {
+    // Validate that the base address is a valid Generator
+    let base_action_hash = base_address
+        .into_action_hash()
+        .ok_or(
+            wasm_error!(
+                WasmErrorInner::Guest(String::from("Base address must be an action hash"))
+            ),
+        )?;
+    let _generator: Generator = must_get_valid_record(base_action_hash)?
+        .entry()
+        .to_app_option()
+        .map_err(|e| wasm_error!(e))?
+        .ok_or(
+            wasm_error!(
+                WasmErrorInner::Guest(String::from("Base address must reference a Generator entry"))
+            ),
+        )?;
+
+    // Validate that the target address is a valid Observation
+    let target_action_hash = target_address
+        .into_action_hash()
+        .ok_or(
+            wasm_error!(
+                WasmErrorInner::Guest(String::from("Target address must be an action hash"))
+            ),
+        )?;
+    let _observation: Observation = must_get_valid_record(target_action_hash)?
+        .entry()
+        .to_app_option()
+        .map_err(|e| wasm_error!(e))?
+        .ok_or(
+            wasm_error!(
+                WasmErrorInner::Guest(String::from("Target address must reference an Observation entry"))
+            ),
+        )?;
+
+    Ok(ValidateCallbackResult::Valid)
+}
+
+pub fn validate_delete_link_generator_to_observation(
+    _action: DeleteLink,
+    _original_action: CreateLink,
+    _base: AnyLinkableHash,
+    _target: AnyLinkableHash,
+    _tag: LinkTag,
+) -> ExternResult<ValidateCallbackResult> {
+    Ok(
+        ValidateCallbackResult::Invalid(
+            String::from("GeneratorToObservation links cannot be deleted"),
+        ),
+    )
+}

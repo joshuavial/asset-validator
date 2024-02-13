@@ -19,6 +19,7 @@ pub enum EntryTypes {
 pub enum LinkTypes {
     AllObservations,
     AllGenerators,
+    GeneratorToObservation,
     GenerationUpdates,
     Generations,
 }
@@ -175,6 +176,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             action,
         } => {
             match link_type {
+                LinkTypes::GeneratorToObservation => {
+                    validate_create_link_generator_to_observation(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
                 LinkTypes::AllObservations => {
                     validate_create_link_all_observations(
                         action,
@@ -218,6 +227,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             action,
         } => {
             match link_type {
+                LinkTypes::GeneratorToObservation => {
+                    validate_delete_link_generator_to_observation(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
                 LinkTypes::AllObservations => {
                     validate_delete_link_all_observations(
                         action,
