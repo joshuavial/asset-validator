@@ -21,11 +21,13 @@ let error: any = undefined;
 let record: Record | undefined;
 let generation: Generation | undefined;
 let timeAgo: string | undefined;
+let showDetails = false;
 
 let editing = false;
 
 let errorSnackbar: Snackbar;
   
+
 $: editing,  error, loading, record, generation, timeAgo;
 
 onMount(async () => {
@@ -42,6 +44,7 @@ async function fetchGeneration() {
   generation = undefined;
   timeAgo = undefined;
   
+
   try {
     record = await client.callZome({
       cap_secret: null,
@@ -62,6 +65,10 @@ async function fetchGeneration() {
   loading = false;
 }
 
+function toggleDetails() {
+  showDetails = !showDetails;
+}
+
 </script>
 
 <mwc-snackbar bind:this={errorSnackbar} leading>
@@ -77,12 +84,19 @@ async function fetchGeneration() {
 
 <div style="display: flex; flex-direction: column">
   <div style="display: flex; flex-direction: row">
-    <span style="flex: 1">
+    <span style="flex: 1" on:click={toggleDetails}>
       {generation.user_handle}:
       {generation.status.type}:
       {timeAgo}
     </span>
   </div>
+  {#if showDetails}
+  <div>
+    <!-- Add any additional details you want to show here -->
+    <p>User Address: {generation.user_address}</p>
+    <p>Signature: {generation.signature}</p>
+  </div>
+  {/if}
 
 </div>
 {/if}
