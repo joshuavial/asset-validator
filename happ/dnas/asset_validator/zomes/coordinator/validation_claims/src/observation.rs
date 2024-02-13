@@ -34,12 +34,12 @@ pub fn get_observation_for_generation(generation_hash: ActionHash) -> ExternResu
     )?;
     let records = links
         .into_iter()
-        .map(|link| {
-            let action_hash = link.target.into_action_hash()
-                .ok_or(wasm_error!(WasmErrorInner::Guest(String::from("Target is not an ActionHash"))))?;
-            get(action_hash, GetOptions::default())
-        })
-        .collect::<Result<Vec<Option<Record>>, WasmError>>()
+        .map(|link| link.target.into_action_hash()
+            .ok_or(wasm_error!(WasmErrorInner::Guest(String::from("Target is not an ActionHash")))))
+        .collect::<Result<Vec<ActionHash>, WasmError>>()?
+        .into_iter()
+        .map(|action_hash| get(action_hash, GetOptions::default()))
+        .collect::<Result<Vec<Option<Record>>, WasmError>>()?
         .into_iter()
         .filter_map(|record_option| record_option)
         .collect::<Vec<Record>>();
