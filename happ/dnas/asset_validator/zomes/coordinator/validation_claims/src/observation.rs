@@ -26,7 +26,8 @@ pub fn create_observation(input: CreateObservationInput) -> ExternResult<Record>
     Ok(record)
 }
 
-pub fn get_observation_for_generation(generation_hash: ActionHash) -> ExternResult<Vec<Record>> {
+#[hdk_extern]
+pub fn get_observations_for_generation(generation_hash: ActionHash) -> ExternResult<Vec<Record>> {
     let links = get_links(
         generation_hash,
         LinkTypes::GenerationToObservation,

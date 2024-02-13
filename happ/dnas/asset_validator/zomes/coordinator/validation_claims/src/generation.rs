@@ -137,7 +137,7 @@ pub fn delete_generation(
                 WasmErrorInner::Guest(String::from("{pascal_entry_def_name} not found"))
             ),
         )?;
-    let record = match details {
+    let _record = match details {
         Details::Record(details) => Ok(details.record),
         _ => {
             Err(
