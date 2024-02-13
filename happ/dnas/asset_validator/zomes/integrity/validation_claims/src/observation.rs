@@ -1,4 +1,5 @@
 use hdi::prelude::*;
+use crate::generation::Generation;
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct Observation {
@@ -79,7 +80,7 @@ pub fn validate_delete_link_all_observations(
         ),
     )
 }
-pub fn validate_create_link_generator_to_observation(
+pub fn validate_create_link_generation_to_observation(
     _action: CreateLink,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
@@ -93,7 +94,7 @@ pub fn validate_create_link_generator_to_observation(
                 WasmErrorInner::Guest(String::from("Base address must be an action hash"))
             ),
         )?;
-    let _generator: Generator = must_get_valid_record(base_action_hash)?
+    let _generator: Generation = must_get_valid_record(base_action_hash)?
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
@@ -124,7 +125,7 @@ pub fn validate_create_link_generator_to_observation(
     Ok(ValidateCallbackResult::Valid)
 }
 
-pub fn validate_delete_link_generator_to_observation(
+pub fn validate_delete_link_generation_to_observation(
     _action: DeleteLink,
     _original_action: CreateLink,
     _base: AnyLinkableHash,
@@ -133,7 +134,7 @@ pub fn validate_delete_link_generator_to_observation(
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(
         ValidateCallbackResult::Invalid(
-            String::from("GeneratorToObservation links cannot be deleted"),
+            String::from("GenerationToObservation links cannot be deleted"),
         ),
     )
 }
