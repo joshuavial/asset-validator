@@ -1,7 +1,8 @@
 use hdk::prelude::*;
 use validation_claims_integrity::*;
 #[hdk_extern]
-pub fn create_observation(observation: Observation) -> ExternResult<Record> {
+pub fn create_observation(input: CreateObservationInput) -> ExternResult<Record> {
+    let observation = input.observation;
     let observation_hash = create_entry(&EntryTypes::Observation(observation.clone()))?;
     let record = get(observation_hash.clone(), GetOptions::default())?
         .ok_or(
@@ -14,6 +15,12 @@ pub fn create_observation(observation: Observation) -> ExternResult<Record> {
         path.path_entry_hash()?,
         observation_hash.clone(),
         LinkTypes::AllObservations,
+        (),
+    )?;
+    create_link(
+        input.generator_hash.clone(),
+        observation_hash.clone(),
+        LinkTypes::GeneratorToObservation,
         (),
     )?;
     Ok(record)
@@ -84,4 +91,9 @@ pub fn get_all_observations(_: ()) -> ExternResult<Vec<Record>> {
     let records = HDK.with(|hdk| hdk.borrow().get(get_input))?;
     let records: Vec<Record> = records.into_iter().filter_map(|r| r).collect();
     Ok(records)
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateObservationInput {
+    pub observation: Observation,
+    pub generator_hash: ActionHash,
 }

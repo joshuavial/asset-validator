@@ -79,6 +79,10 @@ function toggleDetails() {
     border-radius: 4px;
     background-color: #f9f9f9;
   }
+  .generation-span {
+    padding:4px;
+    margin:0px;
+  }
   .generation-span:hover {
     cursor: pointer;
     background-color: #e6e6e6;
