@@ -3,7 +3,7 @@ import { NewEntryAction, ActionHash, Record, AppBundleSource, fakeActionHash, fa
 
 
 
-export async function sampleObservation(partialObservation = {}) {
+export async function sampleObservation(generation_hash: string, partialObservation = {}) {
     const now = Math.floor(Date.now());
     const tenSecondsLater = now + 10000;
     return {
@@ -15,6 +15,7 @@ export async function sampleObservation(partialObservation = {}) {
                 energy: 100
             }
         },
+        generation_hash: generation_hash,
         ...partialObservation,
     };
 }
@@ -52,6 +53,7 @@ export async function sampleGeneration(cell: CallableCell, partialGeneration = {
     return {
         ...{
 	  user_address: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    user_handle: 'test',
 	  status: { type: 'Active' },
 	  signature: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
         },

@@ -4,7 +4,7 @@ import { runScenario, pause, CallableCell } from '@holochain/tryorama';
 import { NewEntryAction, ActionHash, Record, AppBundleSource, fakeDnaHash, fakeActionHash, fakeAgentPubKey, fakeEntryHash } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 
-import { createObservation, sampleObservation } from './common.js';
+import { createObservation, sampleObservation, createGeneration, sampleGeneration } from './common.js';
 
 test('create Observation', async () => {
   await runScenario(async scenario => {
@@ -24,7 +24,9 @@ test('create Observation', async () => {
     await scenario.shareAllAgents();
 
     // Alice creates a Observation
-    const record: Record = await createObservation(alice.cells[0]);
+    const generation = await createGeneration(alice.cells[0]);
+    const observationSample = await sampleObservation(generation.signed_action.hashed.hash);
+    const record: Record = await createObservation(alice.cells[0], observationSample);
     assert.ok(record);
   });
 });
