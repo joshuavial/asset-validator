@@ -71,6 +71,20 @@ function toggleDetails() {
 
 </script>
 
+<style>
+  .details {
+    padding: 8px;
+    margin-top: 4px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+  }
+  .generation-span:hover {
+    cursor: pointer;
+    background-color: #e6e6e6;
+  }
+</style>
+
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
 
@@ -84,14 +98,14 @@ function toggleDetails() {
 
 <div style="display: flex; flex-direction: column">
   <div style="display: flex; flex-direction: row">
-    <span style="flex: 1" on:click={toggleDetails}>
+    <span class="generation-span" style="flex: 1" on:click={toggleDetails}>
       {generation.user_handle}:
       {generation.status.type}:
       {timeAgo}
     </span>
   </div>
   {#if showDetails}
-  <div>
+  <div class="details">
     <!-- Add any additional details you want to show here -->
     <p>User Address: {generation.user_address}</p>
     <p>Signature: {generation.signature}</p>
