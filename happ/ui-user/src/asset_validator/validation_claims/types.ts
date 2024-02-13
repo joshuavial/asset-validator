@@ -76,7 +76,12 @@ export interface Generation {
   user_handle: string
   user_address: string;
   status: GenerationStatus;
-
   signature?: string;
+}
+
+export interface GenerationWithHash {
+  generation: Generation;
+  hash: ActionHash;
+  action: Action;
 }
 

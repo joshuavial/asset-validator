@@ -9,9 +9,6 @@ import '@material/mwc-circular-progress';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
-import EditGeneration from './EditGeneration.svelte'; 
-
-const dispatch = createEventDispatcher();
 
 export let generationHash: ActionHash;
 
@@ -60,21 +57,6 @@ async function fetchGeneration() {
   loading = false;
 }
 
-async function deleteGeneration() {
-  try {
-    await client.callZome({
-      cap_secret: null,
-      role_name: 'asset_validator',
-      zome_name: 'validation_claims',
-      fn_name: 'delete_generation',
-      payload: generationHash,
-    });
-    dispatch('generation-deleted', { generationHash: generationHash });
-  } catch (e: any) {
-    errorSnackbar.labelText = `Error deleting the generation: ${e.data.data}`;
-    errorSnackbar.show();
-  }
-}
 </script>
 
 <mwc-snackbar bind:this={errorSnackbar} leading>
@@ -86,16 +68,6 @@ async function deleteGeneration() {
 </div>
 {:else if error}
 <span>Error fetching the generation: {error.data.data}</span>
-{:else if editing}
-<EditGeneration
-  originalGenerationHash={ generationHash}
-  currentRecord={record}
-  on:generation-updated={async () => {
-    editing = false;
-    await fetchGeneration()
-  } }
-  on:edit-canceled={() => { editing = false; } }
-></EditGeneration>
 {:else}
 
 <div style="display: flex; flex-direction: column">
@@ -104,8 +76,6 @@ async function deleteGeneration() {
       {generation.user_handle}:
       {generation.status.type}
     </span>
-    <!--<mwc-icon-button style="margin-left: 8px" icon="edit" on:click={() => { editing = true; } }></mwc-icon-button>-->
-    <mwc-icon-button style="margin-left: 8px" icon="delete" on:click={() => deleteGeneration()}></mwc-icon-button>
   </div>
 
 </div>

@@ -1,13 +1,12 @@
 <script lang="ts">
-import { onMount, getContext } from 'svelte';
 import { onMount, getContext, createEventDispatcher } from 'svelte';
 import { userContext } from '../../contexts';
 import '@material/mwc-circular-progress';
+import { decode } from '@msgpack/msgpack';
 import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
 import { clientContext } from '../../contexts';
 import GenerationDetail from './GenerationDetail.svelte';
-import type { ValidationClaimsSignal, Generation } from './types';
-import type { ValidationClaimsSignal } from './types';
+import type { ValidationClaimsSignal, Generation, GenerationWithHash } from './types';
 
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -22,8 +21,6 @@ let error: any = undefined;
 $: hashes, loading, error;
 
 onMount(async () => {
-
-onMount(async () => {
   await fetchGenerations();
   client.on('signal', signal => {
     if (signal.zome_name !== 'validation_claims') return;
@@ -31,13 +28,17 @@ onMount(async () => {
     if (payload.type !== 'EntryCreated') return;
     if (payload.app_entry.type !== 'Generation') return;
     hashes = [...hashes, payload.action.hashed.hash];
-    checkAndSetActiveGeneration(payload.app_entry.content);
+    checkAndSetActiveGeneration([{generation: payload.app_entry, hash: payload.action.hashed.hash, action: payload.action} as GenerationWithHash]);
   });
 });
 
-function checkAndSetActiveGeneration(generation: Generation) {
-  if (generation.user_address === $user.eth_address && generation.status.type === 'Active') {
-    dispatch('setActiveGeneration', { activeGeneration: generation });
+function checkAndSetActiveGeneration(generations: GenerationWithHash[]) {
+  for (let generationWithHash of generations) {
+    let {generation} = generationWithHash;
+    if (generation.user_address === $user.eth_address && generation.status.type === 'Active') {
+      dispatch('setActiveGeneration', { activeGeneration: generationWithHash });
+      return 
+    }
   }
 }
 
@@ -56,12 +57,13 @@ async function fetchGenerations() {
         cap_secret: null,
         role_name: 'asset_validator',
         zome_name: 'validation_claims',
-        fn_name: 'get_generation',
+        fn_name: 'get_latest_generation',
         payload: hash,
       });
-      return record.entry.content as Generation;
-    }));
-    generations.forEach(checkAndSetActiveGeneration);
+      let g = decode((record.entry as any).Present.entry) as Generation;
+      return {generation: g, hash, action: record.signed_action} as GenerationWithHash;
+    })) as Array<GenerationWithHash>;
+    checkAndSetActiveGeneration(generations);
   } catch (e) {
     error = e;
   }
@@ -69,18 +71,17 @@ async function fetchGenerations() {
 }
 </script>
 
-</script>
-
 {#if loading}
 <div style="display: flex; flex: 1; align-items: center; justify-content: center">
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the generations: {error.data.data}.</span>
+<span>Error fetching the generations: {error}.</span>
 {:else if hashes.length === 0}
 <span>No generations found.</span>
 {:else}
 <div style="display: flex; flex-direction: column">
+  <h2>All Generations</h2>
   {#each hashes as hash}
     <div style="margin-bottom: 8px;">
       <GenerationDetail generationHash={hash}  on:generation-deleted={() => fetchGenerations()}></GenerationDetail>

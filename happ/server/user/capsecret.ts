@@ -15,7 +15,12 @@ router.post('/grant', async (req, res) => {
     const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
     const capSecret = await adminWs.grantSigningKey(
       decodedCellId,
-      { [GrantedFunctionsType.All]: null },
+      { [GrantedFunctionsType.Listed]: [
+        ['asset_validator', 'create_generation'],
+        ['asset_validator', 'get_generations'],
+        ['asset_validator', 'get_latest_generation'],
+        ['eth_user', 'who_am_i'],
+      ] },
       decodedSigningKey
     );
     await adminWs.client.close()
