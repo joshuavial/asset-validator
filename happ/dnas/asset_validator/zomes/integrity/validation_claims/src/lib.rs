@@ -565,10 +565,10 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         LinkTypes::AllObservations => {
                             validate_delete_link_all_observations(
                                 action,
-                                original_action,
+                                create_link.clone(),
                                 base_address,
-                                target_address,
-                                tag,
+                                create_link.target_address,
+                                create_link.tag,
                             )
                         }
                         LinkTypes::GenerationToObservation => {

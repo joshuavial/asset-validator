@@ -7,6 +7,7 @@ export async function sampleObservation(generation_hash: string, partialObservat
     const now = Math.floor(Date.now());
     const tenSecondsLater = now + 10000;
     return {
+      observation: {
         observed_at: now, // Ensure this is an integer (i64)
         data: {
             EnergyObservation: {
@@ -15,8 +16,9 @@ export async function sampleObservation(generation_hash: string, partialObservat
                 energy: 100
             }
         },
-        generation_hash: generation_hash,
         ...partialObservation,
+      },
+      generation_hash: generation_hash,
     };
 }
 

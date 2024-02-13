@@ -1,5 +1,12 @@
 use hdk::prelude::*;
 use validation_claims_integrity::*;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateObservationInput {
+    pub observation: Observation,
+    pub generation_hash: ActionHash,
+}
+
 #[hdk_extern]
 pub fn create_observation(input: CreateObservationInput) -> ExternResult<Record> {
     let observation = input.observation;
@@ -10,17 +17,10 @@ pub fn create_observation(input: CreateObservationInput) -> ExternResult<Record>
                 WasmErrorInner::Guest(String::from("Could not find the newly created Observation"))
             ),
         )?;
-    let path = Path::from("all_observations");
     create_link(
-        path.path_entry_hash()?,
+        input.generation_hash.clone(),
         observation_hash.clone(),
-        LinkTypes::AllObservations,
-        (),
-    )?;
-    create_link(
-        input.generator_hash.clone(),
-        observation_hash.clone(),
-        LinkTypes::GeneratorToObservation,
+        LinkTypes::GenerationToObservation,
         (),
     )?;
     Ok(record)
@@ -91,9 +91,4 @@ pub fn get_all_observations(_: ()) -> ExternResult<Vec<Record>> {
     let records = HDK.with(|hdk| hdk.borrow().get(get_input))?;
     let records: Vec<Record> = records.into_iter().filter_map(|r| r).collect();
     Ok(records)
-}
-#[derive(Serialize, Deserialize, Debug)]
-pub struct CreateObservationInput {
-    pub observation: Observation,
-    pub generator_hash: ActionHash,
 }

@@ -11,6 +11,8 @@ import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import { formatDistanceToNow } from 'date-fns';
 
+import CreateImageObservation from './CreateImageObservation.svelte'
+
 export let generationHash: ActionHash;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -110,9 +112,8 @@ function toggleDetails() {
   </div>
   {#if showDetails}
   <div class="details">
-    <!-- Add any additional details you want to show here -->
     <p>User Address: {generation.user_address}</p>
-    <p>Signature: {generation.signature}</p>
+    <CreateImageObservation generationRecord={record}/>
   </div>
   {/if}
 
