@@ -169,13 +169,12 @@ test('get observations for generation', async () => {
     await pause(1200);
 
     // Alice retrieves Observations for the Generation
-    const observations: Vec<Record> = await alice.cells[0].callZome({
+    const observations: Array<Record> = await alice.cells[0].callZome({
       zome_name: "validation_claims",
-      fn_name: "get_observation_for_generation",
+      fn_name: "get_observations_for_generation",
       payload: generationRecord.signed_action.hashed.hash,
     });
-    assert.equal(observations.length, 2);
-    assert.ok(observations.find(obs => obs.signed_action.hashed.hash === observationRecord1.signed_action.hashed.hash));
-    assert.ok(observations.find(obs => obs.signed_action.hashed.hash === observationRecord2.signed_action.hashed.hash));
+    assert.equal(observations.length, 2, 'Should retrieve two observations');
+    assert.deepEqual(observations.map(obs => obs.signed_action.hashed.hash), [observationRecord1.signed_action.hashed.hash, observationRecord2.signed_action.hashed.hash], 'The retrieved observations should match the created ones');
   });
 });
