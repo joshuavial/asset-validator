@@ -1,11 +1,19 @@
 import { formatDistanceToNow } from 'date-fns';
 
 export function formatTimeAgo(timestamp: number): string {
-  // Check if the timestamp is in milliseconds (assuming no date is past a certain point in the future)
+  // Determine if the timestamp is in seconds, milliseconds, or microseconds
+  // by comparing it to the current time in milliseconds.
   const now = Date.now();
-  const isMilliseconds = timestamp > now;
-  const date = new Date(isMilliseconds ? timestamp : timestamp * 1000);
+  let adjustedTimestamp = timestamp;
+  // If the timestamp is more than 1000 times the current time, it's likely in microseconds
+  if (timestamp > now * 1000) {
+    adjustedTimestamp = timestamp / 1000; // convert microseconds to milliseconds
+  } else if (timestamp < now) {
+    adjustedTimestamp = timestamp * 1000; // convert seconds to milliseconds
+  }
+  // No conversion needed if the timestamp is already in milliseconds
 
-  return formatDistanceToNow(new Date(timestamp / 1000), { addSuffix: true });
+  const date = new Date(adjustedTimestamp);
+
   return formatDistanceToNow(date, { addSuffix: true });
 }
