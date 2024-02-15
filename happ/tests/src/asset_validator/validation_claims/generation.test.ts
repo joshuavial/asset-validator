@@ -1,10 +1,11 @@
 import { assert, test } from "vitest";
 
-import { runScenario, dhtSync, CallableCell } from '@holochain/tryorama';
+import { runScenario, dhtSync, AppSignal, AppSignalCb } from '@holochain/tryorama';
 import { NewEntryAction, ActionHash, Record, AppBundleSource, fakeDnaHash, fakeActionHash, fakeAgentPubKey, fakeEntryHash } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 
-import { createGeneration, sampleGeneration } from './common.js';
+import { createGeneration, sampleGeneration, createObservation, sampleObservation} from './common.js';
+import {createEthUser, sampleEthUser } from '../eth_user/common.js';
 
 test('create Generation', async () => {
   await runScenario(async scenario => {
@@ -206,21 +207,31 @@ test('create and delete Generation', async () => {
     assert.equal(deletesForGeneration.length, 1);
   });
 });
-test('create eth_user, generation, and observe energy', async () => {
+
+test.only('create eth_user, generation, and observe energy', async () => {
   await runScenario(async scenario => {
     const testAppPath = process.cwd() + '/../workdir/asset-validator.happ';
     const appSource = { appBundleSource: { path: testAppPath } };
     const [alice, bob] = await scenario.addPlayersWithApps([appSource, appSource]);
     await scenario.shareAllAgents();
 
-    // Alice creates an eth_user
-    const ethUser = { address: '0x123', signature: '0x456' };
-    const ethUserHash = await alice.cells[0].callZome({
-      zome_name: "eth_user",
-      fn_name: "create_eth_user",
-      payload: ethUser,
+    const signals = []
+    let signalHandlerAlice: AppSignalCb | undefined;
+    const signalReceivedAlice = new Promise<AppSignal>((resolve) => {
+      signalHandlerAlice = (signal) => {
+        signals.push(signal)
+        resolve(signal);
+      };
     });
-    assert.ok(ethUserHash);
+
+    alice.appAgentWs.on("signal", signalHandlerAlice);
+
+    // Alice creates an eth_user
+    const ethUserRecord: Record = await createEthUser(alice.cells[0]);
+    assert.ok(ethUserRecord);
+
+    const ethUserRecord2: Record = await createEthUser(alice.cells[0]);
+    assert.ok(ethUserRecord2);
 
     // Alice creates a Generation for the eth_user
     const generationSample = await sampleGeneration(alice.cells[0]);
@@ -228,20 +239,14 @@ test('create eth_user, generation, and observe energy', async () => {
     assert.ok(generationRecord);
 
     // Bob makes an energy observation on the generation
-    const observation = { energy: 42, timestamp: Date.now() };
-    const observationRecord: Record = await bob.cells[0].callZome({
-      zome_name: "validation_claims",
-      fn_name: "create_observation",
-      payload: {
-        observation: observation,
-        generation_hash: generationRecord.signed_action.hashed.hash,
-      },
-    });
+
+    const observation = await sampleObservation(generationRecord.signed_action.hashed.hash);
+    const observationRecord: Record = await createObservation(bob.cells[0], observation);
     assert.ok(observationRecord);
 
-    // Test that Alice receives a signal about the observation
-    // This part of the test will depend on the implementation of the signal handling
-    // which is not provided in the current context. You would typically use a mock
-    // or a test framework feature to listen for and assert on signals received.
+    const actualSignalReceived = await signalReceivedAlice;
+    console.log(signals);
+
+    await scenario.cleanUp();
   });
 });
