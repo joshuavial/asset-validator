@@ -1,7 +1,5 @@
 use hdk::prelude::*;
 use validation_claims_integrity::*;
-use eth_user_integrity::EthUser;
-use eth_user::eth_user::get_eth_user_by_address;
 use crate::Signal;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -34,11 +32,13 @@ pub fn create_observation(input: CreateObservationInput) -> ExternResult<Record>
     )?;
 
     // Find the EthUser associated with the Generation
-    let eth_user_record = get_eth_user_by_address(generation.user_address.clone())?
-        .ok_or(wasm_error!(WasmErrorInner::Guest("EthUser not found".into())))?;
-    let eth_user: EthUser = eth_user_record.entry().to_app_option().map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?.ok_or(
-        wasm_error!(WasmErrorInner::Guest("EthUser entry not found".into()))
-    )?;
+    let eth_user_record: Record = call_remote(
+        agent_pub_key, // Assuming agent_pub_key is the AgentPubKey for the eth_user zome
+        "eth_user".into(), // The zome name
+        "get_eth_user_by_address".into(), // The function name in the eth_user zome
+        None, // No cap secret required
+        &generation.user_address, // The parameter to pass to the function
+    )?.into_inner()?;
 
     // Retrieve the agent that created the EthUser
     let agent_pub_key = eth_user_record.action().author().clone();
