@@ -42,13 +42,9 @@ pub fn create_observation(input: CreateObservationInput) -> ExternResult<Record>
     // Retrieve the agent that created the EthUser
     let agent_pub_key = eth_user_record.action().author().clone();
 
-    // Send a signal to the agent with the observation details
-    let action = record.action().clone();
-    let action_hash = action.hash();
-    let action_hashed = HoloHashed::with_pre_hashed(action, action_hash);
     let signal_payload = Signal::EntryCreated {
-        action: SignedActionHashed::with_presigned(action_hashed, record.signature().clone()),
-        app_entry: EntryTypes::Observation(observation.clone()),
+        action: record.signed_action().clone(), // Assuming signed_action() returns the correct type
+        app_entry: EntryTypes::Observation(observation.clone()), // Use the observation directly as it is the app_entry we're dealing with
     };
     remote_signal(ExternIO::encode(signal_payload).map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?, vec![agent_pub_key])?;
 
