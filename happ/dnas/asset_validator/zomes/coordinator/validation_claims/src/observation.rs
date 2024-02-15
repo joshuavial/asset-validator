@@ -1,5 +1,7 @@
 use hdk::prelude::*;
+use crate::Signal;
 use validation_claims_integrity::*;
+use eth_user_integrity::EthUser;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreateObservationInput {
