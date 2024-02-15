@@ -1,5 +1,6 @@
 import type { 
   Record, 
+  Action,
   ActionHash,
   DnaHash,
   SignedActionHashed,
@@ -35,12 +36,9 @@ export type ValidationClaimsSignal = {
   link_type: string;
 };
 
-export type EntryTypes =
+export type ValidationClaimsEntryTypes =
  | ({ type: 'Generation'; } & Generation)
- | ({ type: 'Generator'; } & Generator)
  | ({  type: 'Observation'; } & Observation);
-
-
 
 export interface ImageData {
   image_data: string;
@@ -58,12 +56,6 @@ export interface Observation {
   observed_at: number;
   data: ObservationData;
 }
-
-export interface Generator { 
-  name: string;
-}
-
-
 
 export interface GenerationStatus {
   type:  

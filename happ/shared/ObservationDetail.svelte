@@ -5,7 +5,7 @@ import '@material/mwc-circular-progress';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 
-import {formatTimeAgo} from '../../../../shared/lib';
+import {formatTimeAgo} from './lib';
 
 export let observation: Observation;
 </script>

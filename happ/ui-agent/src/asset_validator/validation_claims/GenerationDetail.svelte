@@ -1,20 +1,19 @@
 <script lang="ts">
-import { createEventDispatcher, onMount, getContext } from 'svelte';
+import { onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
-import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
+import type { Record, ActionHash, AppAgentClient} from '@holochain/client';
 import { clientContext } from '../../contexts';
-import type { Generation, GenerationStatus, Observation } from './types';
+import type { Generation, Observation } from './types';
 import '@material/mwc-circular-progress';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 
-import { formatTimeAgo } from '../../../../shared/lib';
-import type { ValidationClaimsSignal } from './types';
+import { formatTimeAgo, onNewObservation, get_observations_for_generation } from '../../../../shared/lib';
 
 import CreateImageObservation from './CreateImageObservation.svelte'
-import ObservationDetail from './ObservationDetail.svelte'
+import ObservationDetail from '../../../../shared/ObservationDetail.svelte'
 
 export let generationHash: ActionHash;
 
@@ -32,7 +31,6 @@ let observations: Observation[];
 let editing = false;
 
 let errorSnackbar: Snackbar;
-  
 
 $: editing,  error, loading, record, generation, timeAgo, observations;
 
@@ -41,11 +39,8 @@ onMount(async () => {
     throw new Error(`The generationHash input is required for the GenerationDetail element`);
   }
   await fetchGeneration();
-  client.on('signal', signal => {
-    if (signal.zome_name !== 'validation_claims') return;
-    const payload = signal.payload as ValidationClaimsSignal;
-    if (payload.type !== 'EntryCreated') return;
-    if (payload.app_entry.type !== 'Observation') return;
+
+  onNewObservation(client, (payload) => {
     observations = [...observations, payload.app_entry as Observation];
   });
 });
@@ -57,7 +52,6 @@ async function fetchGeneration() {
   generation = undefined;
   timeAgo = undefined;
   observations = [];
-  
 
   try {
     record = await client.callZome({
@@ -70,15 +64,7 @@ async function fetchGeneration() {
     if (record) {
       generation = decode((record.entry as any).Present.entry) as Generation;
       timeAgo = formatTimeAgo(record.signed_action.hashed.content.timestamp);
-      let records = await client.callZome({
-        cap_secret: null,
-        role_name: 'asset_validator',
-        zome_name: 'validation_claims',
-        fn_name: 'get_observations_for_generation',
-        payload: generationHash,
-      })
-      observations = records.map(record => decode((record.entry as any).Present.entry) as Observation);
-
+      observations = await get_observations_for_generation(client, generationHash);
     }
   } catch (e) {
     error = e;
@@ -92,24 +78,6 @@ function toggleDetails() {
 }
 
 </script>
-
-<style>
-  .details {
-    padding: 8px;
-    margin-top: 4px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: #f9f9f9;
-  }
-  .generation-span {
-    padding:4px;
-    margin:0px;
-  }
-  .generation-span:hover {
-    cursor: pointer;
-    background-color: #e6e6e6;
-  }
-</style>
 
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
@@ -143,3 +111,20 @@ function toggleDetails() {
 </div>
 {/if}
 
+<style>
+  .details {
+    padding: 8px;
+    margin-top: 4px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+  }
+  .generation-span {
+    padding:4px;
+    margin:0px;
+  }
+  .generation-span:hover {
+    cursor: pointer;
+    background-color: #e6e6e6;
+  }
+</style>

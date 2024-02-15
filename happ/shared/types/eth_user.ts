@@ -35,9 +35,8 @@ export type EthUserSignal = {
   link_type: string;
 };
 
-export type EntryTypes =
+export type EthUserEntryTypes =
  | ({  type: 'EthUser'; } & EthUser);
-
 
 
 export interface EthUser { 

@@ -1,4 +1,5 @@
 import { formatDistanceToNow } from 'date-fns';
+import type { ValidationClaimsSignal } from './types';
 
 export function formatTimeAgo(timestamp: number): string {
   // Determine if the timestamp is in seconds, milliseconds, or microseconds
@@ -18,3 +19,14 @@ export function formatTimeAgo(timestamp: number): string {
 
   return formatDistanceToNow(date, { addSuffix: true });
 }
+
+export function onNewObservation(client, callback) {
+  client.on('signal', signal => {
+    if (signal.zome_name !== 'validation_claims') return;
+    const payload = signal.payload as ValidationClaimsSignal;
+    if (payload.type !== 'EntryCreated') return;
+    if (payload.app_entry.type !== 'Observation') return;
+    callback(payload);
+  });
+}
+
