@@ -9,7 +9,9 @@ import '@material/mwc-circular-progress';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
-import { formatTimeAgo } from '../../../shared/lib';
+
+import { formatTimeAgo } from '../../../../shared/lib';
+import type { ValidationClaimsSignal } from './types';
 
 import CreateImageObservation from './CreateImageObservation.svelte'
 import ObservationDetail from './ObservationDetail.svelte'
@@ -39,6 +41,13 @@ onMount(async () => {
     throw new Error(`The generationHash input is required for the GenerationDetail element`);
   }
   await fetchGeneration();
+  client.on('signal', signal => {
+    if (signal.zome_name !== 'validation_claims') return;
+    const payload = signal.payload as ValidationClaimsSignal;
+    if (payload.type !== 'EntryCreated') return;
+    if (payload.app_entry.type !== 'Observation') return;
+    observations = [...observations, payload.app_entry as Observation];
+  });
 });
 
 async function fetchGeneration() {

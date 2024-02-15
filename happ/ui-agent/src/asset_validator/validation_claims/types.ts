@@ -55,7 +55,6 @@ export interface EnergyData {
 export type ObservationData = { ImageObservation: ImageData } | { EnergyObservation: EnergyData };
 
 export interface Observation {
-  creator: AgentPubKey;
   observed_at: number;
   data: ObservationData;
 }

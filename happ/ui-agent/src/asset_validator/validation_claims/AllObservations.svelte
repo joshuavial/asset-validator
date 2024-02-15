@@ -3,7 +3,7 @@ import { onMount, getContext, createEventDispatcher } from 'svelte';
 import { clientContext } from '../../contexts';
 import ObservationDetail from './ObservationDetail.svelte';
 import type { AppAgentClient, Record, ActionHash } from '@holochain/client';
-import type { ValidationClaimsSignal } from './types';
+import type { ValidationClaimsSignal, Observation } from './types';
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -20,7 +20,7 @@ onMount(async () => {
     const payload = signal.payload as ValidationClaimsSignal;
     if (payload.type !== 'EntryCreated') return;
     if (payload.app_entry.type !== 'Observation') return;
-    hashes = [...hashes, payload.action.hashed.hash];
+    hashes = [...hashes, payload.app_entry as Observation];
   });
 });
 

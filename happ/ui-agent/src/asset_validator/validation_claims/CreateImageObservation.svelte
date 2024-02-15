@@ -24,16 +24,15 @@ async function uploadImage() {
         zome_name: 'validation_claims',
         fn_name: 'create_observation',
         payload: {
-          observed_at: Math.floor(Date.now() / 1000),
-          data: {
-            ImageObservation: {
-              image_data: imageData
-            }
+          observation: {
+            observed_at: Math.floor(Date.now() / 1000),
+            data: {
+              ImageObservation: {
+                image_data: imageData
+              }
+            },
           },
-          // Assuming the generationRecord contains the necessary link information
-          // for the observation to be associated with the generation.
-          // This might need to be adjusted based on the actual data structure.
-          generation_record: generationRecord
+          generation_hash: generationRecord.signed_action.hashed.hash,
         },
       });
       dispatch('image-uploaded', { observationHash: record.signed_action.hashed.hash });
