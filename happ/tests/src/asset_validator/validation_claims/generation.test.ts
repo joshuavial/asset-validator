@@ -230,9 +230,6 @@ test.only('create eth_user, generation, and observe energy', async () => {
     const ethUserRecord: Record = await createEthUser(alice.cells[0]);
     assert.ok(ethUserRecord);
 
-    const ethUserRecord2: Record = await createEthUser(alice.cells[0]);
-    assert.ok(ethUserRecord2);
-
     // Alice creates a Generation for the eth_user
     const generationSample = await sampleGeneration(alice.cells[0]);
     const generationRecord: Record = await createGeneration(alice.cells[0], generationSample);
@@ -244,7 +241,13 @@ test.only('create eth_user, generation, and observe energy', async () => {
     const observationRecord: Record = await createObservation(bob.cells[0], observation);
     assert.ok(observationRecord);
 
-    const actualSignalReceived = await signalReceivedAlice;
+    await signalReceivedAlice;
+    const entryCreatedSignals = signals.filter(signal => signal.payload.type === 'EntryCreated' && signal.zome_name === 'validation_claims');
+    const observationEntryCreatedSignal = entryCreatedSignals.find(signal => signal.payload.app_entry.entry_type === 'Observation');
+    assert.ok(observationEntryCreatedSignal, "Alice should have received an 'EntryCreated' signal for an 'Observation' entry from the 'validation_claims' zome.");
+    const signalPayload = observationEntryCreatedSignal.payload;
+    assert.deepEqual(signalPayload.app_entry, observation, "The 'EntryCreated' signal payload should contain the observation entry.");
+
     console.log(signals);
 
     await scenario.cleanUp();

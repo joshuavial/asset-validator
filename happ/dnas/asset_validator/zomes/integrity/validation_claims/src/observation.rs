@@ -122,6 +122,21 @@ pub fn validate_create_link_generation_to_observation(
             ),
         )?;
 
+    // Retrieve the agent that created the EthUser associated with the Generation
+    let eth_user_record = get(_generation.user_address.into(), GetOptions::default())?
+        .ok_or(wasm_error!(WasmErrorInner::Guest("EthUser not found".into())))?;
+    let agent_pub_key = eth_user_record.action().author().clone();
+
+    // Prepare the signal payload with the observation details
+    let signal_payload = SignalPayload::ObservationCreated {
+        observation_hash: target_action_hash,
+        generation_hash: base_action_hash,
+    };
+
+    // Send the signal to the agent
+    remote_signal(ExternIO::encode(signal_payload)?, vec![agent_pub_key])?;
+
+
     Ok(ValidateCallbackResult::Valid)
 }
 

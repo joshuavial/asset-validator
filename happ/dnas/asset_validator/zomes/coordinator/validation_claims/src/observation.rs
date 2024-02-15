@@ -23,6 +23,33 @@ pub fn create_observation(input: CreateObservationInput) -> ExternResult<Record>
         LinkTypes::GenerationToObservation,
         (),
     )?;
+    // Retrieve the Generation that the observation references
+    let generation_record = get(input.generation_hash.clone(), GetOptions::default())?
+        .ok_or(wasm_error!(WasmErrorInner::Guest("Generation not found".into())))?;
+    let generation: Generation = generation_record.entry().to_app_option()?.ok_or(
+        wasm_error!(WasmErrorInner::Guest("Generation entry not found".into()))
+    )?;
+
+    // Find the EthUser associated with the Generation
+    let eth_user_record = get(generation.user_address.into(), GetOptions::default())?
+        .ok_or(wasm_error!(WasmErrorInner::Guest("EthUser not found".into())))?;
+    let eth_user: EthUser = eth_user_record.entry().to_app_option()?.ok_or(
+        wasm_error!(WasmErrorInner::Guest("EthUser entry not found".into()))
+    )?;
+
+    // Retrieve the agent that created the EthUser
+    let agent_pub_key = eth_user_record.action().author().clone();
+
+    // Send a signal to the agent with the observation details
+    let signal_payload = Signal::EntryCreated {
+        action: SignedActionHashed::with_presigned(
+            ActionHashed::from_content_sync(record.action().clone()),
+            record.signature().clone(),
+        ),
+        app_entry: EntryTypes::Observation(observation.clone()),
+    };
+    remote_signal(ExternIO::encode(signal_payload)?, vec![agent_pub_key])?;
+
     Ok(record)
 }
 
