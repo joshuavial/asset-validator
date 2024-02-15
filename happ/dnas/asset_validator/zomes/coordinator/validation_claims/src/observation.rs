@@ -1,6 +1,7 @@
 use hdk::prelude::*;
 use validation_claims_integrity::*;
 use eth_user_integrity::EthUser;
+use eth_user::eth_user::get_eth_user_by_address;
 use crate::Signal;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -33,7 +34,7 @@ pub fn create_observation(input: CreateObservationInput) -> ExternResult<Record>
     )?;
 
     // Find the EthUser associated with the Generation
-    let eth_user_record = get(generation.user_address.into(), GetOptions::default())?
+    let eth_user_record = get_eth_user_by_address(generation.user_address.clone())?
         .ok_or(wasm_error!(WasmErrorInner::Guest("EthUser not found".into())))?;
     let eth_user: EthUser = eth_user_record.entry().to_app_option().map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?.ok_or(
         wasm_error!(WasmErrorInner::Guest("EthUser entry not found".into()))
