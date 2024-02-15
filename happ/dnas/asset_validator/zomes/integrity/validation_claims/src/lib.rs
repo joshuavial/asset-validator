@@ -1,7 +1,5 @@
 pub mod generation;
 pub use generation::*;
-pub mod generator;
-pub use generator::*;
 pub mod observation;
 pub use observation::*;
 use hdi::prelude::*;
@@ -11,14 +9,12 @@ use hdi::prelude::*;
 #[unit_enum(UnitEntryTypes)]
 pub enum EntryTypes {
     Observation(Observation),
-    Generator(Generator),
     Generation(Generation),
 }
 #[derive(Serialize, Deserialize)]
 #[hdk_link_types]
 pub enum LinkTypes {
     AllObservations,
-    AllGenerators,
     GenerationToObservation,
     GenerationUpdates,
     Generations,
@@ -48,12 +44,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 observation,
                             )
                         }
-                        EntryTypes::Generator(generator) => {
-                            validate_create_generator(
-                                EntryCreationAction::Create(action),
-                                generator,
-                            )
-                        }
                         EntryTypes::Generation(generation) => {
                             validate_create_generation(
                                 EntryCreationAction::Create(action),
@@ -68,12 +58,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             validate_create_observation(
                                 EntryCreationAction::Update(action),
                                 observation,
-                            )
-                        }
-                        EntryTypes::Generator(generator) => {
-                            validate_create_generator(
-                                EntryCreationAction::Update(action),
-                                generator,
                             )
                         }
                         EntryTypes::Generation(generation) => {
@@ -105,17 +89,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 generation,
                                 original_action,
                                 original_generation,
-                            )
-                        }
-                        (
-                            EntryTypes::Generator(generator),
-                            EntryTypes::Generator(original_generator),
-                        ) => {
-                            validate_update_generator(
-                                action,
-                                generator,
-                                original_action,
-                                original_generator,
                             )
                         }
                         (
@@ -153,9 +126,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 observation,
                             )
                         }
-                        EntryTypes::Generator(generator) => {
-                            validate_delete_generator(action, original_action, generator)
-                        }
                         EntryTypes::Generation(generation) => {
                             validate_delete_generation(
                                 action,
@@ -186,14 +156,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 LinkTypes::AllObservations => {
                     validate_create_link_all_observations(
-                        action,
-                        base_address,
-                        target_address,
-                        tag,
-                    )
-                }
-                LinkTypes::AllGenerators => {
-                    validate_create_link_all_generators(
                         action,
                         base_address,
                         target_address,
@@ -245,15 +207,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
-                LinkTypes::AllGenerators => {
-                    validate_delete_link_all_generators(
-                        action,
-                        original_action,
-                        base_address,
-                        target_address,
-                        tag,
-                    )
-                }
                 LinkTypes::GenerationUpdates => {
                     validate_delete_link_generation_updates(
                         action,
@@ -282,12 +235,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             validate_create_observation(
                                 EntryCreationAction::Create(action),
                                 observation,
-                            )
-                        }
-                        EntryTypes::Generator(generator) => {
-                            validate_create_generator(
-                                EntryCreationAction::Create(action),
-                                generator,
                             )
                         }
                         EntryTypes::Generation(generation) => {
@@ -345,37 +292,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                     observation,
                                     original_action,
                                     original_observation,
-                                )
-                            } else {
-                                Ok(result)
-                            }
-                        }
-                        EntryTypes::Generator(generator) => {
-                            let result = validate_create_generator(
-                                EntryCreationAction::Update(action.clone()),
-                                generator.clone(),
-                            )?;
-                            if let ValidateCallbackResult::Valid = result {
-                                let original_generator: Option<Generator> = original_record
-                                    .entry()
-                                    .to_app_option()
-                                    .map_err(|e| wasm_error!(e))?;
-                                let original_generator = match original_generator {
-                                    Some(generator) => generator,
-                                    None => {
-                                        return Ok(
-                                            ValidateCallbackResult::Invalid(
-                                                "The updated entry type must be the same as the original entry type"
-                                                    .to_string(),
-                                            ),
-                                        );
-                                    }
-                                };
-                                validate_update_generator(
-                                    action,
-                                    generator,
-                                    original_action,
-                                    original_generator,
                                 )
                             } else {
                                 Ok(result)
@@ -473,13 +389,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 original_observation,
                             )
                         }
-                        EntryTypes::Generator(original_generator) => {
-                            validate_delete_generator(
-                                action,
-                                original_action,
-                                original_generator,
-                            )
-                        }
                         EntryTypes::Generation(original_generation) => {
                             validate_delete_generation(
                                 action,
@@ -507,14 +416,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::GenerationToObservation => {
                             validate_create_link_generation_to_observation(
-                                action,
-                                base_address,
-                                target_address,
-                                tag,
-                            )
-                        }
-                        LinkTypes::AllGenerators => {
-                            validate_create_link_all_generators(
                                 action,
                                 base_address,
                                 target_address,
@@ -573,15 +474,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::GenerationToObservation => {
                             validate_delete_link_generation_to_observation(
-                                action,
-                                create_link.clone(),
-                                base_address,
-                                create_link.target_address,
-                                create_link.tag,
-                            )
-                        }
-                        LinkTypes::AllGenerators => {
-                            validate_delete_link_all_generators(
                                 action,
                                 create_link.clone(),
                                 base_address,

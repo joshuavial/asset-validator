@@ -59,7 +59,7 @@ export interface Observation {
 
 export interface GenerationStatus {
   type:  
-    | 'Active' | 'Complete' | 'Cancelled'
+    | 'Active' | 'Complete' | 'Cancelled' | 'Processed'
     ;
 }
 

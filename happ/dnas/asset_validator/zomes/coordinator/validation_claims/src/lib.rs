@@ -1,7 +1,5 @@
 pub mod generations;
 pub mod generation;
-pub mod all_generators;
-pub mod generator;
 pub mod observation;
 use hdk::prelude::*;
 use validation_claims_integrity::*;

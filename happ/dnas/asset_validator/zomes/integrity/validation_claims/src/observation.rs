@@ -86,7 +86,7 @@ pub fn validate_create_link_generation_to_observation(
     target_address: AnyLinkableHash,
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    // Validate that the base address is a valid Generator
+    // Validate that the base address is a valid Generation
     let base_action_hash = base_address
         .into_action_hash()
         .ok_or(
@@ -94,13 +94,13 @@ pub fn validate_create_link_generation_to_observation(
                 WasmErrorInner::Guest(String::from("Base address must be an action hash"))
             ),
         )?;
-    let _generator: Generation = must_get_valid_record(base_action_hash)?
+    let _generation: Generation = must_get_valid_record(base_action_hash)?
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
         .ok_or(
             wasm_error!(
-                WasmErrorInner::Guest(String::from("Base address must reference a Generator entry"))
+                WasmErrorInner::Guest(String::from("Base address must reference a Generation entry"))
             ),
         )?;
 
