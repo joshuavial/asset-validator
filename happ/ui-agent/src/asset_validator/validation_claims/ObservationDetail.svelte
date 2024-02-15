@@ -10,73 +10,18 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 
+import {formatTimeAgo} from '../../../../shared/lib';
 
-const dispatch = createEventDispatcher();
-
-export let observationHash: ActionHash;
+export let observation: Observation;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
-
-let loading = true;
-let error: any = undefined;
-
-let record: Record | undefined;
-let observation: Observation | undefined;
-
-
-
-
-  
-$: error, loading, record, observation;
-
-onMount(async () => {
-  if (observationHash === undefined) {
-    throw new Error(`The observationHash input is required for the ObservationDetail element`);
-  }
-  await fetchObservation();
-});
-
-async function fetchObservation() {
-  loading = true;
-  error = undefined;
-  record = undefined;
-  observation = undefined;
-  
-
-  try {
-  console.log(observationHash)
-    record = await client.callZome({
-      cap_secret: null,
-      role_name: 'asset_validator',
-      zome_name: 'validation_claims',
-      fn_name: 'get_observation',
-      payload: observationHash,
-    });
-    if (record) {
-    console.log(record)
-      observation = decode((record.entry as any).Present.entry) as Observation;
-    }
-  } catch (e) {
-    error = e;
-  }
-
-  loading = false;
-}
 
 </script>
 
 
-{#if loading}
-<div style="display: flex; flex: 1; align-items: center; justify-content: center">
-  <mwc-circular-progress indeterminate></mwc-circular-progress>
-</div>
-{:else if error}
-<span>Error fetching the observation: {error}</span>
-{:else}
-
 <div style="display: flex; flex-direction: column">
-
-
+  {observation.observed_at}
+  Observed at { formatTimeAgo(observation.observed_at) }
   {#if observation.data.EnergyObservation}
   <div style="margin-bottom: 16px">
     <span>
@@ -86,6 +31,10 @@ async function fetchObservation() {
     </span>
   </div>
   {/if}
+  {#if observation.data.ImageObservation}
+  <div style="margin-bottom: 16px">
+    <img src={observation.data.ImageObservation.image_data} alt="Observed Image" width="400" height="400">
+  </div>
+  {/if}
 
 </div>
-{/if}
