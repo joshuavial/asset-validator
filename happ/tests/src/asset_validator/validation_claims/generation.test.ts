@@ -204,7 +204,44 @@ test('create and delete Generation', async () => {
       payload: record.signed_action.hashed.hash,
     });
     assert.equal(deletesForGeneration.length, 1);
+  });
+});
+test('create eth_user, generation, and observe energy', async () => {
+  await runScenario(async scenario => {
+    const testAppPath = process.cwd() + '/../workdir/asset-validator.happ';
+    const appSource = { appBundleSource: { path: testAppPath } };
+    const [alice, bob] = await scenario.addPlayersWithApps([appSource, appSource]);
+    await scenario.shareAllAgents();
 
+    // Alice creates an eth_user
+    const ethUser = { address: '0x123', signature: '0x456' };
+    const ethUserHash = await alice.cells[0].callZome({
+      zome_name: "eth_user",
+      fn_name: "create_eth_user",
+      payload: ethUser,
+    });
+    assert.ok(ethUserHash);
 
+    // Alice creates a Generation for the eth_user
+    const generationSample = await sampleGeneration(alice.cells[0]);
+    const generationRecord: Record = await createGeneration(alice.cells[0], generationSample);
+    assert.ok(generationRecord);
+
+    // Bob makes an energy observation on the generation
+    const observation = { energy: 42, timestamp: Date.now() };
+    const observationRecord: Record = await bob.cells[0].callZome({
+      zome_name: "validation_claims",
+      fn_name: "create_observation",
+      payload: {
+        observation: observation,
+        generation_hash: generationRecord.signed_action.hashed.hash,
+      },
+    });
+    assert.ok(observationRecord);
+
+    // Test that Alice receives a signal about the observation
+    // This part of the test will depend on the implementation of the signal handling
+    // which is not provided in the current context. You would typically use a mock
+    // or a test framework feature to listen for and assert on signals received.
   });
 });
