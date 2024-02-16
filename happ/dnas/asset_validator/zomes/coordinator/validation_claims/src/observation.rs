@@ -41,6 +41,7 @@ pub fn create_observation(input: CreateObservationInput) -> ExternResult<Record>
     )? {
         ZomeCallResponse::Ok(output) => {
             let maybe_record: Option<Record> = output.decode().map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?;
+            debug!("maybe_record: {:?}", maybe_record);
             maybe_record.ok_or(wasm_error!(WasmErrorInner::Guest("EthUser not found".into())))?
         },
         _ => return Err(wasm_error!(WasmErrorInner::Guest("EthUser not found".into()))),
