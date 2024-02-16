@@ -208,7 +208,7 @@ test('create and delete Generation', async () => {
   });
 });
 
-test.only('create eth_user, generation, and observe energy', async () => {
+test('create eth_user, generation, and observe energy', async () => {
   await runScenario(async scenario => {
     const testAppPath = process.cwd() + '/../workdir/asset-validator.happ';
     const appSource = { appBundleSource: { path: testAppPath } };
@@ -227,26 +227,29 @@ test.only('create eth_user, generation, and observe energy', async () => {
     alice.appAgentWs.on("signal", signalHandlerAlice);
 
     // Alice creates an eth_user
-    const ethUserRecord: Record = await createEthUser(alice.cells[0]);
+    const ethUserSample = await sampleEthUser(alice.cells[0], {eth_address: '0xeth'});
+    const ethUserRecord: Record = await createEthUser(alice.cells[0], ethUserSample);
     assert.ok(ethUserRecord);
 
     // Alice creates a Generation for the eth_user
-    const generationSample = await sampleGeneration(alice.cells[0]);
+    const generationSample = await sampleGeneration(alice.cells[0], {user_address: '0xeth'});
     const generationRecord: Record = await createGeneration(alice.cells[0], generationSample);
     assert.ok(generationRecord);
 
+    await dhtSync([alice, bob], alice.cells[0].cell_id[0]);
     // Bob makes an energy observation on the generation
 
-    const observation = await sampleObservation(generationRecord.signed_action.hashed.hash);
-    const observationRecord: Record = await createObservation(bob.cells[0], observation);
+    const observationWithHash = await sampleObservation(generationRecord.signed_action.hashed.hash);
+    const observationRecord: Record = await createObservation(bob.cells[0], observationWithHash);
     assert.ok(observationRecord);
 
     await signalReceivedAlice;
     const entryCreatedSignals = signals.filter(signal => signal.payload.type === 'EntryCreated' && signal.zome_name === 'validation_claims');
-    const observationEntryCreatedSignal = entryCreatedSignals.find(signal => signal.payload.app_entry.entry_type === 'Observation');
+    const observationEntryCreatedSignal = entryCreatedSignals.find(signal => signal.payload.app_entry.type === 'Observation');
+    console.log(observationEntryCreatedSignal);
     assert.ok(observationEntryCreatedSignal, "Alice should have received an 'EntryCreated' signal for an 'Observation' entry from the 'validation_claims' zome.");
     const signalPayload = observationEntryCreatedSignal.payload;
-    assert.deepEqual(signalPayload.app_entry, observation, "The 'EntryCreated' signal payload should contain the observation entry.");
+    assert.deepEqual(signalPayload.app_entry.data, observationWithHash.observation.data, "The 'EntryCreated' signal payload should contain the observation entry.");
 
     console.log(signals);
 

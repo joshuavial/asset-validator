@@ -11,4 +11,3 @@ name = "eth_user_integrity"
 hdi = { workspace = true }
 
 serde = { workspace = true }
-eth_user_integrity = { path = "../../integrity/eth_user" }
