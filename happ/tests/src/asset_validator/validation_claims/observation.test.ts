@@ -5,6 +5,7 @@ import { NewEntryAction, ActionHash, Record, AppBundleSource, fakeDnaHash, fakeA
 import { decode } from '@msgpack/msgpack';
 
 import { createObservation, sampleObservation, createGeneration, sampleGeneration } from './common.js';
+import { createEthUser, sampleEthUser } from '../eth_user/common.js';
 
 test('create Observation', async () => {
   await runScenario(async scenario => {
@@ -24,8 +25,11 @@ test('create Observation', async () => {
     await scenario.shareAllAgents();
 
     // Alice creates a Observation
-    const generation = await createGeneration(alice.cells[0]);
-    const observationSample = await sampleObservation(generation.signed_action.hashed.hash);
+    const ethUserSample = await sampleEthUser(alice.cells[0], {eth_address: "0xeth"});
+    const ethUserRecord: Record = await createEthUser(alice.cells[0], ethUserSample);
+    const generationSample = await sampleGeneration(alice.cells[0], {user_address: ethUserSample.eth_address});
+    const generation = await createGeneration(alice.cells[0], generationSample);
+    const observationSample = await sampleObservation(generation.signed_action.hashed.hash, {user_address: ethUserSample.eth_address});
     const record: Record = await createObservation(alice.cells[0], observationSample);
     assert.ok(record);
   });
@@ -49,7 +53,11 @@ test('create and read Observation', async () => {
     await scenario.shareAllAgents();
 
     const generation = await createGeneration(alice.cells[0]);
-    const sample = await sampleObservation(generation.signed_action.hashed.hash);
+    const ethUserSample = await sampleEthUser(alice.cells[0], {eth_address: "0xeth"});
+    const ethUserRecord: Record = await createEthUser(alice.cells[0], ethUserSample);
+    const generationSample = await sampleGeneration(alice.cells[0], {user_address: ethUserSample.eth_address});
+    const generation = await createGeneration(alice.cells[0], generationSample);
+    const sample = await sampleObservation(generation.signed_action.hashed.hash, {user_address: ethUserSample.eth_address});
 
     // Alice creates a Observation
     const record: Record = await createObservation(alice.cells[0], sample);
@@ -86,8 +94,11 @@ test.skip('create and update Observation', async () => {
     await scenario.shareAllAgents();
 
     // Alice creates a Observation
-    const generation = await createGeneration(alice.cells[0]);
-    const sample = await sampleObservation(generation.signed_action.hashed.hash);
+    const ethUserSample = await sampleEthUser(alice.cells[0], {eth_address: "0xeth"});
+    const ethUserRecord: Record = await createEthUser(alice.cells[0], ethUserSample);
+    const generationSample = await sampleGeneration(alice.cells[0], {user_address: ethUserSample.eth_address});
+    const generation = await createGeneration(alice.cells[0], generationSample);
+    const sample = await sampleObservation(generation.signed_action.hashed.hash, {user_address: ethUserSample.eth_address});
     const record: Record = await createObservation(alice.cells[0], sample);
     assert.ok(record);
         
@@ -153,15 +164,18 @@ test('get observations for generation', async () => {
     await scenario.shareAllAgents();
 
     // Alice creates a Generation
-    const generationRecord: Record = await createGeneration(alice.cells[0]);
+    const ethUserSample = await sampleEthUser(alice.cells[0], {eth_address: "0xeth"});
+    const ethUserRecord: Record = await createEthUser(alice.cells[0], ethUserSample);
+    const generationSample = await sampleGeneration(alice.cells[0], {user_address: ethUserSample.eth_address});
+    const generationRecord: Record = await createGeneration(alice.cells[0], generationSample);
     assert.ok(generationRecord);
 
     // Alice creates multiple Observations linked to the Generation
-    const observationSample1 = await sampleObservation(generationRecord.signed_action.hashed.hash);
+    const observationSample1 = await sampleObservation(generationRecord.signed_action.hashed.hash, {user_address: ethUserSample.eth_address});
     const observationRecord1: Record = await createObservation(alice.cells[0], observationSample1);
     assert.ok(observationRecord1);
 
-    const observationSample2 = await sampleObservation(generationRecord.signed_action.hashed.hash);
+    const observationSample2 = await sampleObservation(generationRecord.signed_action.hashed.hash, {user_address: ethUserSample.eth_address});
     const observationRecord2: Record = await createObservation(alice.cells[0], observationSample2);
     assert.ok(observationRecord2);
 

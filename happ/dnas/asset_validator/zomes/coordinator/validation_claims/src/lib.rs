@@ -18,7 +18,7 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
 
 #[hdk_extern]
 fn recv_remote_signal(signal: SerializedBytes) -> ExternResult<()> {
-    let signal: Signal = decode(&signal)?;
+    let signal: Signal = decode(&signal.bytes()).map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?;
     emit_signal(&signal)?;
     Ok(())
 }
