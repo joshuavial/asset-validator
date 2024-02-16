@@ -32,14 +32,17 @@ pub fn create_observation(input: CreateObservationInput) -> ExternResult<Record>
     )?;
 
     // Find the EthUser associated with the Generation
-    let eth_user_record: Record = match call::<CreateObservationInput, ZomeName>(
+    let eth_user_record: Record = match call::<&String, ZomeName>(
         CallTargetCell::Local,
         "eth_user".into(), // The zome name
         "get_eth_user_by_address".into(), // The function name in the eth_user zome
         None, // No cap secret required
         &generation.user_address, // The parameter to pass to the function
     )? {
-        ZomeCallResponse::Ok(output) => output.decode().map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?,
+        ZomeCallResponse::Ok(output) => {
+            let maybe_record: Option<Record> = output.decode().map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?;
+            maybe_record.ok_or(wasm_error!(WasmErrorInner::Guest("EthUser not found".into())))?
+        },
         _ => return Err(wasm_error!(WasmErrorInner::Guest("EthUser not found".into()))),
     };
 
