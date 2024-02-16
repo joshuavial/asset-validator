@@ -52,7 +52,6 @@ test('create and read Observation', async () => {
     // conductor of the scenario.
     await scenario.shareAllAgents();
 
-    const generation = await createGeneration(alice.cells[0]);
     const ethUserSample = await sampleEthUser(alice.cells[0], {eth_address: "0xeth"});
     const ethUserRecord: Record = await createEthUser(alice.cells[0], ethUserSample);
     const generationSample = await sampleGeneration(alice.cells[0], {user_address: ethUserSample.eth_address});
