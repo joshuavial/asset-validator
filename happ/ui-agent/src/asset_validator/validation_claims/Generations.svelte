@@ -4,6 +4,8 @@ import { userContext } from '../../contexts';
 import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
 import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
+
+import {getSensorAllocations} from '../../lib';
 import { clientContext } from '../../contexts';
 import GenerationDetail from './GenerationDetail.svelte';
 import type { ValidationClaimsSignal, Generation, GenerationWithHash } from './types';
@@ -12,6 +14,7 @@ import type { ValidationClaimsSignal, Generation, GenerationWithHash } from './t
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 const dispatch = createEventDispatcher();
 
+let sensorAllocations: Record<string, string | null> = {};
 let hashes: Array<ActionHash> | undefined;
 let loading = true;
 let error: any = undefined;
@@ -63,6 +66,14 @@ async function fetchGenerations() {
 {:else}
 <div style="display: flex; flex-direction: column">
   <h2>All Generations</h2>
+  <div>
+    <h3>Sensor Allocations:</h3>
+    <ul>
+      {#each Object.entries(sensorAllocations) as [sensor, allocatedTo]}
+        <li>{sensor}: {allocatedTo ? allocatedTo : 'Unallocated'}</li>
+      {/each}
+    </ul>
+  </div>
   {#each hashes as hash}
     <div style="margin-bottom: 8px;">
       <GenerationDetail generationHash={hash}  on:generation-deleted={() => fetchGenerations()}></GenerationDetail>
