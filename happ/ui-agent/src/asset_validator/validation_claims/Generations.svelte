@@ -5,7 +5,7 @@ import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
 import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
 
-import {getSensorAllocations} from '../../lib';
+import {getSensorAllocations, allocateSensor} from '../../lib';
 import { clientContext } from '../../contexts';
 import GenerationDetail from './GenerationDetail.svelte';
 import type { ValidationClaimsSignal, Generation, GenerationWithHash } from './types';
@@ -31,13 +31,23 @@ onMount(async () => {
     hashes = [...hashes, payload.action.hashed.hash];
     //checkAndSetActiveGeneration([{generation: payload.app_entry, hash: payload.action.hashed.hash, action: payload.action} as GenerationWithHash]);
   });
+
   try {
     sensorAllocations = await getSensorAllocations();
-    console.log('Current sensor allocations:', sensorAllocations);
   } catch (error) {
     console.error('Error fetching sensor allocations:', error);
   }
 });
+
+async function allocateSensorToGeneration(event: Event) {
+  try {
+    const { sensor_id, generationHash } = event.detail;
+  console.log(sensor_id, generationHash);
+    sensorAllocations = await allocateSensor(sensor_id, generationHash);
+  } catch (error) {
+    console.error('Error allocating sensor to generation:', error);
+  }
+}
 
 async function fetchGenerations() {
   try {
@@ -48,6 +58,7 @@ async function fetchGenerations() {
       fn_name: 'get_generations',
       payload: null,
     });
+    console.log(links);
     hashes = links.map(l => l.target);
   } catch (e) {
     error = e;
@@ -75,16 +86,8 @@ async function fetchGenerations() {
   </div>
   {#each hashes as hash}
     <div style="margin-bottom: 8px;">
-      <GenerationDetail generationHash={hash} on:generation-deleted={() => fetchGenerations()} on:allocate-sensor={allocateSensorToGeneration}></GenerationDetail>
+      <GenerationDetail {hash} {sensorAllocations} on:generation-deleted={() => fetchGenerations()} on:allocate-sensor={allocateSensorToGeneration}></GenerationDetail>
     </div>
   {/each}
 </div>
 {/if}
-async function allocateSensorToGeneration(sensor_id: string, generationHash: string) {
-  try {
-    await allocateSensor(sensor_id, generationHash);
-    // Optionally, you can refresh the sensor allocations or handle the UI update here
-  } catch (error) {
-    console.error('Error allocating sensor to generation:', error);
-  }
-}

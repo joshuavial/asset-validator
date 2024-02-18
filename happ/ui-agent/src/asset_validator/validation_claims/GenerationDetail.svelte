@@ -1,5 +1,5 @@
 <script lang="ts">
-import { onMount, getContext } from 'svelte';
+import { onMount, getContext, createEventDispatcher } from 'svelte';
 import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
 import type { Record, ActionHash, AppAgentClient} from '@holochain/client';
@@ -10,6 +10,8 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 
+const dispatch = createEventDispatcher();
+
 import { formatTimeAgo, onNewObservation, get_observations_for_generation } from '../../../../shared/lib';
 
 const SENSOR_1 = 'sensor_1';
@@ -18,7 +20,8 @@ const SENSOR_2 = 'sensor_2';
 import CreateImageObservation from './CreateImageObservation.svelte'
 import ObservationDetail from '../../../../shared/ObservationDetail.svelte'
 
-export let generationHash: ActionHash;
+export let hash: ActionHash;
+export let sensorAllocations: Record<string, string | null>;
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -38,7 +41,7 @@ let errorSnackbar: Snackbar;
 $: editing,  error, loading, record, generation, timeAgo, observations;
 
 onMount(async () => {
-  if (generationHash === undefined) {
+  if (hash === undefined) {
     throw new Error(`The generationHash input is required for the GenerationDetail element`);
   }
   await fetchGeneration();
@@ -57,6 +60,7 @@ async function fetchGeneration() {
   observations = [];
 
   try {
+    const generationHash = hash; // Use the new prop name
     record = await client.callZome({
       cap_secret: null,
       role_name: 'asset_validator',
@@ -76,12 +80,22 @@ async function fetchGeneration() {
   loading = false;
 }
 
+async function allocateSensorToGeneration(sensor_id) {
+  try {
+    console.log(record);
+    dispatch('allocate-sensor', {sensor_id, generationHash: hash}); // Use the new prop name
+  } catch (error) {
+    console.error('Error allocating sensor to generation:', error);
+  }
+}
+
 function toggleDetails() {
   showDetails = !showDetails;
 }
 
 </script>
 
+<!-- The rest of the component remains unchanged -->
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
 
@@ -95,7 +109,9 @@ function toggleDetails() {
 
 <div style="display: flex; flex-direction: column">
   <div style="display: flex; flex-direction: row">
-    <span class="generation-span" style="flex: 1" on:click={toggleDetails}>
+    <span class="generation-span" style="flex: 1" on:click={toggleDetails}> 
+      {#if sensorAllocations[SENSOR_1]}[sensor_1] {/if}
+      {#if sensorAllocations[SENSOR_2]}[sensor_2] {/if}
       {generation.user_handle}:
       {generation.status.type}:
       {timeAgo}
