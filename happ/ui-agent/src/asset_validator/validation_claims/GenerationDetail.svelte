@@ -100,6 +100,8 @@ function toggleDetails() {
   </div>
   {#if showDetails}
   <div class="details">
+    <button on:click={() => allocateSensor(SENSOR_1)}>Allocate Sensor 1</button>
+    <button on:click={() => allocateSensor(SENSOR_2)}>Allocate Sensor 2</button>
     <p>User Address: {generation.user_address}</p>
     <CreateImageObservation generationRecord={record}/>
     {#each observations as observation}
