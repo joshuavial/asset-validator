@@ -12,6 +12,9 @@ import '@material/mwc-icon-button';
 
 import { formatTimeAgo, onNewObservation, get_observations_for_generation } from '../../../../shared/lib';
 
+const SENSOR_1 = 'sensor_1';
+const SENSOR_2 = 'sensor_2';
+
 import CreateImageObservation from './CreateImageObservation.svelte'
 import ObservationDetail from '../../../../shared/ObservationDetail.svelte'
 
@@ -100,14 +103,10 @@ function toggleDetails() {
   </div>
   {#if showDetails}
   <div class="details">
-    <button on:click={() => allocateSensor('sensor_1', generationHash)}>Allocate Sensor 1</button>
-    <button on:click={() => allocateSensor('sensor_2', generationHash)}>Allocate Sensor 2</button>
-    <button on:click={() => allocateSensor(SENSOR_1)}>Allocate Sensor 1</button>
-    <button on:click={() => allocateSensor(SENSOR_2)}>Allocate Sensor 2</button>
-    <button on:click={() => allocateSensorToGeneration('sensor_1', generationHash)}>Allocate Sensor 1</button>
-    <button on:click={() => allocateSensorToGeneration('sensor_2', generationHash)}>Allocate Sensor 2</button>
-    <button on:click={() => allocateSensorToGeneration('sensor_1', generationHash)}>Allocate Sensor 1</button>
-    <button on:click={() => allocateSensorToGeneration('sensor_2', generationHash)}>Allocate Sensor 2</button>
+
+    <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate Sensor 1</button>
+    <button on:click={() => allocateSensorToGeneration(SENSOR_2)}>Allocate Sensor 2</button>
+
     <p>User Address: {generation.user_address}</p>
     <CreateImageObservation generationRecord={record}/>
     {#each observations as observation}
