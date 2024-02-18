@@ -1,6 +1,6 @@
 import type { SigningCredentials, AppAgentClient } from '@holochain/client';
 import { AppAgentWebsocket, encodeHashToBase64, decodeHashFromBase64, generateSigningKeyPair } from '@holochain/client';
-import { decode } from '@msgpack/msgpack';
+import { decode, encode } from '@msgpack/msgpack';
 
 const VITE_AGENT_DOMAIN = import.meta.env.VITE_AGENT_DOMAIN;
 if (!VITE_AGENT_DOMAIN) {
@@ -97,7 +97,6 @@ export async function whoAmI(client: AppAgentClient, signingKey) {
   }
 }
 
-//todo functions for getSensorAllocations and allocateSensor
 export async function getSensorAllocations() {
   const response = await fetch(`http://${VITE_AGENT_DOMAIN}/sensor_allocations`);
   if (!response.ok) {
@@ -107,12 +106,14 @@ export async function getSensorAllocations() {
 }
 
 export async function allocateSensor(sensor: string, generationHash: string) {
+export async function allocateSensor(sensor: string, generationHash: string | null) {
+  const generationHashB64 = generationHash ? encodeHashToBase64(generationHash) : null;
   const response = await fetch(`http://${VITE_AGENT_DOMAIN}/allocate_sensor`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ sensor, generation_hash: generationHash })
+    body: JSON.stringify({ sensor, generation_hash: generationHashB64 })
   });
   if (!response.ok) {
     throw new Error('Failed to allocate sensor');
