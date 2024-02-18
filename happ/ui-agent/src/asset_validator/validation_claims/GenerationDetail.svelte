@@ -33,7 +33,7 @@ let record: Record | undefined;
 let generation: Generation | undefined;
 let timeAgo: string | undefined;
 let showDetails = false;
-let observations: Observation[];
+let observations: Observation[] = [];
 let totalJoulesGenerated: number;
 
 let editing = false;

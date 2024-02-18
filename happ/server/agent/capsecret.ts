@@ -1,4 +1,5 @@
 import express from 'express'
+import { decode } from '@msgpack/msgpack';
 import { GrantedFunctionsType, AppAgentWebsocket, AdminWebsocket, CellType,  decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 
 const ADMIN_WS_PORT = process.env.WC_ADMIN_PORT
@@ -46,6 +47,49 @@ router.get('/agent_ws', async (_, res) => {
   const agent_ws_url = await appAgentWsURL(adminWs) 
   await adminWs.client.close()
   res.json({agent_ws_url})
+})
+
+router.get('/network', async (_, res) => {
+  const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
+  const response = await adminWs.dumpNetworkStats();
+  await adminWs.client.close()
+  res.json(JSON.parse(response))
+})
+
+router.post('/observation', async(req, res) => {
+  console.log(req.body);
+  try {
+    const {from, to, energy, sensor} = req.body
+    if (!sensor_allocations[sensor]) {
+      console.log('no sensor', sensor);
+      console.log(sensor_allocations);
+      res.status(400).send('no generation allocated to this sensor');
+      return
+    }
+    const payload = {
+      observation: {
+        observed_at: Math.floor(Date.now() / 1000),
+        data: { EnergyObservation: { from, to, energy } }
+      },
+      generation_hash: sensor_allocations[sensor]
+    };
+    const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
+    const appAgentWs = await getAppAgentWS(adminWs);
+    const cell_id = await getCellId('asset_validator', adminWs);
+    await adminWs.authorizeSigningCredentials(cell_id);
+    const response = await appAgentWs.callZome({
+      cell_id,
+      cap_secret: null, // Ensure this is correct for your app
+      zome_name: 'validation_claims',
+      fn_name: 'create_observation',
+      payload,
+    });
+    res.json(decode(response.entry.Present.entry))
+    adminWs.client.close();
+  } catch (e) {
+    console.log(e)
+    res.status(500)
+  }
 })
 
 async function authoriseCell(role, adminWs) {

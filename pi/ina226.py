@@ -125,10 +125,11 @@ try:
                 post_data = {
                     'from': int(start_time * 1e6),
                     'to': int(end_time * 1e6),
-                    'energy': energy_consumed_J
+                    'energy': energy_consumed_J,
+                    'sensor': 'sensor_1',
                 }
                 print(post_data)
-                response = requests.post('http://192.168.1.99:3000/observation', json=post_data)
+                response = requests.post('http://192.168.1.99:4000/observation', json=post_data)
                 if response.status_code == 200:
                     print(f"Energy data posted successfully: {post_data}")
                 else:
