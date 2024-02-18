@@ -12,18 +12,25 @@ export let observation: Observation;
 
 
 <div style="display: flex; flex-direction: column">
-  Observed { formatTimeAgo(observation.observed_at) }
   {#if observation.data.EnergyObservation}
     <div style="margin-bottom: 16px">
       <span>
-        <strong>Energy Usage:</strong> { observation.data.EnergyObservation.energy } joules from
-        { new Date(observation.data.EnergyObservation.from * 1000).toLocaleString() } to
-        { new Date(observation.data.EnergyObservation.to * 1000).toLocaleString() }
+
+        <strong>Generated:</strong> { observation.data.EnergyObservation.energy.toFixed(1) } joules 
+        { formatTimeAgo(observation.observed_at) }
+        <!---
+        from
+        { new Date(observation.data.EnergyObservation.from / 1000).toLocaleString() } to
+        { new Date(observation.data.EnergyObservation.to / 1000).toLocaleString() }
+        -->
       </span>
     </div>
   {/if}
   {#if observation.data.ImageObservation}
     <div style="margin-bottom: 16px">
+      <div>
+      Image observation logged { formatTimeAgo(observation.observed_at) }
+      </div>
       <img src={observation.data.ImageObservation.image_data} alt="Observed Image" width="400" height="400">
     </div>
   {/if}
