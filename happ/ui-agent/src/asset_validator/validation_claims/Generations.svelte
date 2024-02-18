@@ -28,6 +28,12 @@ onMount(async () => {
     hashes = [...hashes, payload.action.hashed.hash];
     //checkAndSetActiveGeneration([{generation: payload.app_entry, hash: payload.action.hashed.hash, action: payload.action} as GenerationWithHash]);
   });
+  try {
+    const sensorAllocations = await getSensorAllocations();
+    console.log('Current sensor allocations:', sensorAllocations);
+  } catch (error) {
+    console.error('Error fetching sensor allocations:', error);
+  }
 });
 
 async function fetchGenerations() {
