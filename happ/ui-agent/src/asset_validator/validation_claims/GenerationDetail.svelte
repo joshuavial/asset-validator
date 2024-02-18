@@ -1,8 +1,9 @@
 <script lang="ts">
 import { onMount, getContext, createEventDispatcher } from 'svelte';
 import '@material/mwc-circular-progress';
-import { decode } from '@msgpack/msgpack';
+import { decode, encode } from '@msgpack/msgpack';
 import type { Record, ActionHash, AppAgentClient} from '@holochain/client';
+import {encodeHashToBase64} from '@holochain/client';
 import { clientContext } from '../../contexts';
 import type { Generation, Observation } from './types';
 import '@material/mwc-circular-progress';
@@ -89,6 +90,10 @@ async function allocateSensorToGeneration(sensor_id) {
   }
 }
 
+async function clearSensorAllocation(sensor_id) {
+  dispatch('allocate-sensor', {sensor_id, generationHash: null});
+}
+
 function toggleDetails() {
   showDetails = !showDetails;
 }
@@ -110,8 +115,8 @@ function toggleDetails() {
 <div style="display: flex; flex-direction: column">
   <div style="display: flex; flex-direction: row">
     <span class="generation-span" style="flex: 1" on:click={toggleDetails}> 
-      {#if sensorAllocations[SENSOR_1]}[sensor_1] {/if}
-      {#if sensorAllocations[SENSOR_2]}[sensor_2] {/if}
+      {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}[sensor_1] {/if}
+      {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}[sensor_2] {/if}
       {generation.user_handle}:
       {generation.status.type}:
       {timeAgo}
@@ -120,8 +125,16 @@ function toggleDetails() {
   {#if showDetails}
   <div class="details">
 
-    <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate Sensor 1</button>
-    <button on:click={() => allocateSensorToGeneration(SENSOR_2)}>Allocate Sensor 2</button>
+    {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}
+      <button on:click={() => clearSensorAllocation(SENSOR_1)}>Clear Sensor 1 Allocation</button>
+    {:else}
+      <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate Sensor 1</button>
+    {/if}
+    {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}
+      <button on:click={() => clearSensorAllocation(SENSOR_2)}>Clear Sensor 2 Allocation</button>
+    {:else}
+      <button on:click={() => allocateSensorToGeneration(SENSOR_2)}>Allocate Sensor 2</button>
+    {/if}
 
     <p>User Address: {generation.user_address}</p>
     <CreateImageObservation generationRecord={record}/>
