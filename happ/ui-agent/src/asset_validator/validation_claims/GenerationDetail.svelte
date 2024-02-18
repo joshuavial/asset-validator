@@ -101,10 +101,10 @@ function toggleDetails() {
   {#if showDetails}
   <div class="details">
     <p>User Address: {generation.user_address}</p>
+    <CreateImageObservation generationRecord={record}/>
     {#each observations as observation}
       <ObservationDetail {observation} />
     {/each}
-    <CreateImageObservation generationRecord={record}/>
   </div>
   {/if}
 
