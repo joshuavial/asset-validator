@@ -104,6 +104,10 @@ function toggleDetails() {
     <button on:click={() => allocateSensor('sensor_2', generationHash)}>Allocate Sensor 2</button>
     <button on:click={() => allocateSensor(SENSOR_1)}>Allocate Sensor 1</button>
     <button on:click={() => allocateSensor(SENSOR_2)}>Allocate Sensor 2</button>
+    <button on:click={() => allocateSensorToGeneration('sensor_1', generationHash)}>Allocate Sensor 1</button>
+    <button on:click={() => allocateSensorToGeneration('sensor_2', generationHash)}>Allocate Sensor 2</button>
+    <button on:click={() => allocateSensorToGeneration('sensor_1', generationHash)}>Allocate Sensor 1</button>
+    <button on:click={() => allocateSensorToGeneration('sensor_2', generationHash)}>Allocate Sensor 2</button>
     <p>User Address: {generation.user_address}</p>
     <CreateImageObservation generationRecord={record}/>
     {#each observations as observation}
