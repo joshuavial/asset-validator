@@ -105,7 +105,6 @@ export async function getSensorAllocations() {
   return response.json();
 }
 
-export async function allocateSensor(sensor: string, generationHash: string) {
 export async function allocateSensor(sensor: string, generationHash: string | null) {
   const generationHashB64 = generationHash ? encodeHashToBase64(generationHash) : null;
   const response = await fetch(`http://${VITE_AGENT_DOMAIN}/allocate_sensor`, {

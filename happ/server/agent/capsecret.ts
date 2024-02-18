@@ -4,6 +4,14 @@ import { GrantedFunctionsType, AppAgentWebsocket, AdminWebsocket, CellType,  dec
 const ADMIN_WS_PORT = process.env.WC_ADMIN_PORT
 const ADMIN_WS_URL = new URL(`ws://127.0.0.1:${ADMIN_WS_PORT}`);
 
+const SENSOR_1 = 'sensor_1';
+const SENSOR_2 = 'sensor_2';
+
+const sensor_allocations = {
+  [SENSOR_1]: null,
+  [SENSOR_2]: null,
+}
+
 const router = express.Router()
 export default router
 
@@ -21,6 +29,16 @@ router.post('/grant', async (req, res) => {
     await adminWs.client.close()
     res.status(500)
   }
+})
+
+router.post('/allocate_sensor', async (req, res) => {
+  const {sensor, generation_hash} = req.body
+  sensor_allocations[sensor] = generation_hash
+  res.json(sensor_allocations);
+})
+
+router.get('/sensor_allocations', async (_, res) => {
+  res.json(sensor_allocations)
 })
 
 router.get('/agent_ws', async (_, res) => {

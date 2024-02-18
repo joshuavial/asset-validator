@@ -77,13 +77,6 @@ async function fetchGenerations() {
 {:else}
 <div style="display: flex; flex-direction: column">
   <h2>All Generations</h2>
-  <div>
-    <ul>
-      {#each Object.entries(sensorAllocations) as [sensor, allocatedTo]}
-        <li>{sensor}: {allocatedTo ? allocatedTo : 'Unallocated'}</li>
-      {/each}
-    </ul>
-  </div>
   {#each hashes as hash}
     <div style="margin-bottom: 8px;">
       <GenerationDetail {hash} {sensorAllocations} on:generation-deleted={() => fetchGenerations()} on:allocate-sensor={allocateSensorToGeneration}></GenerationDetail>
