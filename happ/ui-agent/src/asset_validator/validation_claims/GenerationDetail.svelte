@@ -34,12 +34,19 @@ let generation: Generation | undefined;
 let timeAgo: string | undefined;
 let showDetails = false;
 let observations: Observation[];
+let totalJoulesGenerated: number;
 
 let editing = false;
 
 let errorSnackbar: Snackbar;
 
 $: editing,  error, loading, record, generation, timeAgo, observations;
+$: totalJoulesGenerated = observations.reduce((sum, obs) => {
+    if (obs.data.EnergyObservation) {
+        return sum + parseFloat(obs.data.EnergyObservation.energy);
+    }
+    return sum;
+}, 0).toFixed(1);
 
 onMount(async () => {
   if (hash === undefined) {
@@ -73,6 +80,7 @@ async function fetchGeneration() {
       generation = decode((record.entry as any).Present.entry) as Generation;
       timeAgo = formatTimeAgo(record.signed_action.hashed.content.timestamp);
       observations = await get_observations_for_generation(client, generationHash);
+      console.log(observations);
     }
   } catch (e) {
     error = e;
@@ -119,6 +127,7 @@ function toggleDetails() {
       {generation.user_handle}:
       {generation.status.type}:
       {timeAgo}
+      <strong>Total Generated:</strong> {totalJoulesGenerated} joules
     </span>
   </div>
   {#if showDetails}
