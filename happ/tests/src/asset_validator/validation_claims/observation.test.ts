@@ -1,6 +1,6 @@
 import { assert, test } from "vitest";
 
-import { runScenario, pause, CallableCell } from '@holochain/tryorama';
+import { runScenario, pause, dhtSync} from '@holochain/tryorama';
 import { NewEntryAction, ActionHash, Record, AppBundleSource, fakeDnaHash, fakeActionHash, fakeAgentPubKey, fakeEntryHash } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 
@@ -29,7 +29,7 @@ test('create Observation', async () => {
     const ethUserRecord: Record = await createEthUser(alice.cells[0], ethUserSample);
     const generationSample = await sampleGeneration(alice.cells[0], {user_address: ethUserSample.eth_address});
     const generation = await createGeneration(alice.cells[0], generationSample);
-    const observationSample = await sampleObservation(generation.signed_action.hashed.hash, {user_address: ethUserSample.eth_address});
+    const observationSample = await sampleObservation(generation.signed_action.hashed.hash);
     const record: Record = await createObservation(alice.cells[0], observationSample);
     assert.ok(record);
   });
@@ -56,7 +56,7 @@ test('create and read Observation', async () => {
     const ethUserRecord: Record = await createEthUser(alice.cells[0], ethUserSample);
     const generationSample = await sampleGeneration(alice.cells[0], {user_address: ethUserSample.eth_address});
     const generation = await createGeneration(alice.cells[0], generationSample);
-    const sample = await sampleObservation(generation.signed_action.hashed.hash, {user_address: ethUserSample.eth_address});
+    const sample = await sampleObservation(generation.signed_action.hashed.hash);
 
     // Alice creates a Observation
     const record: Record = await createObservation(alice.cells[0], sample);
@@ -97,7 +97,7 @@ test.skip('create and update Observation', async () => {
     const ethUserRecord: Record = await createEthUser(alice.cells[0], ethUserSample);
     const generationSample = await sampleGeneration(alice.cells[0], {user_address: ethUserSample.eth_address});
     const generation = await createGeneration(alice.cells[0], generationSample);
-    const sample = await sampleObservation(generation.signed_action.hashed.hash, {user_address: ethUserSample.eth_address});
+    const sample = await sampleObservation(generation.signed_action.hashed.hash);
     const record: Record = await createObservation(alice.cells[0], sample);
     assert.ok(record);
         
@@ -142,8 +142,8 @@ test.skip('create and update Observation', async () => {
     });
     assert.ok(updatedRecord);
 
-    // Wait for the updated entry to be propagated to the other node.
-    await pause(1200);
+    // Wait for the created entries to be propagated in the DHT
+    await dhtSync([alice, bob], alice.cells[0].cell_id[0]);
         
     // Bob gets the updated Observation
     const readUpdatedOutput1: Record = await bob.cells[0].callZome({
@@ -170,16 +170,14 @@ test('get observations for generation', async () => {
     assert.ok(generationRecord);
 
     // Alice creates multiple Observations linked to the Generation
-    const observationSample1 = await sampleObservation(generationRecord.signed_action.hashed.hash, {user_address: ethUserSample.eth_address});
+    const observationSample1 = await sampleObservation(generationRecord.signed_action.hashed.hash);
     const observationRecord1: Record = await createObservation(alice.cells[0], observationSample1);
     assert.ok(observationRecord1);
 
-    const observationSample2 = await sampleObservation(generationRecord.signed_action.hashed.hash, {user_address: ethUserSample.eth_address});
+    const observationSample2 = await sampleObservation(generationRecord.signed_action.hashed.hash);
     const observationRecord2: Record = await createObservation(alice.cells[0], observationSample2);
     assert.ok(observationRecord2);
 
-    // Wait for the created entries to be propagated in the DHT
-    await pause(1200);
 
     // Alice retrieves Observations for the Generation
     const observations: Array<Record> = await alice.cells[0].callZome({

@@ -22,11 +22,11 @@ export async function sampleObservation(generation_hash: string, partialObservat
     };
 }
 
-export async function createObservation(cell: CallableCell, observation = undefined): Promise<Record> {
+export async function createObservation(cell: CallableCell, observationData = undefined): Promise<Record> {
     return cell.callZome({
       zome_name: "validation_claims",
       fn_name: "create_observation",
-      payload: observation || await sampleObservation(),
+      payload: observationData || await sampleObservation(),
     });
 }
 
