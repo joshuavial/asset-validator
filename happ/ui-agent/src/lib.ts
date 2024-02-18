@@ -96,3 +96,27 @@ export async function whoAmI(client: AppAgentClient, signingKey) {
     return null
   }
 }
+
+//todo functions for getSensorAllocations and allocateSensor
+export async function getSensorAllocations() {
+  const response = await fetch(`http://${VITE_AGENT_DOMAIN}/sensor_allocations`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch sensor allocations');
+  }
+  return response.json();
+}
+
+export async function allocateSensor(sensor: string, generationHash: string) {
+  const response = await fetch(`http://${VITE_AGENT_DOMAIN}/allocate_sensor`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ sensor, generation_hash: generationHash })
+  });
+  if (!response.ok) {
+    throw new Error('Failed to allocate sensor');
+  }
+  return response.json();
+}
+
