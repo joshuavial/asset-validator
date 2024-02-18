@@ -32,7 +32,7 @@ onMount(async () => {
     //checkAndSetActiveGeneration([{generation: payload.app_entry, hash: payload.action.hashed.hash, action: payload.action} as GenerationWithHash]);
   });
   try {
-    const sensorAllocations = await getSensorAllocations();
+    sensorAllocations = await getSensorAllocations();
     console.log('Current sensor allocations:', sensorAllocations);
   } catch (error) {
     console.error('Error fetching sensor allocations:', error);
@@ -67,7 +67,6 @@ async function fetchGenerations() {
 <div style="display: flex; flex-direction: column">
   <h2>All Generations</h2>
   <div>
-    <h3>Sensor Allocations:</h3>
     <ul>
       {#each Object.entries(sensorAllocations) as [sensor, allocatedTo]}
         <li>{sensor}: {allocatedTo ? allocatedTo : 'Unallocated'}</li>
@@ -76,8 +75,16 @@ async function fetchGenerations() {
   </div>
   {#each hashes as hash}
     <div style="margin-bottom: 8px;">
-      <GenerationDetail generationHash={hash}  on:generation-deleted={() => fetchGenerations()}></GenerationDetail>
+      <GenerationDetail generationHash={hash} on:generation-deleted={() => fetchGenerations()} on:allocate-sensor={allocateSensorToGeneration}></GenerationDetail>
     </div>
   {/each}
 </div>
 {/if}
+async function allocateSensorToGeneration(sensor_id: string, generationHash: string) {
+  try {
+    await allocateSensor(sensor_id, generationHash);
+    // Optionally, you can refresh the sensor allocations or handle the UI update here
+  } catch (error) {
+    console.error('Error allocating sensor to generation:', error);
+  }
+}
