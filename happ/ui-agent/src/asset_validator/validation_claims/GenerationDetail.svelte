@@ -83,7 +83,6 @@ async function fetchGeneration() {
 
 async function allocateSensorToGeneration(sensor_id) {
   try {
-    console.log(record);
     dispatch('allocate-sensor', {sensor_id, generationHash: hash}); // Use the new prop name
   } catch (error) {
     console.error('Error allocating sensor to generation:', error);

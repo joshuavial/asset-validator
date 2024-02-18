@@ -42,7 +42,6 @@ onMount(async () => {
 async function allocateSensorToGeneration(event: Event) {
   try {
     const { sensor_id, generationHash } = event.detail;
-  console.log(sensor_id, generationHash);
     sensorAllocations = await allocateSensor(sensor_id, generationHash);
   } catch (error) {
     console.error('Error allocating sensor to generation:', error);
@@ -58,7 +57,6 @@ async function fetchGenerations() {
       fn_name: 'get_generations',
       payload: null,
     });
-    console.log(links);
     hashes = links.map(l => l.target);
   } catch (e) {
     error = e;
