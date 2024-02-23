@@ -1,5 +1,5 @@
 import { createWalletClient, custom, parseEther } from 'viem';
-import { goerli } from 'viem/chains';
+import { goerli, http, privateKeyToAccount } from 'viem/chains';
 import 'viem/window';
 
 async function main() {
@@ -9,9 +9,11 @@ async function main() {
     process.exit(1);
   }
 
+  const account = privateKeyToAccount(privateKey);
   const walletClient = createWalletClient({
     chain: goerli,
-    transport: custom(window.ethereum!),
+    transport: http(),
+    account: account,
   });
 
   let recipient = process.argv[2];
@@ -34,10 +36,7 @@ async function main() {
     value: parseEther("1"),
   };
 
-  const txResponse = await walletClient.sendTransaction({
-    account: privateKey,
-    ...transaction,
-  });
+  const txResponse = await walletClient.sendTransaction(transaction);
   console.log(`Transaction hash: ${txResponse.hash}`);
 }
 
