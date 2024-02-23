@@ -1,6 +1,5 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
-  import { browser } from '$app/env';
   import { generateSigningKeyPair, encodeHashToBase64, decodeHashFromBase64 } from '@holochain/client';
 
   const dispatch = createEventDispatcher();
@@ -47,8 +46,13 @@
     }
   });
 
-  // Reactive statement to detect if the user is on a mobile device
-  $: isMobile = browser && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  // Function to detect if the user is on a mobile device
+  const isMobile = () => {
+    return typeof window.orientation !== "undefined" || navigator.userAgent.indexOf('IEMobile') !== -1;
+  };
+
+  // Reactive statement to store the result of isMobile
+  $: mobileUser = isMobile();
 
   async function register() {
     if (password !== confirmPassword) {
