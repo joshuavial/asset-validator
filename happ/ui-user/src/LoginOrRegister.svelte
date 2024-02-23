@@ -1,6 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher} from 'svelte';
   import { onMount } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { browser } from '$app/env';
   import { generateSigningKeyPair, encodeHashToBase64, decodeHashFromBase64 } from '@holochain/client';
 
   const dispatch = createEventDispatcher();
@@ -46,6 +48,9 @@
       errorMessage = error.message;
     }
   });
+
+  // Reactive statement to detect if the user is on a mobile device
+  $: isMobile = browser && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   async function register() {
     if (password !== confirmPassword) {
@@ -120,6 +125,16 @@
   }
   img {
     margin-top: 10px;
+  }
+  .tp-deep-link-button {
+    background-color: #2665FF;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-decoration: none;
+    cursor: pointer;
   }
   .container {
     display: flex;
