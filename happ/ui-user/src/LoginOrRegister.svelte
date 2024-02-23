@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import { generateSigningKeyPair, encodeHashToBase64, decodeHashFromBase64 } from '@holochain/client';
+  const VITE_USER_DOMAIN = import.meta.env.VITE_USER_DOMAIN;
 
   const dispatch = createEventDispatcher();
 
@@ -14,10 +15,30 @@
   let qrCodeImage = '';
   let tpDeepLink = '';
 
+  // Reactive statement to detect if the user is on a mobile device
+  let isMobile = typeof window !== 'undefined' &&
+                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
   onMount(async () => {
     try {
-      [keyPair, signingKey] = await generateSigningKeyPair();
-      const tokenProofResponse = await fetch('http://127.0.0.1:5000/get-token-proof', {
+      const storedKeyPair = localStorage.getItem('keyPair');
+      const storedSigningKey = localStorage.getItem('signingKey');
+      const storedTimestamp = localStorage.getItem('timestamp');
+      const currentTime = new Date().getTime();
+
+      const storedRegistrationCredentials = localStorage.getItem('registrationCredentials');
+      if (storedRegistrationCredentials && currentTime - parseInt(storedRegistrationCredentials.timestamp) < 120000) {
+        keyPair = JSON.parse(storedRegistrationCredentials.keyPair);
+        signingKey = decodeHashFromBase64(storedRegistrationCredentials.signingKey);
+      } else {
+        [keyPair, signingKey] = await generateSigningKeyPair();
+        localStorage.setItem('registrationCredentials', JSON.stringify({
+          keyPair: keyPair,
+          signingKey: encodeHashToBase64(signingKey),
+          timestamp: currentTime.toString()
+        }));
+      }
+      const tokenProofResponse = await fetch('http://' + VITE_USER_DOMAIN + '/get-token-proof', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -29,7 +50,7 @@
       const tokenProofData = await tokenProofResponse.json();
       tpDeepLink = tokenProofData.app_link;
       qrCodeImage = tokenProofData.qrcode_image;
-      const ws = new WebSocket('ws://127.0.0.1:5000?signingKey=' + encodeHashToBase64(signingKey));
+      const ws = new WebSocket('ws://' + VITE_USER_DOMAIN + '?signingKey=' + encodeHashToBase64(signingKey));
 
       ws.onopen = () => {
         console.log('connection open')
@@ -45,10 +66,6 @@
       errorMessage = error.message;
     }
   });
-
-  // Reactive statement to detect if the user is on a mobile device
-  $: isMobile = typeof window !== 'undefined' &&
-                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   async function register() {
     if (password !== confirmPassword) {
