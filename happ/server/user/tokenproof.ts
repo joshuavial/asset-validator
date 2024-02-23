@@ -9,7 +9,9 @@ const keyToAddress = new Map()
 
 export function addTokenProofRoutes(app, wss) {
   app.post('/token-proof', (req, res) => {
-    const { nonce, account } = req.body;
+    const { account } = req.body;
+    const nonce = req.body.nonce.substring(0, req.body.nonce.lastIndexOf('-'));
+    //TODO strip off the - + date.now() end of nonce
     const client = keyToWs.get(nonce);
     keyToAddress.set(nonce, account);
     if (client && client.readyState === WebSocket.OPEN) {
@@ -30,7 +32,8 @@ export function addTokenProofRoutes(app, wss) {
           //'X-API-KEY': TOKENPROOF_API_KEY
         },
         body: JSON.stringify({
-          nonce: signingKey,
+          nonce: signingKey + '-' + Date.now(),
+          back_url: 'http://10.10.222.96:8080/?action=register'
         })
       });
 
@@ -49,14 +52,21 @@ export function addTokenProofRoutes(app, wss) {
   wss.on('connection', (ws, request) => {
     const { query } = url.parse(request.url, true);
     const signingKey = query.signingKey;
+    console.log('connecting')
 
     if (!signingKey) {
       ws.close();
       return;
     }
     console.log('connected', signingKey)
+    console.log(keyToAddress);
 
     keyToWs.set(signingKey, ws);
+
+    if (keyToAddress.has(signingKey)) {
+      console.log('address found')
+      ws.send(JSON.stringify({address: keyToAddress.get(signingKey)})); 
+    }
 
     ws.on('close', () => {
       keyToWs.delete(signingKey);
