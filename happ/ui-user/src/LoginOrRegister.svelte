@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { createEventDispatcher} from 'svelte';
-  import { onMount } from 'svelte';
   import { createEventDispatcher, onMount } from 'svelte';
   import { browser } from '$app/env';
   import { generateSigningKeyPair, encodeHashToBase64, decodeHashFromBase64 } from '@holochain/client';
