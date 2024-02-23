@@ -1,8 +1,8 @@
-import { ethers } from 'hardhat';
-import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
-import { main } from '../scripts/send';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { loadFixture } from 'vitest';
+import { send } from '../lib/transactions';
 
-import hre from "hardhat";
+import { hre } from 'hardhat-vitest';
 
 describe('send.ts', () => {
   async function deployFixture() {
@@ -11,7 +11,9 @@ describe('send.ts', () => {
   }
 
   it('sends a transaction successfully', async () => {
-    await loadFixture(deployFixture);
+    beforeEach(async () => {
+      await loadFixture(deployFixture);
+    });
 
     process.env.PRIVATE_KEY = '0x...';
 
