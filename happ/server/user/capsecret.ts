@@ -35,6 +35,7 @@ router.post('/grant', async (req, res) => {
 router.get('/agent_ws', async (_, res) => {
   const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
   const agent_ws_url = await appAgentWsURL(adminWs) 
+  console.log(agent_ws_url);
   await adminWs.client.close()
   res.json({agent_ws_url})
 })
@@ -107,7 +108,11 @@ async function getAppAgentWS(adminWs) {
 
 async function appAgentWsURL(adminWs) {
   const appInterfaces = await adminWs.listAppInterfaces();
-  return `ws://127.0.0.1:${appInterfaces[0]}`;
+  console.log(appInterfaces[0]);
+  //return `ws://127.0.0.1:9999`;
+  return `ws://${process.env.USER_DOMAIN}:9999`;
+  //return `ws://${process.env.USER_DOMAIN}:${appInterfaces[0]}`;
+  //return `ws://127.0.0.1:${appInterfaces[0]}`;
 }
 
 async function grantCapSecret(adminWs, signingKey, cellId) {

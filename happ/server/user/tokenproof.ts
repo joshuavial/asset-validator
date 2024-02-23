@@ -11,7 +11,6 @@ export function addTokenProofRoutes(app, wss) {
   app.post('/token-proof', (req, res) => {
     const { account } = req.body;
     const nonce = req.body.nonce.substring(0, req.body.nonce.lastIndexOf('-'));
-    //TODO strip off the - + date.now() end of nonce
     const client = keyToWs.get(nonce);
     keyToAddress.set(nonce, account);
     if (client && client.readyState === WebSocket.OPEN) {

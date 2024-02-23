@@ -21,21 +21,21 @@
 
   onMount(async () => {
     try {
-      const storedKeyPair = localStorage.getItem('keyPair');
-      const storedSigningKey = localStorage.getItem('signingKey');
-      const storedTimestamp = localStorage.getItem('timestamp');
       const currentTime = new Date().getTime();
 
-      const storedRegistrationCredentials = localStorage.getItem('registrationCredentials');
-      if (storedRegistrationCredentials && currentTime - parseInt(storedRegistrationCredentials.timestamp) < 120000) {
-        keyPair = JSON.parse(storedRegistrationCredentials.keyPair);
+      const storedRegistrationCredentials = JSON.parse(localStorage.getItem('registrationCredentials'));
+      if (storedRegistrationCredentials && currentTime - storedRegistrationCredentials.timestamp < 120000) {
+        keyPair = {
+          privateKey: decodeHashFromBase64(storedRegistrationCredentials.keyPair.privateKey),
+          publicKey: decodeHashFromBase64(storedRegistrationCredentials.keyPair.publicKey),
+        }
         signingKey = decodeHashFromBase64(storedRegistrationCredentials.signingKey);
       } else {
         [keyPair, signingKey] = await generateSigningKeyPair();
         localStorage.setItem('registrationCredentials', JSON.stringify({
-          keyPair: keyPair,
+          keyPair: {privateKey: encodeHashToBase64(keyPair.privateKey), publicKey: encodeHashToBase64(keyPair.publicKey)},
           signingKey: encodeHashToBase64(signingKey),
-          timestamp: currentTime.toString()
+          timestamp: currentTime,
         }));
       }
       const tokenProofResponse = await fetch('http://' + VITE_USER_DOMAIN + '/get-token-proof', {
@@ -74,7 +74,7 @@
     }
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/login_or_register', {
+      const response = await fetch('http://' + VITE_USER_DOMAIN + '/login_or_register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -120,6 +120,7 @@
 {:else }
 <div class="container">
   {#if isMobile}
+    {tpDeepLink}
     <button on:click={() => window.location.href = tpDeepLink} class="tp-deep-link-button">Open in tokenproof</button>
   {:else}
     <div class="qr-code-container">
