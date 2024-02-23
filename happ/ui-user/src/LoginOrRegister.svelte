@@ -13,6 +13,7 @@
   let signingKey;
   let errorMessage = '';
   let qrCodeImage = '';
+  let tpDeepLink = '';
 
   onMount(async () => {
     try {
@@ -27,6 +28,7 @@
         })
       });
       const tokenProofData = await tokenProofResponse.json();
+      tpDeepLink = tokenProofData.app_link;
       qrCodeImage = tokenProofData.qrcode_image;
       const ws = new WebSocket('ws://127.0.0.1:5000?signingKey=' + encodeHashToBase64(signingKey));
 
