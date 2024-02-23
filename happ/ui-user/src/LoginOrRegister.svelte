@@ -46,13 +46,9 @@
     }
   });
 
-  // Function to detect if the user is on a mobile device
-  const isMobile = () => {
-    return typeof window.orientation !== "undefined" || navigator.userAgent.indexOf('IEMobile') !== -1;
-  };
-
-  // Reactive statement to store the result of isMobile
-  $: mobileUser = isMobile();
+  // Reactive statement to detect if the user is on a mobile device
+  $: isMobile = typeof window !== 'undefined' &&
+                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   async function register() {
     if (password !== confirmPassword) {
@@ -106,18 +102,22 @@
 </form>
 {:else }
 <div class="container">
-  <div class="qr-code-container">
-    <div class='qr-code-inner'>
-      <div class="qr-code-header">Scan QR Code</div>
-      <div class='qr-code-text'>
-      To authenticate, please continue on your mobile device and scan with the tokenproof app
+  {#if isMobile}
+    <button on:click={() => window.location.href = tpDeepLink} class="tp-deep-link-button">Open in tokenproof</button>
+  {:else}
+    <div class="qr-code-container">
+      <div class='qr-code-inner'>
+        <div class="qr-code-header">Scan QR Code</div>
+        <div class='qr-code-text'>
+        To authenticate, please continue on your mobile device and scan with the tokenproof app
+        </div>
+        <img src={qrCodeImage} alt="QR Code" class="qr-code-image" />
       </div>
-      <img src={qrCodeImage} alt="QR Code" class="qr-code-image" />
+      <div class="qr-code-footer">
+        <img src='http://localhost:5000/tokenproofIconWhite.png' alt="" class="secured-token-proof" /> Secured with tokenproof
+      </div>
     </div>
-    <div class="qr-code-footer">
-      <img src='http://localhost:5000/tokenproofIconWhite.png' alt="" class="secured-token-proof" /> Secured with tokenproof
-    </div>
-  </div>
+  {/if}
 </div>
 {/if}
 
