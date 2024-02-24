@@ -26,7 +26,6 @@ onMount(async () => {
   onNewObservation(client, (payload) => {
     observations = [...observations, payload.app_entry as Observation];
   });
-  console.log(observations);
   } catch (error) {
     console.log(error);
   }

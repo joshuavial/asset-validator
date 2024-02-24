@@ -10,7 +10,6 @@ const activeGeneration = writable<GenerationWithHash>(null);
 
 function setActiveGeneration(event) {
   activeGeneration.set(event.detail.activeGeneration);
-  console.log(event)
 }
 
 </script>
