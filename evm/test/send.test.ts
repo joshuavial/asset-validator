@@ -9,23 +9,33 @@ import { send } from '../lib/transactions';
 import hre from 'hardhat';
 
 describe('send.ts', () => {
+  let walletClient: WalletClient;
+  let publicClient: PublicClient;
   beforeEach(async () => {
     // Mocking WalletClient and PublicClient
-    const walletClient = vi.mocked(new WalletClient());
-    const publicClient = vi.mocked(new PublicClient());
+    [walletClient] = await hre.viem.getWalletClients(); // This will now use the mocked function
+    publicClient = await hre.viem.getPublicClient(); // This will now use the mocked function
 
+    // Mocking createPublicClient to return the mocked publicClient
+    vi.mock('viem', () => ({
+      createPublicClient: () => publicClient,
+      createWalletClient: () => walletClient,
+    }));
     // Mocking hre.viem.getWalletClients to return the mocked walletClient
-    vi.spyOn(hre.viem, 'getWalletClients').mockResolvedValue([walletClient]);
+    vi.spyOn('viem', 'getWalletClient').mockResolvedValue([walletClient]);
 
     // Mocking hre.viem.getPublicClient to return the mocked publicClient
-    vi.spyOn(hre.viem, 'getPublicClient').mockResolvedValue(publicClient);
+    vi.spyOn('viem', 'getPublicClient').mockResolvedValue(publicClient);
+  });
+
+  afterEach(async() => {
+    // Clear all mocks after each test
+    vi.clearAllMocks();
   });
 
   it('sends a transaction successfully', async () => {
-    // Use the HRE to access Viem clients
-    const [walletClient] = await hre.viem.getWalletClients(); // This will now use the mocked function
-    const publicClient = await hre.viem.getPublicClient(); // This will now use the mocked function
 
+    const privateKey = generatePrivateKey();
     const recipient = privateKeyToAccount(generatePrivateKey()).address;
 
     let balance = await publicClient.getBalance({ address: recipient });
