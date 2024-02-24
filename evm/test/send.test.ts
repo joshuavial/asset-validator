@@ -7,15 +7,13 @@ import { send } from '../lib/transactions';
 import hre from 'hardhat';
 
 describe('send.ts', () => {
-  let walletClient: WalletClient;
-  let publicClient: PublicClient;
 
   beforeEach(async () => {
+    const [mockedWalletClient] = await hre.viem.getWalletClients();
+    const mockedPublicClient = await hre.viem.getPublicClient();
+
     vi.mock('viem', async (importOriginal) => {
       const actual = await importOriginal();
-      const [mockedWalletClient] = await hre.viem.getWalletClients();
-      const mockedPublicClient = await hre.viem.getPublicClient();
-      console.log('mocked', mockedPublicClient);
       return {
         ...actual,
         createPublicClient: vi.fn(() => mockedPublicClient),
@@ -29,8 +27,8 @@ describe('send.ts', () => {
   });
 
   it('sends a transaction successfully', async () => {
+    let publicClient = await hre.viem.getPublicClient();
 
-    try {
     const privateKey = generatePrivateKey();
     const recipient = privateKeyToAccount(generatePrivateKey()).address;
 
@@ -43,8 +41,5 @@ describe('send.ts', () => {
     expect(hash).toBeDefined();
     balance = await publicClient.getBalance({ address: recipient });
     expect(formatEther(balance)).toBe('1.0');
-    } catch (e) {
-      console.log(e);
-    }
   });
 });
