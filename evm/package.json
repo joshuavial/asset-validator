@@ -2,13 +2,19 @@
   "name": "evm",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "hardhat": "^2.20.1"
+    "hardhat": "^2.20.1",
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-viem": "^2.0.0",
+    "vitest": "^1.3.1"
   }
 }
