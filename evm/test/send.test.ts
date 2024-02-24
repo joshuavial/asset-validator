@@ -1,6 +1,7 @@
 import { beforeEach, afterEach, describe, expect, it, vi} from 'vitest';
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
-import { parseEther, formatEther, WalletClient, PublicClient } from 'viem'; 
+import { parseEther, formatEther, WalletClient, PublicClient, createPublicClient, createWalletClient } from 'viem'; 
 
 import { send } from '../lib/transactions';
 
@@ -11,18 +12,13 @@ describe('send.ts', () => {
   let publicClient: PublicClient;
 
   beforeEach(async () => {
-    [walletClient] = await hre.viem.getWalletClients(); 
-    publicClient = await hre.viem.getPublicClient();
-    console.log(walletClient.chain);
+    walletClient = new WalletClient();
+    publicClient = new PublicClient();
 
     vi.mock('viem', () => {
-      const actual = await importOriginal();
-      console.log('mocked');
       return {
         createPublicClient: vi.fn(() => publicClient),
         createWalletClient: vi.fn(() => walletClient),
-        ...viem
-        ...actual
       }
     });
   });
@@ -39,10 +35,8 @@ describe('send.ts', () => {
 
     let balance = await publicClient.getBalance({ address: recipient });
     expect(formatEther(balance)).toBe('0');
-    console.log(walletClient.privateKey);
 
-    const hash = send(recipient, privateKey);
-    await publicClient.waitForTransactionReceipt({ hash });
+    const hash = await send(recipient, privateKey);
 
     // Assertions to verify the transaction was sent
     expect(hash).toBeDefined();
