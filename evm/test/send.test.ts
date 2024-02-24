@@ -1,8 +1,6 @@
-import { beforeEach, describe, expect, it} from 'vitest';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, afterEach, describe, expect, it, vi} from 'vitest';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
-import { parseEther, formatEther } from 'viem';
-import { WalletClient, PublicClient } from 'viem/clients'; // Assuming these are the correct imports
+import { parseEther, formatEther, WalletClient, PublicClient } from 'viem'; 
 
 import { send } from '../lib/transactions';
 
@@ -11,29 +9,30 @@ import hre from 'hardhat';
 describe('send.ts', () => {
   let walletClient: WalletClient;
   let publicClient: PublicClient;
+
   beforeEach(async () => {
-    // Mocking WalletClient and PublicClient
-    [walletClient] = await hre.viem.getWalletClients(); // This will now use the mocked function
-    publicClient = await hre.viem.getPublicClient(); // This will now use the mocked function
+    [walletClient] = await hre.viem.getWalletClients(); 
+    publicClient = await hre.viem.getPublicClient();
+    console.log(walletClient.chain);
 
-    // Mocking createPublicClient to return the mocked publicClient
-    vi.mock('viem', () => ({
-      createPublicClient: () => publicClient,
-      createWalletClient: () => walletClient,
-    }));
-    // Mocking hre.viem.getWalletClients to return the mocked walletClient
-    vi.spyOn('viem', 'getWalletClient').mockResolvedValue([walletClient]);
-
-    // Mocking hre.viem.getPublicClient to return the mocked publicClient
-    vi.spyOn('viem', 'getPublicClient').mockResolvedValue(publicClient);
+    vi.mock('viem', () => {
+      const actual = await importOriginal();
+      console.log('mocked');
+      return {
+        createPublicClient: vi.fn(() => publicClient),
+        createWalletClient: vi.fn(() => walletClient),
+        ...viem
+        ...actual
+      }
+    });
   });
 
   afterEach(async() => {
-    // Clear all mocks after each test
     vi.clearAllMocks();
   });
 
   it('sends a transaction successfully', async () => {
+    // Test implementation remains unchanged
 
     const privateKey = generatePrivateKey();
     const recipient = privateKeyToAccount(generatePrivateKey()).address;
