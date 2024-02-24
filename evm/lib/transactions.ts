@@ -36,7 +36,7 @@ export async function send(recipient:string, privateKey:`0x${string}`){
 
   const transaction = {
     to: recipient as `0x${string}`,
-    value: parseEther("1"),
+    value: parseEther("0.1"),
   };
 
   const hash = await walletClient.sendTransaction(transaction);
