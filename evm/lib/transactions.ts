@@ -1,6 +1,6 @@
 import { createPublicClient, createWalletClient, http, parseEther } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { mainnet, goerli } from 'viem/chains';
+import { mainnet, polygon } from 'viem/chains';
 import { normalize } from 'viem/ens';
 
 export async function send(recipient:string, privateKey:`0x${string}`){
@@ -16,7 +16,7 @@ export async function send(recipient:string, privateKey:`0x${string}`){
 
   const account = privateKeyToAccount(privateKey);
   const walletClient = createWalletClient({
-    chain: goerli,
+    chain: polygon,
     transport: http(),
     account: account,
   });
