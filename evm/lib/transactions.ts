@@ -40,6 +40,5 @@ export async function send(recipient:string, privateKey:`0x${string}`){
   };
 
   const hash = await walletClient.sendTransaction(transaction);
-  console.log(`Transaction hash: ${hash}`);
   return hash
 }
