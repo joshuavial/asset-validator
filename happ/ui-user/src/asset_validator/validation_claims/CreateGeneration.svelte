@@ -19,13 +19,12 @@ $: isGenerationValid = true;
 
 async function createGeneration() {  
   const generationEntry: Generation = { 
-    user_handle: $user.handle.slice(0, 10),
-    user_address: $user.eth_address.slice(0, 10),
+    user_handle: $user.handle,
+    user_address: $user.eth_address,
     status: { type: 'Active'},
     signature: null,
   };
   
-
   try {
     const record: Record = await client.callZome({
       cap_secret: null,
@@ -58,12 +57,12 @@ async function createGeneration() {
 
 <style>
   .createGeneration {
-    max-width: 500px;
-    width: 90%;
-    margin: 20px auto;
+    width: 500px;
+    margin: auto;
   }
   .generationButton {
-    width: 100%;
+    width: 300px;
+    margin: auto;
     margin-top: 20px;
     margin-bottom: 20px;
   }
