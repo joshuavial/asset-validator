@@ -80,7 +80,7 @@
 <main>
 {#if $me.handle}
 <div>
-  Hello {$me.handle} : {$me.eth_address}
+  Hello {$me.handle} : {$me.eth_address.slice(0,10)}..
 </div>
 {/if}
   {#if loading}
@@ -152,5 +152,10 @@
     main {
       max-width: none;
     }
+  }
+  @media (max-width: 640px) {
+   nav ul {
+     list-style: none;
+   }
   }
 </style>
