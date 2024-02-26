@@ -1,6 +1,7 @@
 import { createPublicClient, http, formatEther } from 'viem';
+import 'dotenv/config';
 import { privateKeyToAccount } from 'viem/accounts';
-import { mainnet } from 'viem/chains';
+import { polygon } from 'viem/chains';
 
 async function getBalance() {
   const privateKey = process.env.PRIVATE_KEY;
@@ -11,7 +12,7 @@ async function getBalance() {
 
   const account = privateKeyToAccount(privateKey);
   const publicClient = createPublicClient({
-    chain: mainnet,
+    chain: polygon,
     transport: http(),
   });
 

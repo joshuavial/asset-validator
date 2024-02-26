@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "hardhat": "^2.20.1",
     "typescript": "^5.3.3"
   },

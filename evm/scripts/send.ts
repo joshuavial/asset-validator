@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import 'viem/window';
 import { send } from '../lib/transactions.ts';
 
