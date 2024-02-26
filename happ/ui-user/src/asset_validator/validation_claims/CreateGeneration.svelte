@@ -57,12 +57,12 @@ async function createGeneration() {
 
 <style>
   .createGeneration {
-    width: 500px;
-    margin: auto;
+    max-width: 500px;
+    width: 90%;
+    margin: 20px auto;
   }
   .generationButton {
-    width: 300px;
-    margin: auto;
+    width: 100%;
     margin-top: 20px;
     margin-bottom: 20px;
   }
