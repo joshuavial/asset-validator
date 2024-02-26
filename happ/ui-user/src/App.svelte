@@ -131,27 +131,23 @@
       font-weight: bold;
     }
 
-   nav ul {
-     list-style: none;
-     padding: 0;
-     display: flex;
-     justify-content: center;
-     margin-bottom: 1em;
-   }
-
-   nav ul li {
-     margin: 0 1em;
-   }
-
-   nav ul li a {
-     text-decoration: none;
-     color: #333;
-     font-weight: bold;
-   }
-
     main {
       max-width: none;
     }
+  }
+  @media (max-width: 640px) {
+   nav ul {
+     flex-direction: column;
+     align-items: center;
+   }
+   nav ul li {
+     margin: 0.5em 0;
+   }
+   main {
+     padding: 1em;
+     max-width: 100%;
+     margin: 0 auto;
+   }
   }
   @media (max-width: 640px) {
    nav ul {
