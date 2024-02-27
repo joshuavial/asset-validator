@@ -41,6 +41,10 @@
       me.set(maybeMe)
     } 
     loading = false;
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'register') {
+      setTab('loginOrRegister');
+    }
   });
 
   setContext(clientContext, {
