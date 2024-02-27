@@ -23,14 +23,14 @@ async function uploadImage() {
   }
 
   // Ensure the image is resized and under the 2MB limit
-  const resizedImageData = await resizeImage(imageData);
-  if (resizedImageData.length * (3/4) > 2 * 1024 * 1024) {
+  console.log(imageData);
+  if (imageData.length * (3/4) > 2 * 1024 * 1024) {
     errorSnackbar.labelText = 'Image is too large after resizing. Please select a smaller image.';
     errorSnackbar.show();
     return;
   }
 
-  if (typeof resizedImageData === 'string') {
+  if (typeof imageData === 'string') {
     try {
       const record: Record = await client.callZome({
         cap_secret: null,
@@ -42,8 +42,7 @@ async function uploadImage() {
             observed_at: Math.floor(Date.now() / 1000),
             data: {
               ImageObservation: {
-                image_data: imageData
-               image_data: resizedImageData
+               image_data: imageData
               }
             },
           },
@@ -61,31 +60,14 @@ async function uploadImage() {
 function handleFileChange(event: Event) {
   const input = event.target as HTMLInputElement;
   if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
       resizeImage(input.files[0]).then(resizedImage => {
         imageData = resizedImage;
       }).catch(error => {
         errorSnackbar.labelText = `Error resizing the image: ${error}`;
         errorSnackbar.show();
       });
-    };
   }
 }
-</script>
-
-<mwc-snackbar bind:this={errorSnackbar} leading>
-</mwc-snackbar>
-
-<div style="display: flex; flex-direction: column">
-  <input type="file" id="imageInput" accept="image/*" on:change={handleFileChange} />
-  <mwc-button 
-    raised
-    label="Upload Image"
-    on:click={uploadImage}
-    disabled={!imageData}
-  ></mwc-button>
-</div>
 function resizeImage(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -122,4 +104,18 @@ function resizeImage(file: File): Promise<string> {
     img.src = URL.createObjectURL(file);
   });
 }
+</script>
+
+<mwc-snackbar bind:this={errorSnackbar} leading>
+</mwc-snackbar>
+
+<div style="display: flex; flex-direction: column">
+  <input type="file" id="imageInput" accept="image/*" on:change={handleFileChange} />
+  <mwc-button 
+    raised
+    label="Upload Image"
+    on:click={uploadImage}
+    disabled={!imageData}
+  ></mwc-button>
+</div>
 

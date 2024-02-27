@@ -68,15 +68,17 @@
 <style>
   main {
     text-align: center;
-    padding: 1em;
-    max-width: 240px;
+    padding: 0.5em;
+    max-width: 90%;
     margin: 0 auto;
+  }
+  nav ul {
+    list-style: none;
+    padding: 0;
   }
 
   @media (min-width: 640px) {
     nav ul {
-      list-style: none;
-      padding: 0;
       display: flex;
       justify-content: center;
       margin-bottom: 1em;

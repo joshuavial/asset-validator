@@ -80,7 +80,6 @@ async function fetchGeneration() {
       generation = decode((record.entry as any).Present.entry) as Generation;
       timeAgo = formatTimeAgo(record.signed_action.hashed.content.timestamp);
       observations = await get_observations_for_generation(client, generationHash);
-      console.log(observations);
     }
   } catch (e) {
     error = e;
@@ -165,7 +164,7 @@ function toggleDetails() {
     overflow: hidden;
   }
   .details img {
-    max-width: 100%;
+    max-width: 00%;
     height: auto;
   }
   .generation-span {
