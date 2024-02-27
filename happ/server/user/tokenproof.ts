@@ -1,6 +1,8 @@
 import 'dotenv/config'
 import url from 'url'
 import WebSocket from 'ws'
+import { initialiseAdminWs } from './capsecret'
+import { encodeHashToBase64 } from '@holochain/client'
 
 const TOKENPROOF_APP_ID = process.env.TOKENPROOF_APP_ID
 const USER_DOMAIN = process.env.USER_DOMAIN
@@ -8,14 +10,32 @@ const USER_DOMAIN = process.env.USER_DOMAIN
 const keyToWs = new Map()
 const keyToAddress = new Map()
 
+export function addressForKey(key) {
+  return keyToAddress.get(key)
+}
+
 export function addTokenProofRoutes(app, wss) {
-  app.post('/token-proof', (req, res) => {
+  app.post('/token-proof', async (req, res) => {
     const { account } = req.body;
     const nonce = req.body.nonce.substring(0, req.body.nonce.lastIndexOf('-'));
     const client = keyToWs.get(nonce);
     keyToAddress.set(nonce, account);
     if (client && client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({address: account}));
+      const {cellId, appAgentWs} = await initialiseAdminWs();
+      const existingUser = await appAgentWs.callZome({
+        cap: null,
+        cell_id: cellId,
+        zome_name: 'eth_user',
+        fn_name: 'get_eth_user_by_address',
+        payload: account,
+      });
+      let payload = {
+        address: account,
+      }
+      if (existingUser) {
+        payload.existingUser = encodeHashToBase64(existingUser.entry.Present.entry)
+      }
+      client.send(JSON.stringify(payload));
     } else {
       console.log(`Client with key ${nonce} not found or connection is not open.`);
     }
@@ -59,7 +79,6 @@ export function addTokenProofRoutes(app, wss) {
       return;
     }
     console.log('connected', signingKey)
-    console.log(keyToAddress);
 
     keyToWs.set(signingKey, ws);
 
@@ -73,7 +92,5 @@ export function addTokenProofRoutes(app, wss) {
       console.log(`Connection with client ${signingKey} closed`);
     });
   });
-
-  
 
 }

@@ -1,5 +1,6 @@
 import express from 'express'
 import { GrantedFunctionsType, AppAgentWebsocket, AdminWebsocket, CellType,  decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import {addressForKey} from "./tokenproof"
 
 const ADMIN_WS_PORT = process.env.WC_ADMIN_PORT
 const ADMIN_WS_URL = new URL(`ws://127.0.0.1:${ADMIN_WS_PORT}`);
@@ -41,7 +42,8 @@ router.get('/agent_ws', async (_, res) => {
 })
 
 router.post('/login_or_register', async(req, res) => {
-  const { handle, ethAddress, signingKey } = req.body;
+  const { handle, signingKey } = req.body;
+  const ethAddress = addressForKey(signingKey)
   const decodedSigningKey = decodeHashFromBase64(signingKey);
   try {
     const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
@@ -94,6 +96,14 @@ router.post('/login_or_register', async(req, res) => {
   }
 })
 
+export async function initialiseAdminWs() {
+  const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
+  const cellId = await getCellId('asset_validator', adminWs);
+  await authoriseCell('asset_validator', adminWs);
+  const appAgentWs = await getAppAgentWS(adminWs);
+  return {cellId, appAgentWs, adminWs}
+}
+
 async function authoriseCell(role, adminWs) {
   const cell_id = await getCellId(role, adminWs)
   await adminWs.authorizeSigningCredentials(cell_id);
@@ -109,10 +119,7 @@ async function getAppAgentWS(adminWs) {
 async function appAgentWsURL(adminWs) {
   const appInterfaces = await adminWs.listAppInterfaces();
   console.log(appInterfaces[0]);
-  //return `ws://127.0.0.1:9999`;
-  return `ws://${process.env.USER_DOMAIN}:9999`;
-  //return `ws://${process.env.USER_DOMAIN}:${appInterfaces[0]}`;
-  //return `ws://127.0.0.1:${appInterfaces[0]}`;
+  return `ws://${process.env.USER_DOMAIN}:${process.env.USER_APP_AGENT_WS_PROXY_PORT}`;
 }
 
 async function grantCapSecret(adminWs, signingKey, cellId) {

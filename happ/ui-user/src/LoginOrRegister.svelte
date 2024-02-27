@@ -1,6 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
+  import { decode } from '@msgpack/msgpack';
   import { generateSigningKeyPair, encodeHashToBase64, decodeHashFromBase64 } from '@holochain/client';
+  import type {EthUser} from './asset_validator/eth_user/types';
   const VITE_USER_DOMAIN = import.meta.env.VITE_USER_DOMAIN;
 
   const dispatch = createEventDispatcher();
@@ -59,6 +61,12 @@
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
         ethAddress = data.address;
+
+        if (data.existingUser) {
+          const user: EthUser = decode(decodeHashFromBase64(data.existingUser)) as EthUser;
+          handle = user.handle;
+          register();
+        }
         ws.close();
       };
 
@@ -68,10 +76,6 @@
   });
 
   async function register() {
-    if (password !== confirmPassword) {
-      errorMessage = 'Passwords do not match.';
-      return;
-    }
 
     try {
       const response = await fetch('http://' + VITE_USER_DOMAIN + '/login_or_register', {
@@ -81,8 +85,6 @@
         },
         body: JSON.stringify({
           handle,
-          password,
-          ethAddress,
           signingKey: encodeHashToBase64(signingKey),
         })
       });
@@ -118,26 +120,35 @@
   <button type="submit">Register</button>
 </form>
 {:else }
-<div class="container">
   {#if isMobile}
-    {tpDeepLink}
+    <p>
+      To authenticate, please ensure you have tokenProof installed on your device and click the button below.
+    </p>
+    <p>
+      Note: that any wallet or email addresses that you share from tokenproof will be publicly visible within the holochain application.  
+    </p>
+    <p>
     <button on:click={() => window.location.href = tpDeepLink} class="tp-deep-link-button">Open in tokenproof</button>
+    </p>
   {:else}
-    <div class="qr-code-container">
-      <div class='qr-code-inner'>
-        <div class="qr-code-header">Scan QR Code</div>
-    {tpDeepLink}
-        <div class='qr-code-text'>
-        To authenticate, please continue on your mobile device and scan with the tokenproof app
+    <div class="container">
+        <div class="qr-code-container">
+          <div class='qr-code-inner'>
+            <div class="qr-code-header">Scan QR Code</div>
+            <div class='qr-code-text'>
+            To authenticate, please continue on your mobile device and scan with the tokenproof app
+            </div>
+    <div class='qr-code-text'>
+      Note: that any wallet or email addresses that you share from tokenproof will be publicly visible within the holochain application.  
+    </div>
+            <img src={qrCodeImage} alt="QR Code" class="qr-code-image" />
+          </div>
+          <div class="qr-code-footer">
+            <img src='http://localhost:5000/tokenproofIconWhite.png' alt="" class="secured-token-proof" /> Secured with tokenproof
+          </div>
         </div>
-        <img src={qrCodeImage} alt="QR Code" class="qr-code-image" />
-      </div>
-      <div class="qr-code-footer">
-        <img src='http://localhost:5000/tokenproofIconWhite.png' alt="" class="secured-token-proof" /> Secured with tokenproof
-      </div>
     </div>
   {/if}
-</div>
 {/if}
 
 <style>
@@ -148,6 +159,8 @@
     margin-top: 10px;
   }
   .tp-deep-link-button {
+    display: block;
+    margin: auto;
     background-color: #2665FF;
     color: white;
     padding: 10px 20px;

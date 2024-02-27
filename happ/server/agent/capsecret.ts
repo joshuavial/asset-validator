@@ -107,8 +107,7 @@ async function getAppAgentWS(adminWs) {
 async function appAgentWsURL(adminWs) {
   const appInterfaces = await adminWs.listAppInterfaces();
   console.log(appInterfaces[0]);
-  return `ws://${process.env.USER_DOMAIN}:9998`;
-  return `ws://127.0.0.1:${appInterfaces[0]}`;
+  return `ws://${process.env.USER_DOMAIN}:${process.env.AGENT_APP_AGENT_WS_PROXY_PORT}`;
 }
 
 async function grantCapSecret(adminWs, signingKey, cellId) {
