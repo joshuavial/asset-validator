@@ -3,6 +3,7 @@ use crate::generation::Generation;
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct Observation {
+    pub generation_hash: ActionHash,
     pub observed_at: Timestamp,
     pub data: ObservationType,
 }
