@@ -16,7 +16,21 @@ let imageData: string | ArrayBuffer | null = '';
 let errorSnackbar: Snackbar;
 
 async function uploadImage() {
-  if (typeof imageData === 'string') {
+  if (!imageData) {
+    errorSnackbar.labelText = 'No image selected.';
+    errorSnackbar.show();
+    return;
+  }
+
+  // Ensure the image is resized and under the 2MB limit
+  const resizedImageData = await resizeImage(imageData);
+  if (resizedImageData.length * (3/4) > 2 * 1024 * 1024) {
+    errorSnackbar.labelText = 'Image is too large after resizing. Please select a smaller image.';
+    errorSnackbar.show();
+    return;
+  }
+
+  if (typeof resizedImageData === 'string') {
     try {
       const record: Record = await client.callZome({
         cap_secret: null,
@@ -29,6 +43,7 @@ async function uploadImage() {
             data: {
               ImageObservation: {
                 image_data: imageData
+               image_data: resizedImageData
               }
             },
           },
@@ -48,9 +63,13 @@ function handleFileChange(event: Event) {
   if (input.files && input.files[0]) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      imageData = e.target.result;
+      resizeImage(input.files[0]).then(resizedImage => {
+        imageData = resizedImage;
+      }).catch(error => {
+        errorSnackbar.labelText = `Error resizing the image: ${error}`;
+        errorSnackbar.show();
+      });
     };
-    reader.readAsDataURL(input.files[0]);
   }
 }
 </script>
@@ -67,3 +86,40 @@ function handleFileChange(event: Event) {
     disabled={!imageData}
   ></mwc-button>
 </div>
+function resizeImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+
+      // Calculate the new dimensions to maintain the aspect ratio
+      const MAX_WIDTH = 1920;
+      const MAX_HEIGHT = 1080;
+      if (width > height) {
+        if (width > MAX_WIDTH) {
+          height *= MAX_WIDTH / width;
+          width = MAX_WIDTH;
+        }
+      } else {
+        if (height > MAX_HEIGHT) {
+          width *= MAX_HEIGHT / height;
+          height = MAX_HEIGHT;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Convert to desired file format
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      resolve(dataUrl);
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+

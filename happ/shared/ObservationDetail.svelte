@@ -31,7 +31,7 @@ export let observation: Observation;
       <div>
       Image observation logged { formatTimeAgo(observation.observed_at) }
       </div>
-      <img src={observation.data.ImageObservation.image_data} alt="Observed Image" width="400" height="400">
+      <img src={observation.data.ImageObservation.image_data} alt="Observed Image" style="max-width: 100%; height: auto;">
     </div>
   {/if}
 

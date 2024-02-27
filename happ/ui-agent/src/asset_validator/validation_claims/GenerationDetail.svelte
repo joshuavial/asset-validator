@@ -122,8 +122,8 @@ function toggleDetails() {
 <div style="display: flex; flex-direction: column">
   <div style="display: flex; flex-direction: row">
     <span class="generation-span" style="flex: 1" on:click={toggleDetails}> 
-      {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}[sensor_1] {/if}
-      {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}[sensor_2] {/if}
+      {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}[fun bike] {/if}
+      {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}[work bike] {/if}
       {generation.user_handle}:
       {generation.status.type}:
       {timeAgo}
@@ -162,6 +162,11 @@ function toggleDetails() {
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: #f9f9f9;
+    overflow: hidden;
+  }
+  .details img {
+    max-width: 100%;
+    height: auto;
   }
   .generation-span {
     padding:4px;
