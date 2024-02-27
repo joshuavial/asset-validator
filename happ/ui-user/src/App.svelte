@@ -11,6 +11,7 @@
   import { clientContext, userContext } from './contexts';
   import Welcome from './Welcome.svelte';
   import LoginOrRegister from './LoginOrRegister.svelte';
+  import ClearStorage from './ClearStorage.svelte';
 
   import Generate from './Generate.svelte';
 
@@ -42,7 +43,7 @@
     } 
     loading = false;
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('action') === 'register') {
+    if (urlParams.get('action') === 'register' && !me) {
       setTab('loginOrRegister');
     }
   });
@@ -71,11 +72,12 @@
 <nav>
   <ul>
     {#if $signingCredentials}
-    <li><button on:click={(e) => setTab('generate', e)}>Human Power</button></li>
-    <li><button on:click={logout}>Logout</button></li>
+      <li><button on:click={(e) => setTab('generate', e)}>Human Power</button></li>
+      <li><button on:click={logout}>Logout</button></li>
     {:else}
-    <li><button on:click={(e) => setTab('welcome', e)}>Welcome</button></li>
-    <li><button on:click={(e) => setTab('loginOrRegister', e)}>Login</button></li>
+      <li><button on:click={(e) => setTab('welcome', e)}>Welcome</button></li>
+      <li><button on:click={(e) => setTab('loginOrRegister', e)}>Login</button></li>
+      <ClearStorage />
 
     {/if}
   </ul>

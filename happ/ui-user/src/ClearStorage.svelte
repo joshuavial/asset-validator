@@ -20,4 +20,3 @@
 {#if $hasLocalStorageData}
   <a href="javascript:void(0)" on:click={clearStorage}>Reset</a>
 {/if}
-Hi
