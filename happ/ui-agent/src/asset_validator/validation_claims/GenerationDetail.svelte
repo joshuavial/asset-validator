@@ -134,14 +134,14 @@ function toggleDetails() {
   <div class="details">
 
     {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}
-      <button on:click={() => clearSensorAllocation(SENSOR_1)}>Clear Sensor 1 Allocation</button>
+      <button on:click={() => clearSensorAllocation(SENSOR_1)}>Clear OTG Sensor Allocation</button>
     {:else}
-      <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate Sensor 1</button>
+      <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate OTG Sensor </button>
     {/if}
     {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}
-      <button on:click={() => clearSensorAllocation(SENSOR_2)}>Clear Sensor 2 Allocation</button>
+      <button on:click={() => clearSensorAllocation(SENSOR_2)}>Clear Friction Sensor Allocation</button>
     {:else}
-      <button on:click={() => allocateSensorToGeneration(SENSOR_2)}>Allocate Sensor 2</button>
+      <button on:click={() => allocateSensorToGeneration(SENSOR_2)}>Allocate Friction Sensor</button>
     {/if}
 
     <p>User Address: {generation.user_address}</p>

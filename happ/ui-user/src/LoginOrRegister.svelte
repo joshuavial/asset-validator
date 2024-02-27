@@ -126,6 +126,7 @@
     <div class="qr-code-container">
       <div class='qr-code-inner'>
         <div class="qr-code-header">Scan QR Code</div>
+    {tpDeepLink}
         <div class='qr-code-text'>
         To authenticate, please continue on your mobile device and scan with the tokenproof app
         </div>
