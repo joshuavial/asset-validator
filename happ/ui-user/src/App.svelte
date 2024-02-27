@@ -107,8 +107,8 @@
 <style>
   main {
     text-align: center;
-    padding: 1em;
-    max-width: 240px;
+    padding: 0.5em;
+    max-width: 90%;
     margin: 0 auto;
   }
 
