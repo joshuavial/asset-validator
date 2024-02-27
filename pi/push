@@ -1,3 +1,5 @@
 #! /usr/bin/bash
 
-scp ./ina226.py 192.168.1.7:/home/jv/ina226.py
+scp ./ina226.py pi4-1.local:/home/jv/ina226.py
+scp ./ina226.py pi4-2.local:/home/jv/ina226.py
+scp ./ina226.py pi-lite.local:/home/jv/ina226.py

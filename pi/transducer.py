@@ -4,7 +4,7 @@ import requests
 import json
 
 # Constants for INA226
-ADDRESS = 0x50
+ADDRESS = 0x40
 REG_CONFIG = 0x00
 REG_BUS_VOLTAGE = 0x02
 REG_SHUNT_VOLTAGE = 0x01
@@ -93,14 +93,12 @@ try:
 
     while True:
         bus_voltage = get_bus_voltage()
-        shunt_voltage = get_shunt_voltage()
-        current = get_current()
-        bus_voltage = get_bus_voltage()
-        shunt_voltage = get_shunt_voltage()
-        current = get_current()
-        #power = get_power()
+        # shunt_voltage = get_shunt_voltage()
+        current = bus_voltage * 100
+        VOLTAGE = 120 #mains voltage
+        # power = get_power()
 
-        current_power_reading = bus_voltage * current if bus_voltage and current else 0
+        current_power_reading = VOLTAGE * current if VOLTAGE and current else 0
         if not last_power_reading == 0:
             # Calculate the average power over the last second
             average_power = (last_power_reading + current_power_reading) / 2
@@ -110,12 +108,12 @@ try:
         last_power_reading = current_power_reading
 
         # If any reading fails, skip the iteration
-        if bus_voltage is None or shunt_voltage is None or current is None:
+        if bus_voltage is None or current is None:
             print("Failed to read sensor data. Skipping...")
             time.sleep(1)
             continue
 
-        print(f"{bus_voltage}V @ {current} A = {current_power_reading}")
+        print(f"{VOLTAGE}V @ {current}A = {current_power_reading}")
 
         if time.time() - start_time >= ENERGY_BUFFER_DURATION:
             # Convert energy buffer to joules (J)
@@ -126,7 +124,7 @@ try:
                     'from': int(start_time * 1e6),
                     'to': int(end_time * 1e6),
                     'energy': energy_consumed_J,
-                    'sensor': 'sensor_2',
+                    'sensor': 'sensor_1',
                 }
                 print(post_data)
                 response = requests.post('http://omf.local:4000/observation', json=post_data)
