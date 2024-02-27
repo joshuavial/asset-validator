@@ -3,6 +3,7 @@ import url from 'url'
 import WebSocket from 'ws'
 
 const TOKENPROOF_APP_ID = process.env.TOKENPROOF_APP_ID
+const USER_DOMAIN = process.env.USER_DOMAIN
 
 const keyToWs = new Map()
 const keyToAddress = new Map()
@@ -32,7 +33,7 @@ export function addTokenProofRoutes(app, wss) {
         },
         body: JSON.stringify({
           nonce: signingKey + '-' + Date.now(),
-          back_url: 'http://10.10.222.96:8080/?action=register'
+          back_url: 'http://' + USER_DOMAIN + ':8080/?action=register'
         })
       });
 
