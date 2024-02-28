@@ -8,6 +8,8 @@
   import {cellIdFromClient, getSigningCredentials, createSigningCredentials, newAppAgentWebsocket} from './lib'
   import Generations from './Generations.svelte';
 
+  import Issuances from './asset_validator/validation_claims/Issuances.svelte';
+
   import { clientContext } from './contexts';
   import Welcome from './Welcome.svelte';
 
@@ -43,6 +45,7 @@
   <ul>
     {#if $signingCredentials}
       <li><button on:click={(e) => setTab('generations', e)}>Human Power</button></li>
+      <li><button on:click={(e) => setTab('issuances', e)}>Issuances</button></li>
     {/if}
   </ul>
 </nav>
@@ -58,6 +61,9 @@
       {#if $currentTab === 'generations'}
         <Generations />
       {/if}
+     {#if $currentTab === 'issuances'}
+       <Issuances />
+     {/if}
     </div>
     {:else}
       <Welcome />

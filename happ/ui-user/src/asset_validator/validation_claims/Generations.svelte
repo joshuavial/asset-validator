@@ -6,7 +6,9 @@ import { decode } from '@msgpack/msgpack';
 import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
 import { clientContext } from '../../contexts';
 import GenerationDetail from './GenerationDetail.svelte';
-import type { ValidationClaimsSignal, Generation, GenerationWithHash } from './types';
+import type { EntryHash, AgentPubKey, ActionHash, AppAgentClient } from '@holochain/client';
+import { fetchGenerations } from '../../shared/lib/generations';
+import type { ValidationClaimsSignal, GenerationWithHash } from './types';
 
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -20,8 +22,9 @@ let error: any = undefined;
 
 $: hashes, loading, error;
 
-onMount(async () => {
-  await fetchGenerations();
+let generations: Array<GenerationWithHash> | undefined;
+onMount(() => {
+  fetchGenerationsWrapper();
   client.on('signal', signal => {
     if (signal.zome_name !== 'validation_claims') return;
     const payload = signal.payload as ValidationClaimsSignal;
@@ -42,32 +45,17 @@ function checkAndSetActiveGeneration(generations: GenerationWithHash[]) {
   }
 }
 
-async function fetchGenerations() {
+async function fetchGenerationsWrapper() {
+  loading = true;
   try {
-    const links = await client.callZome({
-      cap_secret: null,
-      role_name: 'asset_validator',
-      zome_name: 'validation_claims',
-      fn_name: 'get_generations',
-      payload: null,
-    });
-    hashes = links.map(l => l.target);
-    generations = await Promise.all(hashes.map(async (hash) => {
-      const record: Record = await client.callZome({
-        cap_secret: null,
-        role_name: 'asset_validator',
-        zome_name: 'validation_claims',
-        fn_name: 'get_latest_generation',
-        payload: hash,
-      });
-      let g = decode((record.entry as any).Present.entry) as Generation;
-      return {generation: g, hash, action: record.signed_action} as GenerationWithHash;
-    })) as Array<GenerationWithHash>;
+    generations = await fetchGenerations(client);
+    hashes = generations.map(g => g.hash);
     checkAndSetActiveGeneration(generations);
   } catch (e) {
     error = e;
+  } finally {
+    loading = false;
   }
-  loading = false;
 }
 </script>
 
