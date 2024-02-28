@@ -9,6 +9,10 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import {fetchGenerations, get_observations_for_generation} from '../../../../shared/lib/generations';
 import {formatTimeAgo} from '../../../../shared/lib';
 
+function formatJoules(joules: number): string {
+  return joules.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+}
+
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
 const dispatch = createEventDispatcher();
@@ -89,14 +93,14 @@ async function createIssuance() {
 <div style="display: flex; flex-direction: column">
   <h2>Create Issuance</h2>
   <p>
-  Total Joules : {quantity.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+  Total Joules : {formatJoules(quantity)}
   </p>
 
   <div class='generation-list'>
     {#each generations as generation}
       <div>
         <span>{generation.generation.user_handle}</span>
-        <span> generated {generationTotalJoules[generation.hash].toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
+        <span> generated {formatJoules(generationTotalJoules[generation.hash])}</span>
         <span>{formatTimeAgo(generation.action.hashed.content.timestamp)}</span>
       </div>
     {/each}
