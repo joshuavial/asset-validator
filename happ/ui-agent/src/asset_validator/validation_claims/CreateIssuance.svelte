@@ -6,6 +6,7 @@ import type { Issuance, IssuanceStatus } from './types';
 import '@material/mwc-button';
 import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
+import { GenerationStatus } from '../../types';
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -19,6 +20,7 @@ let quantity: number = 0;
 let status: IssuanceStatus = { type: 'Created' };
 
 let errorSnackbar: Snackbar;
+let allGenerations: Array<GenerationWithHash> = [];
 
 $: generationHashes, transaction, quantity, status;
 $: isIssuanceValid = true && true && true;
