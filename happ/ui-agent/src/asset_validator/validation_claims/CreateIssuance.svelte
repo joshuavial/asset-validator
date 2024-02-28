@@ -20,10 +20,23 @@ let quantity: number = 0;
 let status: IssuanceStatus = { type: 'Created' };
 
 let errorSnackbar: Snackbar;
-let allGenerations: Array<GenerationWithHash> = [];
 
 $: generationHashes, transaction, quantity, status;
-$: isIssuanceValid = true && true && true;
+$: isIssuanceValid = generationHashes.length > 0 && transaction !== '' && quantity > 0;
+
+onMount(() => {
+//TODO get all generations and add those that are complete to generationHashes
+      .filter(g => g.generation.status.type === 'Complete')
+      .map(g => g.hash);
+  } catch (e) {
+    errorSnackbar.labelText = `Error fetching generations: ${e}`;
+    errorSnackbar.show();
+  }
+});
+
+function validateIssuance() {
+  return generationHashes.length > 0 && transaction !== '' && quantity > 0;
+}
 
 onMount(() => {
 //TODO get all generations and add those that are complete to generationHashes
