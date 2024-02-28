@@ -7,6 +7,8 @@ import type { GenerationWithHash, Observation } from '../../shared/types';
 import { formatTimeAgo, get_observations_for_generation, onNewObservation } from '../../shared/lib';
 import ObservationDetail from '../../shared/ObservationDetail.svelte'
 
+import { updateGenerationStatus } from './lib'; // Assuming this function exists in the lib file
+
 import { clientContext } from './contexts';
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -32,6 +34,15 @@ onMount(async () => {
     return acc;
   }, 0);
 
+  const handleDoneClick = async () => {
+    try {
+      const updatedGeneration = await updateGenerationStatus(client, activeGeneration.hash, 'Completed');
+      activeGeneration.generation.status = updatedGeneration.status;
+    } catch (error) {
+      console.error('Error updating generation status:', error);
+    }
+  };
+
   onNewObservation(client, (payload) => {
     if (encodeHashToBase64(activeGeneration.hash) == encodeHashToBase64(payload.app_entry.generation_hash)) {
       observations = [...observations, payload.app_entry as Observation];
@@ -47,8 +58,22 @@ onMount(async () => {
 </script>
 
 <h1>Ready for Human Power?</h1>
-<p>Total Energy Generated: {totalJoules.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})} joules</p>
+<p>Total Energy Generated: <span class='total'>{totalJoules.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}</span> joules</p>
+<mwc-button 
+  raised
+  label="I'm done"
+  class='done'
+  on:click={handleDoneClick}></mwc-button>
 <p>Status : {activeGeneration.generation.status.type} </p>
 {#each observations as observation}
   <ObservationDetail {observation} />
 {/each}
+
+<style>
+  .total {
+    font-weight: bold;
+    color: green;
+    font-size: 2em;
+  }
+</style>
+
