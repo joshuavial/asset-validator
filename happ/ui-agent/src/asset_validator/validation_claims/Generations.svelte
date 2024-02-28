@@ -26,10 +26,10 @@ onMount(async () => {
   client.on('signal', signal => {
     if (signal.zome_name !== 'validation_claims') return;
     const payload = signal.payload as ValidationClaimsSignal;
+    console.log(payload);
     if (payload.type !== 'EntryCreated') return;
     if (payload.app_entry.type !== 'Generation') return;
     hashes = [...hashes, payload.action.hashed.hash];
-    //checkAndSetActiveGeneration([{generation: payload.app_entry, hash: payload.action.hashed.hash, action: payload.action} as GenerationWithHash]);
   });
 
   try {

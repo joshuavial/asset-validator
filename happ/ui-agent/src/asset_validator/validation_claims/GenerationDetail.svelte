@@ -96,11 +96,12 @@ async function fetchGeneration() {
 }
 
 async function allocateSensorToGeneration(sensor_id) {
-  try {
-    dispatch('allocate-sensor', {sensor_id, generationHash: hash}); // Use the new prop name
-  } catch (error) {
-    console.error('Error allocating sensor to generation:', error);
+  if (sensorAllocations[SENSOR_1] === encodeHashToBase64(hash) && sensor_id === SENSOR_2) {
+    await clearSensorAllocation(SENSOR_1);
+  } else if (sensorAllocations[SENSOR_2] === encodeHashToBase64(hash) && sensor_id === SENSOR_1) {
+    await clearSensorAllocation(SENSOR_2);
   }
+  dispatch('allocate-sensor', {sensor_id, generationHash: hash});
 }
 
 async function clearSensorAllocation(sensor_id) {
@@ -142,14 +143,14 @@ function toggleDetails() {
   <div class="details">
 
     {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}
-      <button on:click={() => clearSensorAllocation(SENSOR_2)}>Finish work bike</button>
+      <button on:click={() => clearSensorAllocation(SENSOR_2)}>Clear work bike allocation</button>
     {:else}
-      <button on:click={() => allocateSensorToGeneration(SENSOR_2)}>Allocate work bike</button>
+      <button on:click={() => allocateSensorToGeneration(SENSOR_2)}>Allocate to work bike</button>
     {/if}
     {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}
-      <button on:click={() => clearSensorAllocation(SENSOR_1)}>Clear fun bike allocation</button>
+      <button on:click={() => clearSensorAllocation(SENSOR_1)}>Finish fun bike</button>
     {:else}
-      <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate fun bike</button>
+      <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate to fun bike</button>
     {/if}
 
     <p>User Address: {generation.user_address}</p>

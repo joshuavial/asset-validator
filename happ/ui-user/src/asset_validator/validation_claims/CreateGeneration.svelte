@@ -33,7 +33,6 @@ async function createGeneration() {
       fn_name: 'create_generation',
       payload: generationEntry,
     });
-    console.log(record)
     dispatch('generation-created', { generationHash: record.signed_action.hashed.hash });
   } catch (e) {
     errorSnackbar.labelText = `Error creating the generation: ${e}`;

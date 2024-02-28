@@ -67,7 +67,7 @@ test('create and read Generation', async () => {
   });
 });
 
-test('create and update Generation', async () => {
+test.only('create and update Generation', async () => {
   await runScenario(async scenario => {
     // Construct proper paths for your app.
     // This assumes app bundle created by the `hc app pack` command.
@@ -93,7 +93,6 @@ test('create and update Generation', async () => {
     // Alice updates the Generation
     let contentUpdate: any = await sampleGeneration(alice.cells[0]);
     let updateInput = {
-      original_generation_hash: originalActionHash,
       previous_generation_hash: originalActionHash,
       updated_generation: contentUpdate,
     };
@@ -119,7 +118,6 @@ test('create and update Generation', async () => {
     // Alice updates the Generation again
     contentUpdate = await sampleGeneration(alice.cells[0]);
     updateInput = { 
-      original_generation_hash: originalActionHash,
       previous_generation_hash: updatedRecord.signed_action.hashed.hash,
       updated_generation: contentUpdate,
     };

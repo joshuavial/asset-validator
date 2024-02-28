@@ -16,7 +16,7 @@ function setActiveGeneration(event) {
 
 <div>
 {#if $activeGeneration}  
-  <ActiveGeneration activeGeneration={$activeGeneration} />
+  <ActiveGeneration activeGeneration={$activeGeneration} on:setActiveGeneration={setActiveGeneration} />
 {:else}
   <CreateGeneration />
 {/if}

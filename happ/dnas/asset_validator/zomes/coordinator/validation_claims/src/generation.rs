@@ -109,8 +109,7 @@ pub struct UpdateGenerationInput {
 #[hdk_extern]
 pub fn update_generation(input: UpdateGenerationInput) -> ExternResult<Record> {
     let original_generation_record = get_original_generation(
-        input.original_generation_hash.clone(),
-    );
+        input.previous_generation_hash.clone(),
     )?;
     let original_generation_hash = original_generation_record
         .as_ref()

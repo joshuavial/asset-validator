@@ -1,6 +1,6 @@
 <script lang="ts">
-import { getContext, onMount } from 'svelte';
-import type { AppAgentClient} from '@holochain/client';
+import { getContext, onMount, createEventDispatcher } from 'svelte';
+import type { AppAgentClient, ActionHash } from '@holochain/client';
 import {encodeHashToBase64} from '@holochain/client';
 
 import type { GenerationWithHash, Observation } from '../../shared/types';
@@ -8,9 +8,9 @@ import { formatTimeAgo, get_observations_for_generation, onNewObservation } from
 import ObservationDetail from '../../shared/ObservationDetail.svelte'
 
 import { clientContext } from './contexts';
-import type { UpdateGenerationInput } from '../../shared/types/validation_claims';
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
+const dispatch = createEventDispatcher();
 
 export let activeGeneration: GenerationWithHash;
 let timeAgo: string | undefined;
@@ -33,13 +33,25 @@ onMount(async () => {
     return acc;
   }, 0);
 
-  const updateGenerationStatus = async (generationHash: ActionHash, status: string) => {
-    const input: UpdateGenerationInput = {
-      original_generation_hash: generationHash,
+  onNewObservation(client, (payload) => {
+    if (encodeHashToBase64(activeGeneration.hash) == encodeHashToBase64(payload.app_entry.generation_hash)) {
+      observations = [...observations, payload.app_entry as Observation];
+      if (payload.app_entry.data.EnergyObservation) {
+        totalJoules += payload.app_entry.data.EnergyObservation.energy;
+      }
+    }
+  });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+async function updateGenerationStatus(generationHash: ActionHash, status: string) {
+    const input = {
       previous_generation_hash: generationHash,
       updated_generation: {
-        ...activeGeneration.generation,
-        status: { type: status }
+      ...activeGeneration.generation,
+      status: {type: status},
       }
     };
     try {
@@ -59,25 +71,12 @@ onMount(async () => {
 
   const handleDoneClick = async () => {
     try {
-      const updatedGeneration = await updateGenerationStatus(activeGeneration.hash, 'Completed');
-      activeGeneration.generation.status = updatedGeneration.status;
+      await updateGenerationStatus(activeGeneration.hash, 'Complete');
+      dispatch('setActiveGeneration', { activeGeneration: null});
     } catch (error) {
       console.error('Error updating generation status:', error);
     }
   };
-
-  onNewObservation(client, (payload) => {
-    if (encodeHashToBase64(activeGeneration.hash) == encodeHashToBase64(payload.app_entry.generation_hash)) {
-      observations = [...observations, payload.app_entry as Observation];
-      if (payload.app_entry.data.EnergyObservation) {
-        totalJoules += payload.app_entry.data.EnergyObservation.energy;
-      }
-    }
-  });
-  } catch (error) {
-    console.log(error);
-  }
-});
 </script>
 
 <h1>Ready for Human Power?</h1>
