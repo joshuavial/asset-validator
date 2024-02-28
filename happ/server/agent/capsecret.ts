@@ -67,11 +67,9 @@ router.post('/observation', async(req, res) => {
       return
     }
     const payload = {
-      observation: {
-        observed_at: Math.floor(Date.now() / 1000),
-        data: { EnergyObservation: { from, to, energy } }
-      },
-      generation_hash: sensor_allocations[sensor]
+      observed_at: Math.floor(Date.now() / 1000),
+      generation_hash: sensor_allocations[sensor],
+      data: { EnergyObservation: { from, to, energy } }
     };
     const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
     const appAgentWs = await getAppAgentWS(adminWs);

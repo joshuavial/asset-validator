@@ -2,15 +2,8 @@ use hdk::prelude::*;
 use validation_claims_integrity::*;
 use crate::Signal;
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct CreateObservationInput {
-    pub observation: Observation,
-    pub generation_hash: ActionHash,
-}
-
 #[hdk_extern]
-pub fn create_observation(input: CreateObservationInput) -> ExternResult<Record> {
-    let observation = input.observation;
+pub fn create_observation(observation: Observation) -> ExternResult<Record> {
     let observation_hash = create_entry(&EntryTypes::Observation(observation.clone()))?;
     let record = get(observation_hash.clone(), GetOptions::default())?
         .ok_or(
@@ -19,13 +12,13 @@ pub fn create_observation(input: CreateObservationInput) -> ExternResult<Record>
             ),
         )?;
     create_link(
-        input.generation_hash.clone(),
+        observation.generation_hash.clone(),
         observation_hash.clone(),
         LinkTypes::GenerationToObservation,
         (),
     )?;
     // Retrieve the Generation that the observation references
-    let generation_record = get(input.generation_hash.clone(), GetOptions::default())?
+    let generation_record = get(observation.generation_hash.clone(), GetOptions::default())?
         .ok_or(wasm_error!(WasmErrorInner::Guest("Generation not found".into())))?;
     let generation: Generation = generation_record.entry().to_app_option().map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?.ok_or(
         wasm_error!(WasmErrorInner::Guest("Generation entry not found".into()))

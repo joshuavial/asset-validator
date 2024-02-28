@@ -55,7 +55,9 @@ onMount(async () => {
   await fetchGeneration();
 
   onNewObservation(client, (payload) => {
-    observations = [...observations, payload.app_entry as Observation];
+    if (encodeHashToBase64(hash) == encodeHashToBase64(payload.app_entry.generation_hash)) {
+      observations = [...observations, payload.app_entry as Observation];
+    }
   });
 });
 
@@ -132,15 +134,15 @@ function toggleDetails() {
   {#if showDetails}
   <div class="details">
 
-    {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}
-      <button on:click={() => clearSensorAllocation(SENSOR_1)}>Clear OTG Sensor Allocation</button>
-    {:else}
-      <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate OTG Sensor </button>
-    {/if}
     {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}
-      <button on:click={() => clearSensorAllocation(SENSOR_2)}>Clear Friction Sensor Allocation</button>
+      <button on:click={() => clearSensorAllocation(SENSOR_2)}>Finish work bike</button>
     {:else}
-      <button on:click={() => allocateSensorToGeneration(SENSOR_2)}>Allocate Friction Sensor</button>
+      <button on:click={() => allocateSensorToGeneration(SENSOR_2)}>Allocate work bike</button>
+    {/if}
+    {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}
+      <button on:click={() => clearSensorAllocation(SENSOR_1)}>Clear fun bike allocation</button>
+    {:else}
+      <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate fun bike</button>
     {/if}
 
     <p>User Address: {generation.user_address}</p>

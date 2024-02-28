@@ -23,7 +23,6 @@ async function uploadImage() {
   }
 
   // Ensure the image is resized and under the 2MB limit
-  console.log(imageData);
   if (imageData.length * (3/4) > 2 * 1024 * 1024) {
     errorSnackbar.labelText = 'Image is too large after resizing. Please select a smaller image.';
     errorSnackbar.show();
@@ -38,15 +37,13 @@ async function uploadImage() {
         zome_name: 'validation_claims',
         fn_name: 'create_observation',
         payload: {
-          observation: {
-            observed_at: Math.floor(Date.now() / 1000),
-            data: {
-              ImageObservation: {
-               image_data: imageData
-              }
-            },
-          },
+          observed_at: Math.floor(Date.now() / 1000),
           generation_hash: generationRecord.signed_action.hashed.hash,
+          data: {
+            ImageObservation: {
+             image_data: imageData
+            }
+          },
         },
       });
       dispatch('image-uploaded', { observationHash: record.signed_action.hashed.hash });

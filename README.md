@@ -32,3 +32,4 @@ Issuance
 
 ## MVP
 - 
+- SFT testnet - https://sft-template-git-pvblox-demo-hardingjam.vercel.app/token/0x4af2cb3580ddd8b29ec83b809af01d7508d9a4c9

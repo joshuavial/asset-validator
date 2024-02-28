@@ -2,23 +2,20 @@ import { CallableCell } from '@holochain/tryorama';
 import { NewEntryAction, ActionHash, Record, AppBundleSource, fakeActionHash, fakeAgentPubKey, fakeEntryHash, fakeDnaHash } from '@holochain/client';
 
 
-
 export async function sampleObservation(generation_hash: string, partialObservation = {}) {
     const now = Math.floor(Date.now());
     const tenSecondsLater = now + 10000;
     return {
-      observation: {
-        observed_at: now, // Ensure this is an integer (i64)
-        data: {
-            EnergyObservation: {
-                from: now, // Ensure this is an integer (i64), in seconds
-                to: tenSecondsLater, // Ensure this is an integer (i64), in seconds
-                energy: 100
-            }
-        },
-        ...partialObservation,
-      },
+      observed_at: now, // Ensure this is an integer (i64)
       generation_hash: generation_hash,
+      data: {
+          EnergyObservation: {
+              from: now, // Ensure this is an integer (i64), in seconds
+              to: tenSecondsLater, // Ensure this is an integer (i64), in seconds
+              energy: 100
+          }
+      },
+      ...partialObservation,
     };
 }
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 import { getContext, onMount } from 'svelte';
 import type { AppAgentClient} from '@holochain/client';
+import {encodeHashToBase64} from '@holochain/client';
 
 import type { GenerationWithHash } from '../../shared/types';
 import { formatTimeAgo, get_observations_for_generation, onNewObservation } from '../../shared/lib';
@@ -24,7 +25,9 @@ onMount(async () => {
   timeAgo = formatTimeAgo(activeGeneration.action.hashed.content.timestamp); 
 
   onNewObservation(client, (payload) => {
-    observations = [...observations, payload.app_entry as Observation];
+    if (encodeHashToBase64(activeGeneration.hash) == encodeHashToBase64(payload.app_entry.generation_hash)) {
+      observations = [...observations, payload.app_entry as Observation];
+    }
   });
   } catch (error) {
     console.log(error);

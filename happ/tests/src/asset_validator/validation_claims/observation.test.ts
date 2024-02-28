@@ -71,7 +71,7 @@ test('create and read Observation', async () => {
       fn_name: "get_observation",
       payload: record.signed_action.hashed.hash,
     });
-    assert.deepEqual(sample.observation, decode((createReadOutput.entry as any).Present.entry) as any);
+    assert.deepEqual(sample, decode((createReadOutput.entry as any).Present.entry) as any);
   });
 });
 
@@ -94,7 +94,6 @@ test.skip('create and update Observation', async () => {
 
     // Alice creates a Observation
     const ethUserSample = await sampleEthUser(alice.cells[0], {eth_address: "0xeth"});
-    const ethUserRecord: Record = await createEthUser(alice.cells[0], ethUserSample);
     const generationSample = await sampleGeneration(alice.cells[0], {user_address: ethUserSample.eth_address});
     const generation = await createGeneration(alice.cells[0], generationSample);
     const sample = await sampleObservation(generation.signed_action.hashed.hash);
