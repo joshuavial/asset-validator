@@ -156,12 +156,12 @@ function canAllocate() {
 
       {totalJoulesGeneratedFormatted} joules
     </span>
-    {#if generation.status.type === 'Complete'}
-      <button on:click={cancelGeneration} class="cancel-button">Cancel</button>
-    {/if}
   </div>
   {#if showDetails}
   <div class="details">
+    {#if generation.status.type === 'Complete'}
+      <button on:click={cancelGeneration} class="cancel-button">Cancel</button>
+    {/if}
     <!-- Details content -->
 
     {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}
@@ -199,6 +199,7 @@ function canAllocate() {
     background-color: red;
     color: white;
   }
+  <!-- Other styles -->
   .details {
     padding: 8px;
     margin-top: 4px;
@@ -207,7 +208,6 @@ function canAllocate() {
     background-color: #f9f9f9;
     overflow: hidden;
   }
-  <!-- Other styles -->
   .details img {
     max-width: 00%;
     height: auto;
