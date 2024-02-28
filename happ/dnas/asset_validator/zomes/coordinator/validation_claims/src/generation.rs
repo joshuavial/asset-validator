@@ -46,22 +46,22 @@ pub fn get_latest_generation(
     };
     get(latest_generation_hash, GetOptions::default())
 }
+
 #[hdk_extern]
 pub fn get_original_generation(
-    original_generation_hash: ActionHash,
+    mut generation_hash: ActionHash,
 ) -> ExternResult<Option<Record>> {
-    let Some(details) = get_details(original_generation_hash, GetOptions::default())?
-    else {
-        return Ok(None);
-    };
-    match details {
-        Details::Record(details) => Ok(Some(details.record)),
-        _ => {
-            Err(
-                wasm_error!(
-                    WasmErrorInner::Guest(String::from("Malformed get details response"))
-                ),
-            )
+    loop {
+        let details = get_details(generation_hash.clone(), GetOptions::default())?;
+        match details {
+            Some(Details::Record(record_details)) => {
+                if let Some(parent_action) = record_details.updates.first() {
+                    generation_hash = parent_action.action_address().clone();
+                } else {
+                    return Ok(Some(record_details.record));
+                }
+            }
+            _ => return Ok(None),
         }
     }
 }
