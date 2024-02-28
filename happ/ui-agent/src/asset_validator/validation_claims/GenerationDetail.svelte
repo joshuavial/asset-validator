@@ -41,12 +41,17 @@ let editing = false;
 let errorSnackbar: Snackbar;
 
 $: editing,  error, loading, record, generation, timeAgo, observations;
-$: totalJoulesGenerated = observations.reduce((sum, obs) => {
-    if (obs.data.EnergyObservation) {
-        return sum + parseFloat(obs.data.EnergyObservation.energy);
-    }
-    return sum;
-}, 0).toFixed(1);
+let totalJoulesGeneratedFormatted: string;
+
+$: {
+  const totalJoulesGenerated = observations.reduce((sum, obs) => {
+      if (obs.data.EnergyObservation) {
+          return sum + parseFloat(obs.data.EnergyObservation.energy);
+      }
+      return sum;
+  }, 0);
+  totalJoulesGeneratedFormatted = totalJoulesGenerated.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1});
+}
 
 onMount(async () => {
   if (hash === undefined) {
@@ -128,7 +133,9 @@ function toggleDetails() {
       {generation.user_handle}:
       {generation.status.type}:
       {timeAgo}
-      <strong>Total Generated:</strong> {totalJoulesGenerated} joules
+      <strong>Total Generated:</strong> 
+
+      {totalJoulesGeneratedFormatted} joules
     </span>
   </div>
   {#if showDetails}
