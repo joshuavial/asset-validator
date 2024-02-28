@@ -248,7 +248,7 @@ test('create eth_user, generation, and observe energy', async () => {
     const observationEntryCreatedSignal = entryCreatedSignals.find(signal => signal.payload.app_entry.type === 'Observation');
     assert.ok(observationEntryCreatedSignal, "Alice should have received an 'EntryCreated' signal for an 'Observation' entry from the 'validation_claims' zome.");
     const signalPayload = observationEntryCreatedSignal.payload;
-    assert.deepEqual(signalPayload.app_entry.data, observationWithHash.observation.data, "The 'EntryCreated' signal payload should contain the observation entry.");
+    assert.deepEqual(signalPayload.app_entry.data, observationWithHash.data, "The 'EntryCreated' signal payload should contain the observation entry.");
 
 
     await scenario.cleanUp();
