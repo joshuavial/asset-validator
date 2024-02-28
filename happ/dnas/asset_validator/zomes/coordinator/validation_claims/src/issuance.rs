@@ -12,6 +12,13 @@ pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
                 WasmErrorInner::Guest(String::from("Could not find the newly created Issuance"))
             ),
         )?;
+    let path = Path::from("issuances");
+    create_link(
+        path.path_entry_hash()?,
+        issuance_hash.clone(),
+        LinkTypes::Issuances,
+        (),
+    )?;
     Ok(record)
 }
 #[hdk_extern]
@@ -158,6 +165,15 @@ pub fn delete_issuance(original_issuance_hash: ActionHash) -> ExternResult<Actio
                 if action_hash.eq(&original_issuance_hash) {
                     delete_link(link.create_link_hash)?;
                 }
+            }
+        }
+    }
+    let path = Path::from("issuances");
+    let links = get_links(path.path_entry_hash()?, LinkTypes::Issuances, None)?;
+    for link in links {
+        if let Some(hash) = link.target.into_action_hash() {
+            if hash.eq(&original_issuance_hash) {
+                delete_link(link.create_link_hash)?;
             }
         }
     }
