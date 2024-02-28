@@ -7,9 +7,8 @@ import type { GenerationWithHash, Observation } from '../../shared/types';
 import { formatTimeAgo, get_observations_for_generation, onNewObservation } from '../../shared/lib';
 import ObservationDetail from '../../shared/ObservationDetail.svelte'
 
-import { updateGenerationStatus } from './lib'; // Assuming this function exists in the lib file
-
 import { clientContext } from './contexts';
+import type { UpdateGenerationInput } from '../../shared/types/validation_claims';
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -34,9 +33,33 @@ onMount(async () => {
     return acc;
   }, 0);
 
+  const updateGenerationStatus = async (generationHash: ActionHash, status: string) => {
+    const input: UpdateGenerationInput = {
+      original_generation_hash: generationHash,
+      previous_generation_hash: generationHash,
+      updated_generation: {
+        ...activeGeneration.generation,
+        status: { type: status }
+      }
+    };
+    try {
+      const updatedRecord = await client.callZome({
+        cap_secret: null,
+        role_name: 'asset_validator',
+        zome_name: 'validation_claims',
+        fn_name: 'update_generation',
+        payload: input,
+      });
+      return updatedRecord.entry as Generation;
+    } catch (error) {
+      console.error('Error updating generation status:', error);
+      throw error;
+    }
+  };
+
   const handleDoneClick = async () => {
     try {
-      const updatedGeneration = await updateGenerationStatus(client, activeGeneration.hash, 'Completed');
+      const updatedGeneration = await updateGenerationStatus(activeGeneration.hash, 'Completed');
       activeGeneration.generation.status = updatedGeneration.status;
     } catch (error) {
       console.error('Error updating generation status:', error);
