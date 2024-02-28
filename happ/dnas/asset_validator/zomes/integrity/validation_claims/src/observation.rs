@@ -87,7 +87,6 @@ pub fn validate_create_link_generation_to_observation(
     target_address: AnyLinkableHash,
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    // Validate that the base address is a valid Generation
     let base_action_hash = base_address
         .into_action_hash()
         .ok_or(
@@ -104,8 +103,6 @@ pub fn validate_create_link_generation_to_observation(
                 WasmErrorInner::Guest(String::from("Base address must reference a Generation entry"))
             ),
         )?;
-
-    // Validate that the target address is a valid Observation
     let target_action_hash = target_address
         .into_action_hash()
         .ok_or(
@@ -122,10 +119,8 @@ pub fn validate_create_link_generation_to_observation(
                 WasmErrorInner::Guest(String::from("Target address must reference an Observation entry"))
             ),
         )?;
-
     Ok(ValidateCallbackResult::Valid)
 }
-
 pub fn validate_delete_link_generation_to_observation(
     _action: DeleteLink,
     _original_action: CreateLink,

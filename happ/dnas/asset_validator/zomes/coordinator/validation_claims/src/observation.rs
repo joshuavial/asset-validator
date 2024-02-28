@@ -1,7 +1,6 @@
 use hdk::prelude::*;
 use validation_claims_integrity::*;
 use crate::Signal;
-
 #[hdk_extern]
 pub fn create_observation(observation: Observation) -> ExternResult<Record> {
     let observation_hash = create_entry(&EntryTypes::Observation(observation.clone()))?;
@@ -17,51 +16,63 @@ pub fn create_observation(observation: Observation) -> ExternResult<Record> {
         LinkTypes::GenerationToObservation,
         (),
     )?;
-    // Retrieve the Generation that the observation references
-    let generation_record = get(observation.generation_hash.clone(), GetOptions::default())?
+    let generation_record = get(
+            observation.generation_hash.clone(),
+            GetOptions::default(),
+        )?
         .ok_or(wasm_error!(WasmErrorInner::Guest("Generation not found".into())))?;
-    let generation: Generation = generation_record.entry().to_app_option().map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?.ok_or(
-        wasm_error!(WasmErrorInner::Guest("Generation entry not found".into()))
-    )?;
-
-    // Find the EthUser associated with the Generation
-    let eth_user_record: Record = match call::<&String, ZomeName>(
+    let generation: Generation = generation_record
+        .entry()
+        .to_app_option()
+        .map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?
+        .ok_or(wasm_error!(WasmErrorInner::Guest("Generation entry not found".into())))?;
+    let eth_user_record: Record = match call::<
+        &String,
+        ZomeName,
+    >(
         CallTargetCell::Local,
-        "eth_user".into(), // The zome name
-        "get_eth_user_by_address".into(), // The function name in the eth_user zome
-        None, // No cap secret required
-        &generation.user_address, // The parameter to pass to the function
+        "eth_user".into(),
+        "get_eth_user_by_address".into(),
+        None,
+        &generation.user_address,
     )? {
         ZomeCallResponse::Ok(output) => {
-            let maybe_record: Option<Record> = output.decode().map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?;
-            maybe_record.ok_or(wasm_error!(WasmErrorInner::Guest("EthUser not found".into())))?
-        },
+            let maybe_record: Option<Record> = output
+                .decode()
+                .map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?;
+            maybe_record
+                .ok_or(wasm_error!(WasmErrorInner::Guest("EthUser not found".into())))?
+        }
         _ => return Err(wasm_error!(WasmErrorInner::Guest("EthUser not found".into()))),
     };
-
-    // Retrieve the agent that created the EthUser
     let agent_pub_key = eth_user_record.action().author().clone();
-
     let signal_payload = Signal::EntryCreated {
-        action: record.signed_action().clone(), // Assuming signed_action() returns the correct type
-        app_entry: EntryTypes::Observation(observation.clone()), // Use the observation directly as it is the app_entry we're dealing with
+        action: record.signed_action().clone(),
+        app_entry: EntryTypes::Observation(observation.clone()),
     };
-    remote_signal(ExternIO::encode(signal_payload).map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?, vec![agent_pub_key])?;
-
+    remote_signal(
+        ExternIO::encode(signal_payload)
+            .map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?,
+        vec![agent_pub_key],
+    )?;
     Ok(record)
 }
-
 #[hdk_extern]
-pub fn get_observations_for_generation(generation_hash: ActionHash) -> ExternResult<Vec<Record>> {
-    let links = get_links(
-        generation_hash,
-        LinkTypes::GenerationToObservation,
-        None,
-    )?;
+pub fn get_observations_for_generation(
+    generation_hash: ActionHash,
+) -> ExternResult<Vec<Record>> {
+    let links = get_links(generation_hash, LinkTypes::GenerationToObservation, None)?;
     let records = links
         .into_iter()
-        .map(|link| link.target.into_action_hash()
-            .ok_or(wasm_error!(WasmErrorInner::Guest(String::from("Target is not an ActionHash")))))
+        .map(|link| {
+            link.target
+                .into_action_hash()
+                .ok_or(
+                    wasm_error!(
+                        WasmErrorInner::Guest(String::from("Target is not an ActionHash"))
+                    ),
+                )
+        })
         .collect::<Result<Vec<ActionHash>, WasmError>>()?
         .into_iter()
         .map(|action_hash| get(action_hash, GetOptions::default()))
@@ -71,7 +82,6 @@ pub fn get_observations_for_generation(generation_hash: ActionHash) -> ExternRes
         .collect::<Vec<Record>>();
     Ok(records)
 }
-
 #[hdk_extern]
 pub fn get_observation(
     original_observation_hash: ActionHash,

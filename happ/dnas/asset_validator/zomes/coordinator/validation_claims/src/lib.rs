@@ -1,3 +1,4 @@
+pub mod issuance;
 pub mod generations;
 pub mod generation;
 pub mod observation;
@@ -6,8 +7,11 @@ use validation_claims_integrity::*;
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     let mut functions: BTreeSet<(ZomeName, FunctionName)> = BTreeSet::new();
-    functions.insert((ZomeName::from("validation_claims"), FunctionName::from("recv_remote_signal")));
-
+    functions
+        .insert((
+            ZomeName::from("validation_claims"),
+            FunctionName::from("recv_remote_signal"),
+        ));
     create_cap_grant(CapGrantEntry {
         tag: "recv_remote_signal_unrestricted".into(),
         access: CapAccess::Unrestricted,
@@ -15,14 +19,13 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     })?;
     Ok(InitCallbackResult::Pass)
 }
-
 #[hdk_extern]
 fn recv_remote_signal(signal: SerializedBytes) -> ExternResult<()> {
-    let signal: Signal = decode(&signal.bytes()).map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?;
+    let signal: Signal = decode(&signal.bytes())
+        .map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?;
     emit_signal(&signal)?;
     Ok(())
 }
-
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
 pub enum Signal {
