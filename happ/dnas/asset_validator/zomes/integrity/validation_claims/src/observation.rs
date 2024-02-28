@@ -11,6 +11,8 @@ pub struct Observation {
 pub enum ObservationType {
     ImageObservation(ImageData),
     EnergyObservation(EnergyData),
+    FileObservation(FileData),
+    TextObservation(TextData),
 }
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub struct ImageData {
@@ -133,4 +135,13 @@ pub fn validate_delete_link_generation_to_observation(
             String::from("GenerationToObservation links cannot be deleted"),
         ),
     )
+}
+#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
+pub struct FileData {
+    pub filename: String,
+    pub data: Vec<u8>,
+}
+#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
+pub struct TextData {
+    pub text: String,
 }

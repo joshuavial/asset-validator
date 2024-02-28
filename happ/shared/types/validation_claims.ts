@@ -50,7 +50,23 @@ export interface EnergyData {
   energy: number; // joules, +ve = generation, -ve = consumption
 }
 
+export interface FileData {
+  filename: string;
+  data: Uint8Array; // Binary data
+}
+
+export interface TextData {
+  text: string;
+}
+
+export type ObservationData = 
+  | { ImageObservation: ImageData } 
+  | { EnergyObservation: EnergyData }
+  | { FileObservation: FileData };
+
 export type ObservationData = { ImageObservation: ImageData } | { EnergyObservation: EnergyData };
+  | { FileObservation: FileData }
+  | { TextObservation: TextData };
 
 export interface Observation {
   observed_at: number;
@@ -75,4 +91,3 @@ export interface GenerationWithHash {
   hash: ActionHash;
   action: Action;
 }
-

@@ -11,9 +11,6 @@ pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
     let issuance_hash = create_entry(&EntryTypes::Issuance(issuance.clone()))?;
         //create_link(base, issuance_hash.clone(), LinkTypes::GenerationToIssuances, ())?;
 
-#[hdk_extern]
-pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
-    ...
     for generation_hash in issuance.generation_hashes {
         let details = get_details(generation_hash.clone(), GetOptions::latest())?
             .ok_or(wasm_error!(WasmErrorInner::Guest("Generation not found".into())))?;
@@ -37,13 +34,13 @@ pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
             (original_action_hash, latest_action_hash, generation_entry)
         } else {
             return Err(wasm_error!(WasmErrorInner::Guest("Expected entry details".into())));
-        }?;
-        ...
-    }
-    ...
+        };
 
         // Convert the entry to your Generation type
-        let mut generation: Generation = generation_entry.try_into()?;
+        let mut generation: Generation = match generation_entry {
+            RecordEntry::Present(entry) => entry.try_into()?,
+            _ => return Err(wasm_error!(WasmErrorInner::Guest("Entry is not present".into()))),
+        };
 
         // Update the generation status to Processed using the update_generation function
         generation.status = GenerationStatus::Processed;
