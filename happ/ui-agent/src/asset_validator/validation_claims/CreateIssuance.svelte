@@ -6,10 +6,7 @@ import type { Issuance, IssuanceStatus } from './types';
 import '@material/mwc-button';
 import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
-import '@material/mwc-select';
 
-import '@material/mwc-textfield';
-import '@material/mwc-slider';
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
 const dispatch = createEventDispatcher();
@@ -27,9 +24,7 @@ $: generationHashes, transaction, quantity, status;
 $: isIssuanceValid = true && true && true;
 
 onMount(() => {
-  if (generationHashes === undefined) {
-    throw new Error(`The generationHashes input is required for the CreateIssuance element`);
-  }
+//TODO get all generations and add those that are complete to generationHashes
 });
 
 async function createIssuance() {  
@@ -50,7 +45,7 @@ async function createIssuance() {
     });
     dispatch('issuance-created', { issuanceHash: record.signed_action.hashed.hash });
   } catch (e) {
-    errorSnackbar.labelText = `Error creating the issuance: ${e.data.data}`;
+    errorSnackbar.labelText = `Error creating the issuance: ${e}`;
     errorSnackbar.show();
   }
 }
@@ -60,28 +55,7 @@ async function createIssuance() {
 </mwc-snackbar>
 <div style="display: flex; flex-direction: column">
   <span style="font-size: 18px">Create Issuance</span>
-  
-
-  <div style="margin-bottom: 16px">
-    <mwc-textfield outlined label="Transaction" value={ transaction } on:input={e => { transaction = e.target.value; } } ></mwc-textfield>          
-  </div>
             
-  <div style="margin-bottom: 16px">
-    <div style="display: flex; flex-direction: row">
-      <span style="margin-right: 4px">Quantity</span>
-    
-      <mwc-slider value={ quantity } on:input={e => { quantity = e.detail.value; } } discrete></mwc-slider>
-    </div>          
-  </div>
-            
-  <div style="margin-bottom: 16px">
-    <mwc-select outlined helper="Status" required>
-  <mwc-list-item selected={ status.type === 'Created' } on:request-selected={() => { status = { type: 'Created' }; } }>Created</mwc-list-item>
-  <mwc-list-item selected={ status.type === 'Finalised' } on:request-selected={() => { status = { type: 'Finalised' }; } }>Finalised</mwc-list-item>
-</mwc-select>          
-  </div>
-            
-
   <mwc-button 
     raised
     label="Create Issuance"
