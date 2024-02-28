@@ -11,6 +11,8 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 
+import { updateGenerationStatus } from '../../../../shared/lib/generation';
+
 const dispatch = createEventDispatcher();
 
 import { formatTimeAgo, onNewObservation, get_observations_for_generation } from '../../../../shared/lib';
@@ -34,7 +36,6 @@ let generation: Generation | undefined;
 let timeAgo: string | undefined;
 let showDetails = false;
 let observations: Observation[] = [];
-let totalJoulesGenerated: number;
 
 let editing = false;
 
@@ -42,9 +43,10 @@ let errorSnackbar: Snackbar;
 
 $: editing,  error, loading, record, generation, timeAgo, observations;
 let totalJoulesGeneratedFormatted: string;
+let totalJoulesGenerated: number;
 
 $: {
-  const totalJoulesGenerated = observations.reduce((sum, obs) => {
+  totalJoulesGenerated = observations.reduce((sum, obs) => {
       if (obs.data.EnergyObservation) {
           return sum + parseFloat(obs.data.EnergyObservation.energy);
       }
@@ -116,12 +118,11 @@ async function cancelGeneration() {
   const confirmCancel = confirm('Are you sure you want to cancel this generation?');
   if (confirmCancel) {
     try {
-      await updateGenerationStatus(client, {generation, hash}, 'Cancelled');
+      await updateGenerationStatus(client, hash, {generation, hash: record.signed_action.hashed.hash}, 'Cancelled');
       // Refresh the generation details or emit an event to notify the parent component
       // This part of the code depends on how you want to handle the update in the UI
     } catch (error) {
       console.error('Error cancelling generation:', error);
-      // Handle the error, possibly showing a message to the user
     }
   }
 }
@@ -142,8 +143,9 @@ function canAllocate() {
 </div>
 {:else if error}
 <span>Error fetching the generation: {error}</span>
+{:else if generation.status.type == 'Cancelled'}
+  <span></span>
 {:else}
-
 <div style="display: flex; flex-direction: column">
   <div style="display: flex; flex-direction: row">
     <span class="generation-span" style="flex: 1" on:click={toggleDetails}> 
@@ -159,10 +161,10 @@ function canAllocate() {
   </div>
   {#if showDetails}
   <div class="details">
-    {#if generation.status.type === 'Complete'}
+
+    {#if generation.status.type === 'Complete' && totalJoulesGenerated == 0}
       <button on:click={cancelGeneration} class="cancel-button">Cancel</button>
     {/if}
-    <!-- Details content -->
 
     {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}
       <button on:click={() => clearSensorAllocation(SENSOR_2)}>Clear work bike allocation</button>
@@ -179,7 +181,6 @@ function canAllocate() {
       {/if}
     {/if}
 
-    Cancel button here
 
     <p>User Address: {generation.user_address}</p>
     <CreateImageObservation generationRecord={record}/>
@@ -199,7 +200,6 @@ function canAllocate() {
     background-color: red;
     color: white;
   }
-  <!-- Other styles -->
   .details {
     padding: 8px;
     margin-top: 4px;

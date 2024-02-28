@@ -5,6 +5,7 @@ pub enum GenerationStatus {
     Active,
     Complete,
     Cancelled,
+    Processed,
 }
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]

@@ -2,8 +2,9 @@
 import type { AppAgentClient, ActionHash } from '@holochain/client';
 import type { GenerationWithHash } from '../types';
 
-export async function updateGenerationStatus(client: AppAgentClient, generationWithHash: GenerationWithHash, status: string) {
+export async function updateGenerationStatus(client: AppAgentClient, originalGenerationHash: ActionHash, generationWithHash: GenerationWithHash, status: string) {
     const input = {
+      original_generation_hash: originalGenerationHash,
       previous_generation_hash: generationWithHash.hash,
       updated_generation: {
         ...generationWithHash.generation,

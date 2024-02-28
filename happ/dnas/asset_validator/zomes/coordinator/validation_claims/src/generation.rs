@@ -46,22 +46,22 @@ pub fn get_latest_generation(
     };
     get(latest_generation_hash, GetOptions::default())
 }
-
 #[hdk_extern]
 pub fn get_original_generation(
-    mut generation_hash: ActionHash,
+    original_generation_hash: ActionHash,
 ) -> ExternResult<Option<Record>> {
-    loop {
-        let details = get_details(generation_hash.clone(), GetOptions::default())?;
-        match details {
-            Some(Details::Record(record_details)) => {
-                if let Some(parent_action) = record_details.updates.first() {
-                    generation_hash = parent_action.action_address().clone();
-                } else {
-                    return Ok(Some(record_details.record));
-                }
-            }
-            _ => return Ok(None),
+    let Some(details) = get_details(original_generation_hash, GetOptions::default())?
+    else {
+        return Ok(None);
+    };
+    match details {
+        Details::Record(details) => Ok(Some(details.record)),
+        _ => {
+            Err(
+                wasm_error!(
+                    WasmErrorInner::Guest(String::from("Malformed get details response"))
+                ),
+            )
         }
     }
 }
@@ -103,29 +103,18 @@ pub fn get_all_revisions_for_generation(
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateGenerationInput {
+    pub original_generation_hash: ActionHash,
     pub previous_generation_hash: ActionHash,
     pub updated_generation: Generation,
 }
 #[hdk_extern]
 pub fn update_generation(input: UpdateGenerationInput) -> ExternResult<Record> {
-    let original_generation_record = get_original_generation(
-        input.previous_generation_hash.clone(),
-    )?;
-    let original_generation_hash = original_generation_record
-        .as_ref()
-        .ok_or(wasm_error!(
-            WasmErrorInner::Guest(String::from("Original generation not found"))
-        ))?
-        .signed_action()
-        .hashed
-        .hash
-        .clone();
     let updated_generation_hash = update_entry(
         input.previous_generation_hash.clone(),
         &input.updated_generation,
     )?;
     create_link(
-        original_generation_hash.clone(),
+        input.original_generation_hash.clone(),
         updated_generation_hash.clone(),
         LinkTypes::GenerationUpdates,
         (),

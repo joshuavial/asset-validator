@@ -50,7 +50,11 @@ onMount(async () => {
 
   const handleDoneClick = async () => {
     try {
-      await updateGenerationStatus(client, activeGeneration, 'Complete');
+      await updateGenerationStatus(client, activeGeneration.hash, 
+      {
+        generation: activeGeneration.generation,
+        hash: activeGeneration.action.hashed.hash,
+      } as GenerationWithHash, 'Complete');
       dispatch('setActiveGeneration', { activeGeneration: null});
     } catch (error) {
       console.error('Error updating generation status:', error);
