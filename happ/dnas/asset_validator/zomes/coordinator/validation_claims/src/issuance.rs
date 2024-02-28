@@ -1,5 +1,11 @@
 use hdk::prelude::*;
+use crate::generation::{
+    get_original_generation,
+    update_generation,
+    UpdateGenerationInput,
+};
 use validation_claims_integrity::*;
+
 #[hdk_extern]
 pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
     let issuance_hash = create_entry(&EntryTypes::Issuance(issuance.clone()))?;
@@ -7,19 +13,42 @@ pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
         create_link(generation_hash.clone(), issuance_hash.clone(), LinkTypes::GenerationToIssuances, ())?;
 
         // Retrieve the original generation entry
-        let generation: Generation = get_original_generation(generation_hash.clone())?
+        let generation_record = get_details(generation_hash.clone(), GetOptions::latest())?
             .ok_or(wasm_error!(WasmErrorInner::Guest("Generation not found".into())))?
             .entry()
-            .to_app_option()?
+            .into_option()
             .ok_or(wasm_error!(WasmErrorInner::Guest("Malformed generation entry".into())))?;
+        let mut generation: Generation = generation_record
+            .entry()
+            .to_app_option()?
+#[hdk_extern]
+pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
+    let issuance_hash = create_entry(&EntryTypes::Issuance(issuance.clone()))?;
+    for generation_hash in issuance.generation_hashes.clone() {
+        create_link(generation_hash.clone(), issuance_hash.clone(), LinkTypes::GenerationToIssuances, ())?;
 
-        // Update the generation status to Processed
-        let mut updated_generation = generation.clone();
-        updated_generation.status = GenerationStatus::Processed;
+        let details = get_details(generation_hash.clone(), GetOptions::latest())?
+            .ok_or(wasm_error!(WasmErrorInner::Guest("Generation not found".into())))?;
+        let generation_record = match details {
+            Details::Record(record_details) => record_details.record,
+            _ => return Err(wasm_error!(WasmErrorInner::Guest("Expected record details".into()))),
+        };
+        let mut generation: Generation = match generation_record.entry().as_option() {
+            Some(entry) => entry.clone().try_into()?,
+            None => return Err(wasm_error!(WasmErrorInner::Guest("Malformed generation entry".into()))),
+        };
 
-        // Commit the updated generation entry
-        update_entry(generation_hash, &updated_generation)?;
-        create_link(base, issuance_hash.clone(), LinkTypes::GenerationToIssuances, ())?;
+        // Update the generation status to Processed using the update_generation function
+        generation.status = GenerationStatus::Processed;
+        let original_action_hash = generation_record.action().action_address().clone();
+        let latest_action_hash = get_latest_action_hash(original_action_hash.clone())?
+            .ok_or(wasm_error!(WasmErrorInner::Guest("Latest Generation action not found".into())))?;
+        let update_generation_input = UpdateGenerationInput {
+            original_generation_hash: original_action_hash,
+            previous_generation_hash: latest_action_hash,
+            updated_generation: generation,
+        };
+        update_generation(update_generation_input)?;
     }
     let record = get(issuance_hash.clone(), GetOptions::default())?
         .ok_or(
@@ -35,6 +64,17 @@ pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
         (),
     )?;
     Ok(record)
+}
+
+fn get_latest_action_hash(entry_hash: ActionHash) -> ExternResult<Option<ActionHash>> {
+    let links = get_links(entry_hash.clone(), LinkTypes::GenerationUpdates, None)?;
+    let latest_link = links
+        .into_iter()
+        .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));
+    match latest_link {
+        Some(link) => Ok(Some(link.target.into_action_hash().unwrap())),
+        None => Ok(Some(entry_hash)),
+    }
 }
 #[hdk_extern]
 pub fn get_latest_issuance(
