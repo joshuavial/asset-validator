@@ -1,6 +1,7 @@
 <script lang="ts">
 import { getContext, onMount, createEventDispatcher } from 'svelte';
-import type { AppAgentClient, ActionHash } from '@holochain/client';
+import type { AppAgentClient } from '@holochain/client';
+import { updateGenerationStatus } from '../../shared/lib/generation';
 import {encodeHashToBase64} from '@holochain/client';
 
 import type { GenerationWithHash, Observation } from '../../shared/types';
@@ -46,32 +47,10 @@ onMount(async () => {
   }
 });
 
-async function updateGenerationStatus(generationHash: ActionHash, status: string) {
-    const input = {
-      previous_generation_hash: generationHash,
-      updated_generation: {
-      ...activeGeneration.generation,
-      status: {type: status},
-      }
-    };
-    try {
-      const updatedRecord = await client.callZome({
-        cap_secret: null,
-        role_name: 'asset_validator',
-        zome_name: 'validation_claims',
-        fn_name: 'update_generation',
-        payload: input,
-      });
-      return updatedRecord.entry as Generation;
-    } catch (error) {
-      console.error('Error updating generation status:', error);
-      throw error;
-    }
-  };
 
   const handleDoneClick = async () => {
     try {
-      await updateGenerationStatus(activeGeneration.hash, 'Complete');
+      await updateGenerationStatus(client, activeGeneration, 'Complete');
       dispatch('setActiveGeneration', { activeGeneration: null});
     } catch (error) {
       console.error('Error updating generation status:', error);
