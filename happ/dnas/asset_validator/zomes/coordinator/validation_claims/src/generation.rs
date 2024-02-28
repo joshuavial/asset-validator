@@ -103,18 +103,30 @@ pub fn get_all_revisions_for_generation(
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateGenerationInput {
-    pub original_generation_hash: ActionHash,
     pub previous_generation_hash: ActionHash,
     pub updated_generation: Generation,
 }
 #[hdk_extern]
 pub fn update_generation(input: UpdateGenerationInput) -> ExternResult<Record> {
+    let original_generation_record = get_original_generation(
+        input.original_generation_hash.clone(),
+    );
+    )?;
+    let original_generation_hash = original_generation_record
+        .as_ref()
+        .ok_or(wasm_error!(
+            WasmErrorInner::Guest(String::from("Original generation not found"))
+        ))?
+        .signed_action()
+        .hashed
+        .hash
+        .clone();
     let updated_generation_hash = update_entry(
         input.previous_generation_hash.clone(),
         &input.updated_generation,
     )?;
     create_link(
-        input.original_generation_hash.clone(),
+        original_generation_hash.clone(),
         updated_generation_hash.clone(),
         LinkTypes::GenerationUpdates,
         (),

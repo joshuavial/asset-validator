@@ -22,21 +22,22 @@ def post_energy_data(sensor_id, start_time, energy_consumed_J):
 
 def simulate_transducer(sensor_number):
     sensor_id = f'sensor_{sensor_number}'
-    energy_buffer = 0.0
+    energy_buffer = random.uniform(20, 50) * 1  # Energy in joules (W * s)
     start_time = time.time()
+
+    post_energy_data(sensor_id, start_time, energy_buffer)
 
     while True:
         # Simulate energy generation between 20-50 watts
         power = random.uniform(20, 50)
         energy_buffer += power * 1  # Energy in joules (W * s)
 
+        time.sleep(1)
         if time.time() - start_time >= ENERGY_BUFFER_DURATION:
             post_energy_data(sensor_id, start_time, energy_buffer)
             # Reset the energy buffer and start time
             energy_buffer = 0.0
             start_time = time.time()
-
-        time.sleep(1)
 
 if __name__ == "__main__":
     if len(sys.argv) != 2 or sys.argv[1] not in ['1', '2']:
