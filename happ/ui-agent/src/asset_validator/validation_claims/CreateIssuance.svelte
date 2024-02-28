@@ -7,6 +7,7 @@ import '@material/mwc-button';
 import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
 import {fetchGenerations, get_observations_for_generation} from '../../../../shared/lib/generations';
+import {formatTimeAgo} from '../../../../shared/lib';
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -17,6 +18,7 @@ let generationHashes: EntryHash[] = [];
 let transaction: string | undefined = '';
 let quantity: number = 0;
 let status: IssuanceStatus = { type: 'Created' };
+let generations: Array<GenerationWithHash> = [];
 
 let errorSnackbar: Snackbar;
 
@@ -24,10 +26,9 @@ $: isIssuanceValid = generationHashes.length > 0 && transaction !== '' && quanti
 
 onMount(async () => {
   try {
-    let generations = (await fetchGenerations(client))
+    generations = (await fetchGenerations(client))
       .filter(g => g.generation.status.type === 'Complete')
 
-console.log(generations);
     quantity = await calculateTotalJoules(generations, client);
     generationHashes = generations.map(g => g.hash);
 
@@ -39,7 +40,7 @@ console.log(generations);
 
 async function calculateTotalJoules(generations: Array<GenerationWithHash>, client: AppAgentClient): Promise<number> {
   let totalJoules = 0;
-  for (const generation of generations) {
+  for (let generation of generations) {
     let generationJoules = 0;
     const observations = await get_observations_for_generation(client, generation.hash);
     for (const observation of observations) {
@@ -47,8 +48,8 @@ async function calculateTotalJoules(generations: Array<GenerationWithHash>, clie
         generationJoules += observation.data.EnergyObservation.energy;
         totalJoules += observation.data.EnergyObservation.energy;
       }
+      generation.generation.totalJoules = generationJoules;
     }
-    generation.totalJoules = generationJoules;
     generation.totalJoules = generationJoules;
   }
   return totalJoules;
@@ -93,8 +94,17 @@ async function createIssuance() {
     {#each generations as generation}
       <div>
         <span>User Handle: {generation.generation.user_handle}</span>
-        <span>Time Ago: {formatTimeAgo(generation.action.timestamp)}</span>
         <span>Joules: {generation.totalJoules.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
+      </div>
+    {/each}
+  </div>
+
+  <div>
+    {#each generations as generation}
+      <div>
+        <span>User Handle: {generation.generation.user_handle}</span>
+        <span>Time Ago: {formatTimeAgo(generation.action.timestamp)}</span>
+        <span>Joules: {generation.generation.totalJoules.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
       </div>
     {/each}
   </div>
