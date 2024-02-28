@@ -18,7 +18,8 @@ let generationHashes: EntryHash[] = [];
 let transaction: string | undefined = '';
 let quantity: number = 0;
 let status: IssuanceStatus = { type: 'Created' };
-let generations: Array<GenerationWithHash> = [];
+let generations = [];
+let generationTotalJoules = {};
 
 let errorSnackbar: Snackbar;
 
@@ -38,6 +39,7 @@ onMount(async () => {
   }
 });
 
+
 async function calculateTotalJoules(generations: Array<GenerationWithHash>, client: AppAgentClient): Promise<number> {
   let totalJoules = 0;
   for (let generation of generations) {
@@ -48,9 +50,8 @@ async function calculateTotalJoules(generations: Array<GenerationWithHash>, clie
         generationJoules += observation.data.EnergyObservation.energy;
         totalJoules += observation.data.EnergyObservation.energy;
       }
-      generation.generation.totalJoules = generationJoules;
     }
-    generation.totalJoules = generationJoules;
+    generationTotalJoules[generation.hash] = generationJoules;
   }
   return totalJoules;
 }
@@ -86,28 +87,21 @@ async function createIssuance() {
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
 <div style="display: flex; flex-direction: column">
-  <span style="font-size: 18px">Create Issuance</span>
+  <h2>Create Issuance</h2>
+  <p>
   Total Joules : {quantity.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+  </p>
 
-            
-  <div>
+  <div class='generation-list'>
     {#each generations as generation}
       <div>
-        <span>User Handle: {generation.generation.user_handle}</span>
-        <span>Joules: {generation.totalJoules.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
+        <span>{generation.generation.user_handle}</span>
+        <span> generated {generationTotalJoules[generation.hash].toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
+        <span>{formatTimeAgo(generation.action.hashed.content.timestamp)}</span>
       </div>
     {/each}
   </div>
 
-  <div>
-    {#each generations as generation}
-      <div>
-        <span>User Handle: {generation.generation.user_handle}</span>
-        <span>Time Ago: {formatTimeAgo(generation.action.timestamp)}</span>
-        <span>Joules: {generation.generation.totalJoules.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
-      </div>
-    {/each}
-  </div>
 
   <mwc-button 
     raised
@@ -116,3 +110,9 @@ async function createIssuance() {
     on:click={() => createIssuance()}
   ></mwc-button>
 </div>
+
+<style>
+  .generation-list {
+    margin-bottom:20px;
+  }
+</style>
