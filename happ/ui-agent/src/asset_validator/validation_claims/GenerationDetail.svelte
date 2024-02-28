@@ -112,20 +112,22 @@ function toggleDetails() {
   showDetails = !showDetails;
 }
 
-function canAllocate() {
-  return generation && generation.status.type === 'Active';
+async function cancelGeneration() {
+  const confirmCancel = confirm('Are you sure you want to cancel this generation?');
+  if (confirmCancel) {
+    try {
+      await updateGenerationStatus(client, {generation, hash}, 'Cancelled');
+      // Refresh the generation details or emit an event to notify the parent component
+      // This part of the code depends on how you want to handle the update in the UI
+    } catch (error) {
+      console.error('Error cancelling generation:', error);
+      // Handle the error, possibly showing a message to the user
+    }
+  }
 }
 
 function canAllocate() {
   return generation && generation.status.type === 'Active';
-}
-
-function canAllocateSensor(sensor_id: string) {
-  return canAllocate() && sensorAllocations[sensor_id] !== encodeHashToBase64(hash);
-}
-
-function canAllocateSensor(sensor_id: string) {
-  return canAllocate() && sensorAllocations[sensor_id] !== encodeHashToBase64(hash);
 }
 
 </script>
@@ -154,20 +156,30 @@ function canAllocateSensor(sensor_id: string) {
 
       {totalJoulesGeneratedFormatted} joules
     </span>
+    {#if generation.status.type === 'Complete'}
+      <button on:click={cancelGeneration} class="cancel-button">Cancel</button>
+    {/if}
   </div>
   {#if showDetails}
   <div class="details">
+    <!-- Details content -->
 
     {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}
       <button on:click={() => clearSensorAllocation(SENSOR_2)}>Clear work bike allocation</button>
     {:else}
-      <button on:click={() => allocateSensorToGeneration(SENSOR_2)}>Allocate to work bike</button>
+      {#if canAllocate()}
+        <button on:click={() => allocateSensorToGeneration(SENSOR_2)}>Allocate to work bike</button>
+      {/if}
     {/if}
     {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}
       <button on:click={() => clearSensorAllocation(SENSOR_1)}>Finish fun bike</button>
     {:else}
-      <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate to fun bike</button>
+      {#if canAllocate()}
+        <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate to fun bike</button>
+      {/if}
     {/if}
+
+    Cancel button here
 
     <p>User Address: {generation.user_address}</p>
     <CreateImageObservation generationRecord={record}/>
@@ -181,6 +193,12 @@ function canAllocateSensor(sensor_id: string) {
 {/if}
 
 <style>
+  .cancel-button {
+    align-self: flex-end;
+    margin-left: auto;
+    background-color: red;
+    color: white;
+  }
   .details {
     padding: 8px;
     margin-top: 4px;
@@ -189,6 +207,7 @@ function canAllocateSensor(sensor_id: string) {
     background-color: #f9f9f9;
     overflow: hidden;
   }
+  <!-- Other styles -->
   .details img {
     max-width: 00%;
     height: auto;
