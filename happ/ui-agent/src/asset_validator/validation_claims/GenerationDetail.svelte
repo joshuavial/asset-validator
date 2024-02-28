@@ -116,6 +116,14 @@ function canAllocate() {
   return generation && generation.status.type === 'Active';
 }
 
+function canAllocate() {
+  return generation && generation.status.type === 'Active';
+}
+
+function canAllocateSensor(sensor_id: string) {
+  return canAllocate() && sensorAllocations[sensor_id] !== encodeHashToBase64(hash);
+}
+
 function canAllocateSensor(sensor_id: string) {
   return canAllocate() && sensorAllocations[sensor_id] !== encodeHashToBase64(hash);
 }
