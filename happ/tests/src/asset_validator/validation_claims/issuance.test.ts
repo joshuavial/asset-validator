@@ -239,3 +239,31 @@ test('create and delete Issuance', async () => {
 
   });
 });
+test('create_issuance updates generation status to Processed', async () => {
+  await runScenario(async scenario => {
+    const testAppPath = process.cwd() + '/../workdir/asset-validator.happ';
+    const appSource = { appBundleSource: { path: testAppPath } };
+    const [alice] = await scenario.addPlayersWithApps([appSource]);
+    await scenario.shareAllAgents();
+
+    // Create a sample generation and issuance
+    const generationSample = await sampleGeneration(alice.cells[0]);
+    const issuanceSample = await sampleIssuance(alice.cells[0], [generationSample.actionHash]);
+
+    // Alice creates a Generation
+    const generationRecord: Record = await createGeneration(alice.cells[0], generationSample);
+    assert.ok(generationRecord);
+
+    // Alice creates an Issuance with the Generation
+    const issuanceRecord: Record = await createIssuance(alice.cells[0], issuanceSample);
+    assert.ok(issuanceRecord);
+
+    // Check if the Generation status is updated to Processed
+    const readGenerationOutput: Record = await alice.cells[0].callZome({
+      zome_name: "validation_claims",
+      fn_name: "get_original_generation",
+      payload: generationRecord.signed_action.hashed.hash,
+    });
+    assert.equal(readGenerationOutput.entry.Processed, true);
+  });
+});

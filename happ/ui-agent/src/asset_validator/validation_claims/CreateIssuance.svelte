@@ -10,6 +10,7 @@ import {fetchGenerations, get_observations_for_generation} from '../../../../sha
 import {formatTimeAgo} from '../../../../shared/lib';
 
 function formatJoules(joules: number): string {
+  if (!joules) return '';
   return joules.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
@@ -17,17 +18,17 @@ let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
 const dispatch = createEventDispatcher();
 
-
-let generationHashes: EntryHash[] = [];
+let generationHashes =  [];
 let transaction: string | undefined = '';
 let quantity: number = 0;
 let status: IssuanceStatus = { type: 'Created' };
+
 let generations = [];
 let generationTotalJoules = {};
 
 let errorSnackbar: Snackbar;
 
-$: isIssuanceValid = generationHashes.length > 0 && transaction !== '' && quantity > 0;
+$: isIssuanceValid = generationHashes.length > 0 && quantity > 0;
 
 onMount(async () => {
   try {
@@ -68,10 +69,13 @@ async function createIssuance() {
   const issuanceEntry: Issuance = { 
     generation_hashes: generationHashes,
     transaction: transaction,
-    quantity: quantity!,
+    quantity: parseInt(quantity),
     status: status!,
   };
+
+  console.log(issuanceEntry);
   
+
   try {
     const record: Record = await client.callZome({
       cap_secret: null,

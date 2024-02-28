@@ -3,7 +3,22 @@ use validation_claims_integrity::*;
 #[hdk_extern]
 pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
     let issuance_hash = create_entry(&EntryTypes::Issuance(issuance.clone()))?;
-    for base in issuance.generation_hashes.clone() {
+    for generation_hash in issuance.generation_hashes.clone() {
+        create_link(generation_hash.clone(), issuance_hash.clone(), LinkTypes::GenerationToIssuances, ())?;
+
+        // Retrieve the original generation entry
+        let generation: Generation = get_original_generation(generation_hash.clone())?
+            .ok_or(wasm_error!(WasmErrorInner::Guest("Generation not found".into())))?
+            .entry()
+            .to_app_option()?
+            .ok_or(wasm_error!(WasmErrorInner::Guest("Malformed generation entry".into())))?;
+
+        // Update the generation status to Processed
+        let mut updated_generation = generation.clone();
+        updated_generation.status = GenerationStatus::Processed;
+
+        // Commit the updated generation entry
+        update_entry(generation_hash, &updated_generation)?;
         create_link(base, issuance_hash.clone(), LinkTypes::GenerationToIssuances, ())?;
     }
     let record = get(issuance_hash.clone(), GetOptions::default())?
