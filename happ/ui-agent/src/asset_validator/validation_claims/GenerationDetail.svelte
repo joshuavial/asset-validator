@@ -112,6 +112,10 @@ function toggleDetails() {
   showDetails = !showDetails;
 }
 
+function canAllocate() {
+  return generation && generation.status.type === 'Active';
+}
+
 </script>
 
 <!-- The rest of the component remains unchanged -->
