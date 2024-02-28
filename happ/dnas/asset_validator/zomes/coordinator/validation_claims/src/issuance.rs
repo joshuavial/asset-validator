@@ -1,6 +1,5 @@
 use hdk::prelude::*;
 use crate::generation::{
-    get_original_generation,
     update_generation,
     UpdateGenerationInput,
 };
@@ -8,41 +7,46 @@ use validation_claims_integrity::*;
 
 #[hdk_extern]
 pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
-    let issuance_hash = create_entry(&EntryTypes::Issuance(issuance.clone()))?;
-    for generation_hash in issuance.generation_hashes.clone() {
-        create_link(generation_hash.clone(), issuance_hash.clone(), LinkTypes::GenerationToIssuances, ())?;
 
-        // Retrieve the original generation entry
-        let generation_record = get_details(generation_hash.clone(), GetOptions::latest())?
-            .ok_or(wasm_error!(WasmErrorInner::Guest("Generation not found".into())))?
-            .entry()
-            .into_option()
-            .ok_or(wasm_error!(WasmErrorInner::Guest("Malformed generation entry".into())))?;
-        let mut generation: Generation = generation_record
-            .entry()
-            .to_app_option()?
+    let issuance_hash = create_entry(&EntryTypes::Issuance(issuance.clone()))?;
+        //create_link(base, issuance_hash.clone(), LinkTypes::GenerationToIssuances, ())?;
+
 #[hdk_extern]
 pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
-    let issuance_hash = create_entry(&EntryTypes::Issuance(issuance.clone()))?;
-    for generation_hash in issuance.generation_hashes.clone() {
-        create_link(generation_hash.clone(), issuance_hash.clone(), LinkTypes::GenerationToIssuances, ())?;
-
+    ...
+    for generation_hash in issuance.generation_hashes {
         let details = get_details(generation_hash.clone(), GetOptions::latest())?
             .ok_or(wasm_error!(WasmErrorInner::Guest("Generation not found".into())))?;
-        let generation_record = match details {
-            Details::Record(record_details) => record_details.record,
-            _ => return Err(wasm_error!(WasmErrorInner::Guest("Expected record details".into()))),
-        };
-        let mut generation: Generation = match generation_record.entry().as_option() {
-            Some(entry) => entry.clone().try_into()?,
-            None => return Err(wasm_error!(WasmErrorInner::Guest("Malformed generation entry".into()))),
-        };
+
+        // Initialize variables outside of the if let scope
+        let (original_action_hash, latest_action_hash, generation_entry) = if let Details::Entry(entry_details) = details {
+            let actions = entry_details.actions;
+            if actions.is_empty() {
+                return Err(wasm_error!(WasmErrorInner::Guest("No actions found for entry".into())));
+            }
+            let original_action_hash = actions.first().unwrap().action_address().clone();
+            let latest_action_hash = actions.last().unwrap().action_address().clone();
+
+            // Fetch the record associated with the latest action hash
+            let latest_record = get(latest_action_hash.clone(), GetOptions::latest())?
+                .ok_or(wasm_error!(WasmErrorInner::Guest("Record not found for latest action".into())))?;
+
+            // Extract the entry from the latest record
+            let generation_entry = latest_record.entry.clone();
+
+            (original_action_hash, latest_action_hash, generation_entry)
+        } else {
+            return Err(wasm_error!(WasmErrorInner::Guest("Expected entry details".into())));
+        }?;
+        ...
+    }
+    ...
+
+        // Convert the entry to your Generation type
+        let mut generation: Generation = generation_entry.try_into()?;
 
         // Update the generation status to Processed using the update_generation function
         generation.status = GenerationStatus::Processed;
-        let original_action_hash = generation_record.action().action_address().clone();
-        let latest_action_hash = get_latest_action_hash(original_action_hash.clone())?
-            .ok_or(wasm_error!(WasmErrorInner::Guest("Latest Generation action not found".into())))?;
         let update_generation_input = UpdateGenerationInput {
             original_generation_hash: original_action_hash,
             previous_generation_hash: latest_action_hash,
@@ -50,6 +54,7 @@ pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
         };
         update_generation(update_generation_input)?;
     }
+
     let record = get(issuance_hash.clone(), GetOptions::default())?
         .ok_or(
             wasm_error!(
