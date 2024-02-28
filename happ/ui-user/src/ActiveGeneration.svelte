@@ -3,7 +3,7 @@ import { getContext, onMount } from 'svelte';
 import type { AppAgentClient} from '@holochain/client';
 import {encodeHashToBase64} from '@holochain/client';
 
-import type { GenerationWithHash } from '../../shared/types';
+import type { GenerationWithHash, Observation } from '../../shared/types';
 import { formatTimeAgo, get_observations_for_generation, onNewObservation } from '../../shared/lib';
 import ObservationDetail from '../../shared/ObservationDetail.svelte'
 
@@ -46,10 +46,9 @@ onMount(async () => {
 });
 </script>
 
-<h1>Your generation</h1>
-<p>Created {timeAgo}</p>
+<h1>Ready for Human Power?</h1>
+<p>Total Energy Generated: {totalJoules.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})} joules</p>
 <p>Status : {activeGeneration.generation.status.type} </p>
-<p>Total Energy Generated: {totalJoules.toFixed(1)} joules</p>
 {#each observations as observation}
   <ObservationDetail {observation} />
 {/each}
