@@ -6,7 +6,7 @@ import type { Issuance, IssuanceStatus } from './types';
 import '@material/mwc-button';
 import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
-import {fetchGenerations} from '../../../../shared/lib/generations';
+import {fetchGenerations, get_observations_for_generation} from '../../../../shared/lib/generations';
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -19,7 +19,6 @@ let quantity: number = 0;
 let status: IssuanceStatus = { type: 'Created' };
 
 let errorSnackbar: Snackbar;
-let totalJoules: number = 0;
 
 $: isIssuanceValid = generationHashes.length > 0 && transaction !== '' && quantity > 0;
 
@@ -28,9 +27,9 @@ onMount(async () => {
     let generations = (await fetchGenerations(client))
       .filter(g => g.generation.status.type === 'Complete')
 
+console.log(generations);
+    quantity = await calculateTotalJoules(generations, client);
     generationHashes = generations.map(g => g.hash);
-    totalJoules = await calculateTotalJoules(generations, client);
-    quantity = totalJoules;
 
   } catch (e) {
     errorSnackbar.labelText = `Error fetching generations: ${e}`;
@@ -41,12 +40,16 @@ onMount(async () => {
 async function calculateTotalJoules(generations: Array<GenerationWithHash>, client: AppAgentClient): Promise<number> {
   let totalJoules = 0;
   for (const generation of generations) {
-    const observations = await fetchObservationsForGeneration(client, generation.hash);
+    let generationJoules = 0;
+    const observations = await get_observations_for_generation(client, generation.hash);
     for (const observation of observations) {
-      if (observation.type === 'EnergyData') {
-        totalJoules += observation.energy;
+      if (observation.data.EnergyObservation ) {
+        generationJoules += observation.data.EnergyObservation.energy;
+        totalJoules += observation.data.EnergyObservation.energy;
       }
     }
+    generation.totalJoules = generationJoules;
+    generation.totalJoules = generationJoules;
   }
   return totalJoules;
 }
@@ -54,10 +57,6 @@ async function calculateTotalJoules(generations: Array<GenerationWithHash>, clie
 function validateIssuance() {
   return generationHashes.length > 0 && transaction !== '' && quantity > 0;
 }
-
-onMount(() => {
-//TODO get all generations and add those that are complete to generationHashes
-});
 
 async function createIssuance() {  
   const issuanceEntry: Issuance = { 
@@ -87,7 +86,19 @@ async function createIssuance() {
 </mwc-snackbar>
 <div style="display: flex; flex-direction: column">
   <span style="font-size: 18px">Create Issuance</span>
+  Total Joules : {quantity.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+
             
+  <div>
+    {#each generations as generation}
+      <div>
+        <span>User Handle: {generation.generation.user_handle}</span>
+        <span>Time Ago: {formatTimeAgo(generation.action.timestamp)}</span>
+        <span>Joules: {generation.totalJoules.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
+      </div>
+    {/each}
+  </div>
+
   <mwc-button 
     raised
     label="Create Issuance"
