@@ -11,7 +11,7 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 
-import { updateGenerationStatus } from '../../../../shared/lib/generation';
+import { updateGenerationStatus } from '../../../../shared/lib/generations';
 
 const dispatch = createEventDispatcher();
 
@@ -59,7 +59,7 @@ onMount(async () => {
   if (hash === undefined) {
     throw new Error(`The generationHash input is required for the GenerationDetail element`);
   }
-  await fetchGeneration();
+  await fetchGeneration(client, hash);
 
   onNewObservation(client, (payload) => {
     if (encodeHashToBase64(hash) == encodeHashToBase64(payload.app_entry.generation_hash)) {
@@ -68,34 +68,6 @@ onMount(async () => {
   });
 });
 
-async function fetchGeneration() {
-  loading = true;
-  error = undefined;
-  record = undefined;
-  generation = undefined;
-  timeAgo = undefined;
-  observations = [];
-
-  try {
-    const generationHash = hash; // Use the new prop name
-    record = await client.callZome({
-      cap_secret: null,
-      role_name: 'asset_validator',
-      zome_name: 'validation_claims',
-      fn_name: 'get_latest_generation',
-      payload: generationHash,
-    });
-    if (record) {
-      generation = decode((record.entry as any).Present.entry) as Generation;
-      timeAgo = formatTimeAgo(record.signed_action.hashed.content.timestamp);
-      observations = await get_observations_for_generation(client, generationHash);
-    }
-  } catch (e) {
-    error = e;
-  }
-
-  loading = false;
-}
 
 async function allocateSensorToGeneration(sensor_id) {
   if (sensorAllocations[SENSOR_1] === encodeHashToBase64(hash) && sensor_id === SENSOR_2) {
