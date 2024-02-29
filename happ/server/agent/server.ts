@@ -20,6 +20,11 @@ app.use(express.json());
 
 app.use(capsecretRoutes);
 
+app.post('/wattbike', async (req, res) => {
+  console.log(req.body);
+  res.send('wattbike');
+}) 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
