@@ -13,26 +13,14 @@
   import { clientContext } from './contexts';
   import Welcome from './Welcome.svelte';
 
-  let client: AppAgentClient | undefined;
+  let client: AppAgentClient;
 
   let currentTab = writable('generations');
   let signingCredentials = writable<SigningCredentials | null>(null);
 
   let loading = true; 
  let password: string = '';
-
-  onMount(async () => {
-    // Removed the direct call to newAppAgentWebsocket to ask for a password first
-    // client = await newAppAgentWebsocket(password)
-    const cellId = cellIdFromClient(client)
-    let credentials = getSigningCredentials(cellId);
-    if (!credentials) {
-      credentials = await createSigningCredentials(cellId);
-    }
-    signingCredentials.set(credentials);
-    setSigningCredentials(cellId, credentials)
-    loading = false;
-  });
+  let password: string | null = null;
 
   setContext(clientContext, {
     getClient: () => client,
@@ -41,20 +29,33 @@
     currentTab.set(newTab);
   }
 
-  // Function to handle password submission and websocket connection
-  async function handlePasswordSubmit() {
-    loading = true;
-    client = await newAppAgentWebsocket(password);
+  onMount(async () => {
+    client = await newAppAgentWebsocket();
     const cellId = cellIdFromClient(client);
     let credentials = getSigningCredentials(cellId);
-    if (!credentials) {
-      credentials = await createSigningCredentials(cellId);
+    if (!credentials && password !== null) {
+      credentials = await createSigningCredentials(cellId, password);
     }
-    signingCredentials.set(credentials);
-    setSigningCredentials(cellId, credentials);
+    if (credentials) {
+      signingCredentials.set(credentials);
+      setSigningCredentials(cellId, credentials);
+    } else {
+      password = ''; // Prompt for password if credentials are not found
+    }
     loading = false;
-  }
+  });
 
+
+</script>
+
+{#if !client}
+  <div>
+    {#if password !== null}
+      <input type="password" bind:value={password} placeholder="Enter your password" />
+      <button on:click={handlePasswordSubmit}>Submit</button>
+    {/if}
+  </div>
+{:else}
 
  {#if !client}
    <div>
@@ -62,8 +63,6 @@
      <button on:click={handlePasswordSubmit}>Submit</button>
    </div>
  {:else}
-
-</script>
 
 <nav>
   <ul>
@@ -94,6 +93,7 @@
     {/if}
   {/if}
 </main>
+{/if}
 
 <style>
   div {
