@@ -65,7 +65,7 @@ async function fetchEthUser() {
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the eth user: {error.data.data}</span>
+<span>Error fetching the eth user: {error}</span>
 {:else}
 
 <div style="display: flex; flex-direction: column">

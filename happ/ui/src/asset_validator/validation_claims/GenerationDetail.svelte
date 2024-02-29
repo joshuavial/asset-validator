@@ -1,7 +1,6 @@
 <script lang="ts">
 import { onMount, getContext, createEventDispatcher } from 'svelte';
 import '@material/mwc-circular-progress';
-import { decode, encode } from '@msgpack/msgpack';
 import type { Record, ActionHash, AppAgentClient} from '@holochain/client';
 import {encodeHashToBase64} from '@holochain/client';
 import { clientContext } from '../../contexts';
@@ -11,11 +10,12 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 
-import { updateGenerationStatus } from '../../../../shared/lib/generations';
+import { updateGenerationStatus, get_observations_for_generation  } from '../../../../shared/lib/generations';
 
 const dispatch = createEventDispatcher();
 
-import { formatTimeAgo, onNewObservation, get_observations_for_generation } from '../../../../shared/lib';
+import {onNewObservation} from '../../../../shared/lib';
+import {fetchGeneration} from '../../../../shared/lib/generations';
 
 const SENSOR_1 = 'sensor_1';
 const SENSOR_2 = 'sensor_2';
@@ -59,7 +59,15 @@ onMount(async () => {
   if (hash === undefined) {
     throw new Error(`The generationHash input is required for the GenerationDetail element`);
   }
-  await fetchGeneration(client, hash);
+  let res = await fetchGeneration(client, hash);
+  generation = res.generation; 
+  record = res.record;
+  timeAgo = res.timeAgo;
+
+  if (record) {
+    observations = await get_observations_for_generation(client, hash);
+  }
+  loading = false;
 
   onNewObservation(client, (payload) => {
     if (encodeHashToBase64(hash) == encodeHashToBase64(payload.app_entry.generation_hash)) {

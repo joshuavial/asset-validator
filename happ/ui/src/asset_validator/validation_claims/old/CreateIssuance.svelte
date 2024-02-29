@@ -1,8 +1,10 @@
 <script lang="ts">
 import { createEventDispatcher, getContext, onMount } from 'svelte';
 import type { AppAgentClient, Record, EntryHash, AgentPubKey, ActionHash, DnaHash } from '@holochain/client';
+import { encodeHashToBase64 } from '@holochain/client';
 import { clientContext } from '../../contexts';
 import type { Issuance, IssuanceStatus } from './types';
+import type { GenerationWithHash} from '../../../../shared/types';
 import '@material/mwc-button';
 import '@material/mwc-snackbar';
 import type { Snackbar } from '@material/mwc-snackbar';
@@ -23,7 +25,7 @@ let transaction: string | undefined = '';
 let quantity: number = 0;
 let status: IssuanceStatus = { type: 'Created' };
 
-let generations = [];
+let generations:GenerationWithHash = [];
 let generationTotalJoules = {};
 
 let errorSnackbar: Snackbar;
@@ -36,7 +38,7 @@ onMount(async () => {
       .filter(g => g.generation.status.type === 'Complete')
 
     quantity = await calculateTotalJoules(generations, client);
-    generationHashes = generations.map(g => g.hash);
+    generationHashes = generations.map(g => g.action.hashed.content.entry_hash);
 
   } catch (e) {
     errorSnackbar.labelText = `Error fetching generations: ${e}`;

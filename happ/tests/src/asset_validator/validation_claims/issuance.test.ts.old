@@ -4,7 +4,7 @@ import { runScenario, dhtSync, CallableCell } from '@holochain/tryorama';
 import { NewEntryAction, ActionHash, Record, AppBundleSource, fakeDnaHash, fakeActionHash, fakeAgentPubKey, fakeEntryHash } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 
-import { createIssuance, sampleIssuance } from './common.js';
+import { createIssuance, sampleIssuance, sampleGeneration, createGeneration } from './common.js';
 
 test('create Issuance', async () => {
   await runScenario(async scenario => {
@@ -239,31 +239,31 @@ test('create and delete Issuance', async () => {
 
   });
 });
-test('create_issuance updates generation status to Processed', async () => {
+test.only('create_issuance updates generation status to Processed', async () => {
   await runScenario(async scenario => {
     const testAppPath = process.cwd() + '/../workdir/asset-validator.happ';
     const appSource = { appBundleSource: { path: testAppPath } };
     const [alice] = await scenario.addPlayersWithApps([appSource]);
     await scenario.shareAllAgents();
 
-    // Create a sample generation and issuance
     const generationSample = await sampleGeneration(alice.cells[0]);
-    const issuanceSample = await sampleIssuance(alice.cells[0], [generationSample.actionHash]);
 
     // Alice creates a Generation
     const generationRecord: Record = await createGeneration(alice.cells[0], generationSample);
     assert.ok(generationRecord);
 
     // Alice creates an Issuance with the Generation
-    const issuanceRecord: Record = await createIssuance(alice.cells[0], issuanceSample);
+    const issuanceRecord: Record = await createIssuance(alice.cells[0], {generation_hashes: [generationRecord.signed_action.hashed.content.entry_hash], quantity: 10, status: {type: 'Created'}});
     assert.ok(issuanceRecord);
+
 
     // Check if the Generation status is updated to Processed
     const readGenerationOutput: Record = await alice.cells[0].callZome({
       zome_name: "validation_claims",
-      fn_name: "get_original_generation",
+      fn_name: "get_latest_generation",
       payload: generationRecord.signed_action.hashed.hash,
     });
-    assert.equal(readGenerationOutput.entry.Processed, true);
+    const generation = decode(readGenerationOutput.entry.Present.entry);
+    assert.equal(generation.status.type, 'Processed');
   });
 });

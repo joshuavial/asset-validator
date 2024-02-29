@@ -1,7 +1,7 @@
 <script lang="ts">
 import { getContext, onMount, createEventDispatcher } from 'svelte';
 import type { AppAgentClient } from '@holochain/client';
-import { updateGenerationStatus } from '../../shared/lib/generation';
+import { updateGenerationStatus } from '../../shared/lib/generations';
 import {encodeHashToBase64} from '@holochain/client';
 
 import type { GenerationWithHash, Observation } from '../../shared/types';

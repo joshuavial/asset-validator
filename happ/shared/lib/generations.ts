@@ -1,6 +1,7 @@
 import { decode } from '@msgpack/msgpack';
 import type { AppAgentClient, Record, ActionHash } from '@holochain/client';
-import type { Generation, GenerationWithHash } from '../types';
+import type { Generation, GenerationWithHash, Observation } from '../types';
+import {formatTimeAgo} from './utils';
 
 export async function fetchGenerations(client: AppAgentClient): Promise<Array<GenerationWithHash>> {
   try {
@@ -29,13 +30,11 @@ export async function fetchGenerations(client: AppAgentClient): Promise<Array<Ge
   }
 }
 
-export async function fetchGeneration(client: AppAgentClient, generationHash: ActionHash): Promise<{record: Record, generation: Generation, timeAgo: string, observations: Observation[]}> {
-  let loading = true;
+export async function fetchGeneration(client: AppAgentClient, generationHash: ActionHash): Promise<{record: Record, generation: Generation, timeAgo: string}> {
   let error: any = undefined;
   let record: Record | undefined;
   let generation: Generation | undefined;
   let timeAgo: string | undefined;
-  let observations: Observation[] = [];
 
   try {
     record = await client.callZome({
@@ -48,15 +47,13 @@ export async function fetchGeneration(client: AppAgentClient, generationHash: Ac
     if (record) {
       generation = decode((record.entry as any).Present.entry) as Generation;
       timeAgo = formatTimeAgo(record.signed_action.hashed.content.timestamp);
-      observations = await get_observations_for_generation(client, generationHash);
     }
   } catch (e) {
     error = e;
     throw e;
   }
 
-  loading = false;
-  return { record, generation, timeAgo, observations };
+  return { record, generation, timeAgo};
 }
 
 export async function updateGenerationStatus(client: AppAgentClient, originalGenerationHash: ActionHash, generationWithHash: GenerationWithHash, status: string) {
@@ -82,3 +79,14 @@ export async function updateGenerationStatus(client: AppAgentClient, originalGen
       throw error;
     }
   };
+
+export async function get_observations_for_generation(client, generation_hash) {
+  const records = await client.callZome({
+    cap_secret: null,
+    role_name: 'asset_validator',
+    zome_name: 'validation_claims',
+    fn_name: 'get_observations_for_generation',
+    payload: generation_hash,
+  });
+  return records.map(record => decode((record.entry as any).Present.entry) as Observation);
+}

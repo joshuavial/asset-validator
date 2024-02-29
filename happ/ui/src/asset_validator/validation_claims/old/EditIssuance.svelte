@@ -62,7 +62,7 @@ async function updateIssuance() {
   
     dispatch('issuance-updated', { actionHash: updateRecord.signed_action.hashed.hash });
   } catch (e) {
-    errorSnackbar.labelText = `Error updating the issuance: ${e.data.data}`;
+    errorSnackbar.labelText = `Error updating the issuance: ${e}`;
     errorSnackbar.show();
   }
 }

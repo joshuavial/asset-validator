@@ -72,7 +72,7 @@ async function fetchGeneration() {
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the generation: {error.data.data}</span>
+<span>Error fetching the generation: {error}</span>
 {:else}
 
 <div style="display: flex; flex-direction: column">

@@ -55,7 +55,7 @@ async function updateGeneration() {
   
     dispatch('generation-updated', { actionHash: updateRecord.signed_action.hashed.hash });
   } catch (e) {
-    errorSnackbar.labelText = `Error updating the generation: ${e.data.data}`;
+    errorSnackbar.labelText = `Error updating the generation: ${e}`;
     errorSnackbar.show();
   }
 }

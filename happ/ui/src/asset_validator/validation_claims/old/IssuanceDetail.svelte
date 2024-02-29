@@ -71,7 +71,7 @@ async function deleteIssuance() {
     });
     dispatch('issuance-deleted', { issuanceHash: issuanceHash });
   } catch (e: any) {
-    errorSnackbar.labelText = `Error deleting the issuance: ${e.data.data}`;
+    errorSnackbar.labelText = `Error deleting the issuance: ${e}`;
     errorSnackbar.show();
   }
 }
@@ -85,7 +85,7 @@ async function deleteIssuance() {
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the issuance: {error.data.data}</span>
+<span>Error fetching the issuance: {error}</span>
 {:else if editing}
 <EditIssuance
   originalIssuanceHash={ issuanceHash}

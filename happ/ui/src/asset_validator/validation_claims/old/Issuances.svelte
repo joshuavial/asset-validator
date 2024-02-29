@@ -6,6 +6,8 @@ import { clientContext } from '../../contexts';
 import IssuanceDetail from './IssuanceDetail.svelte';
 import type { ValidationClaimsSignal } from './types';
 
+import CreateIssuance from './CreateIssuance.svelte';
+
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
 
@@ -45,12 +47,14 @@ async function fetchIssuances() {
 
 </script>
 
+<CreateIssuance />
+
 {#if loading}
 <div style="display: flex; flex: 1; align-items: center; justify-content: center">
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the issuances: {error.data.data}.</span>
+<span>Error fetching the issuances: {error}.</span>
 {:else if hashes.length === 0}
 <span>No issuances found.</span>
 {:else}

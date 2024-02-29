@@ -2,13 +2,11 @@
 import { onMount, getContext, createEventDispatcher } from 'svelte';
 import { userContext } from '../../contexts';
 import '@material/mwc-circular-progress';
-import { decode } from '@msgpack/msgpack';
-import type { EntryHash, Record, AgentPubKey, ActionHash, AppAgentClient, NewEntryAction } from '@holochain/client';
 import { clientContext } from '../../contexts';
 import GenerationDetail from './GenerationDetail.svelte';
-import type { EntryHash, AgentPubKey, ActionHash, AppAgentClient } from '@holochain/client';
-import { fetchGenerations } from '../../shared/lib/generations';
-import type { ValidationClaimsSignal, GenerationWithHash } from './types';
+import type { Record, ActionHash, AppAgentClient } from '@holochain/client';
+import { fetchGenerations } from '../../../../shared/lib/generations';
+import type { ValidationClaimsSignal, GenerationWithHash } from '../../../../shared/types';
 
 
 let client: AppAgentClient = (getContext(clientContext) as any).getClient();
@@ -16,13 +14,12 @@ let user = (getContext(userContext) as any).getUser();
 const dispatch = createEventDispatcher();
 
 let hashes: Array<ActionHash> | undefined;
-let generations: Array<Generation> | undefined;
+let generations: Array<GenerationWithHash> | undefined;
 let loading = true;
 let error: any = undefined;
 
 $: hashes, loading, error;
 
-let generations: Array<GenerationWithHash> | undefined;
 onMount(() => {
   fetchGenerationsWrapper();
   client.on('signal', signal => {

@@ -46,7 +46,7 @@ async function createEthUser() {
     });
     dispatch('eth-user-created', { ethUserHash: record.signed_action.hashed.hash });
   } catch (e) {
-    errorSnackbar.labelText = `Error creating the eth user: ${e.data.data}`;
+    errorSnackbar.labelText = `Error creating the eth user: ${e}`;
     errorSnackbar.show();
   }
 }
