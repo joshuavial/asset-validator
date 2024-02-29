@@ -134,14 +134,14 @@ export async function allocateSensor(sensor: string, generationHash: string | nu
 }
 
 
-export async function submitWattbikeUrl(wattbikeUrl) {
+export async function submitWattbikeUrl(wattbikeUrl, generationHash) {
   try {
     const response = await fetch('http://' + VITE_AGENT_DOMAIN + '/wattbike', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ url: wattbikeUrl })
+      body: JSON.stringify({ url: wattbikeUrl, generation_hash: generationHash })
     });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
