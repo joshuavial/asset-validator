@@ -31,10 +31,11 @@ app.post('/wattbike', async (req, res) => {
     const browser = await chromium.launch();
     const page = await browser.newPage();
     await page.goto(url);
-    const content = await page.content();
-    console.log(content);
+    const htmlContent = await page.content();
+    const fs = require('fs');
+    fs.writeFileSync('wattbike.html', htmlContent);
     await browser.close();
-    res.send('HTML content fetched successfully');
+    res.send('HTML content saved to wattbike.html');
   } catch (error) {
     console.error('Error fetching HTML content:', error);
     res.status(500).send('Failed to fetch HTML content');
