@@ -48,30 +48,6 @@ export async function createGeneration(cell: CallableCell, generation = undefine
     });
 }
 
-
-
-export async function sampleIssuance(cell: CallableCell, partialIssuance = {}) {
-    return {
-        ...{
-          generation_hashes: [((await createGeneration(cell)).signed_action.hashed.content as NewEntryAction).entry_hash],
-	  transaction: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-	  quantity: 10,
-	  status: { type: 'Created' },
-        },
-        ...partialIssuance
-    };
-}
-
-export async function createIssuance(cell: CallableCell, issuance = undefined): Promise<Record> {
-    return cell.callZome({
-      zome_name: "validation_claims",
-      fn_name: "create_issuance",
-      payload: issuance || await sampleIssuance(cell),
-    });
-}
-
-
-
 export async function sampleIssuance(cell: CallableCell, partialIssuance = {}) {
     return {
         ...{
