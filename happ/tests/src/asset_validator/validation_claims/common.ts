@@ -70,3 +70,25 @@ export async function createIssuance(cell: CallableCell, issuance = undefined): 
     });
 }
 
+
+
+export async function sampleIssuance(cell: CallableCell, partialIssuance = {}) {
+    return {
+        ...{
+          generation_hashes: [(await createGeneration(cell)).signed_action.hashed.hash],
+	  transaction: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+	  quantity: 0.5,
+	  status: { type: 'Created' },
+        },
+        ...partialIssuance
+    };
+}
+
+export async function createIssuance(cell: CallableCell, issuance = undefined): Promise<Record> {
+    return cell.callZome({
+      zome_name: "validation_claims",
+      fn_name: "create_issuance",
+      payload: issuance || await sampleIssuance(cell),
+    });
+}
+

@@ -1,3 +1,5 @@
+pub mod issuance;
+pub use issuance::*;
 pub mod generation;
 pub use generation::*;
 pub mod observation;
@@ -10,6 +12,7 @@ use hdi::prelude::*;
 pub enum EntryTypes {
     Observation(Observation),
     Generation(Generation),
+    Issuance(Issuance),
 }
 #[derive(Serialize, Deserialize)]
 #[hdk_link_types]
@@ -18,6 +21,8 @@ pub enum LinkTypes {
     GenerationToObservation,
     GenerationUpdates,
     Generations,
+    GenerationToIssuances,
+    IssuanceUpdates,
 }
 #[hdk_extern]
 pub fn genesis_self_check(
@@ -50,6 +55,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 generation,
                             )
                         }
+                        EntryTypes::Issuance(issuance) => {
+                            validate_create_issuance(
+                                EntryCreationAction::Create(action),
+                                issuance,
+                            )
+                        }
                     }
                 }
                 OpEntry::UpdateEntry { app_entry, action, .. } => {
@@ -66,6 +77,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 generation,
                             )
                         }
+                        EntryTypes::Issuance(issuance) => {
+                            validate_create_issuance(
+                                EntryCreationAction::Update(action),
+                                issuance,
+                            )
+                        }
                     }
                 }
                 _ => Ok(ValidateCallbackResult::Valid),
@@ -80,6 +97,17 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     action,
                 } => {
                     match (app_entry, original_app_entry) {
+                        (
+                            EntryTypes::Issuance(issuance),
+                            EntryTypes::Issuance(original_issuance),
+                        ) => {
+                            validate_update_issuance(
+                                action,
+                                issuance,
+                                original_action,
+                                original_issuance,
+                            )
+                        }
                         (
                             EntryTypes::Generation(generation),
                             EntryTypes::Generation(original_generation),
@@ -133,6 +161,9 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 generation,
                             )
                         }
+                        EntryTypes::Issuance(issuance) => {
+                            validate_delete_issuance(action, original_action, issuance)
+                        }
                     }
                 }
                 _ => Ok(ValidateCallbackResult::Valid),
@@ -172,6 +203,22 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 LinkTypes::Generations => {
                     validate_create_link_generations(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::GenerationToIssuances => {
+                    validate_create_link_generation_to_issuances(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::IssuanceUpdates => {
+                    validate_create_link_issuance_updates(
                         action,
                         base_address,
                         target_address,
@@ -225,6 +272,24 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
+                LinkTypes::GenerationToIssuances => {
+                    validate_delete_link_generation_to_issuances(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::IssuanceUpdates => {
+                    validate_delete_link_issuance_updates(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
             }
         }
         FlatOp::StoreRecord(store_record) => {
@@ -241,6 +306,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             validate_create_generation(
                                 EntryCreationAction::Create(action),
                                 generation,
+                            )
+                        }
+                        EntryTypes::Issuance(issuance) => {
+                            validate_create_issuance(
+                                EntryCreationAction::Create(action),
+                                issuance,
                             )
                         }
                     }
@@ -328,6 +399,37 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 Ok(result)
                             }
                         }
+                        EntryTypes::Issuance(issuance) => {
+                            let result = validate_create_issuance(
+                                EntryCreationAction::Update(action.clone()),
+                                issuance.clone(),
+                            )?;
+                            if let ValidateCallbackResult::Valid = result {
+                                let original_issuance: Option<Issuance> = original_record
+                                    .entry()
+                                    .to_app_option()
+                                    .map_err(|e| wasm_error!(e))?;
+                                let original_issuance = match original_issuance {
+                                    Some(issuance) => issuance,
+                                    None => {
+                                        return Ok(
+                                            ValidateCallbackResult::Invalid(
+                                                "The updated entry type must be the same as the original entry type"
+                                                    .to_string(),
+                                            ),
+                                        );
+                                    }
+                                };
+                                validate_update_issuance(
+                                    action,
+                                    issuance,
+                                    original_action,
+                                    original_issuance,
+                                )
+                            } else {
+                                Ok(result)
+                            }
+                        }
                     }
                 }
                 OpRecord::DeleteEntry { original_action_hash, action, .. } => {
@@ -396,6 +498,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 original_generation,
                             )
                         }
+                        EntryTypes::Issuance(original_issuance) => {
+                            validate_delete_issuance(
+                                action,
+                                original_action,
+                                original_issuance,
+                            )
+                        }
                     }
                 }
                 OpRecord::CreateLink {
@@ -432,6 +541,22 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::Generations => {
                             validate_create_link_generations(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::GenerationToIssuances => {
+                            validate_create_link_generation_to_issuances(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                        LinkTypes::IssuanceUpdates => {
+                            validate_create_link_issuance_updates(
                                 action,
                                 base_address,
                                 target_address,
@@ -492,6 +617,24 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         }
                         LinkTypes::Generations => {
                             validate_delete_link_generations(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::GenerationToIssuances => {
+                            validate_delete_link_generation_to_issuances(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::IssuanceUpdates => {
+                            validate_delete_link_issuance_updates(
                                 action,
                                 create_link.clone(),
                                 base_address,

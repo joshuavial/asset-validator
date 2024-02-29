@@ -1,54 +1,10 @@
 use hdk::prelude::*;
-use crate::generation::{update_generation, UpdateGenerationInput};
 use validation_claims_integrity::*;
 #[hdk_extern]
 pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
     let issuance_hash = create_entry(&EntryTypes::Issuance(issuance.clone()))?;
-    for generation_hash in issuance.generation_hashes {
-        let details = get_details(generation_hash.clone(), GetOptions::latest())?
-            .ok_or(wasm_error!(WasmErrorInner::Guest("Generation not found".into())))?;
-        let (original_action_hash, latest_action_hash, generation_entry) = if let Details::Entry(
-            entry_details,
-        ) = details {
-            let actions = entry_details.actions;
-            if actions.is_empty() {
-                return Err(
-                    wasm_error!(
-                        WasmErrorInner::Guest("No actions found for entry".into())
-                    ),
-                );
-            }
-            let original_action_hash = actions.first().unwrap().action_address().clone();
-            let latest_action_hash = actions.last().unwrap().action_address().clone();
-            let latest_record = get(latest_action_hash.clone(), GetOptions::latest())?
-                .ok_or(
-                    wasm_error!(
-                        WasmErrorInner::Guest("Record not found for latest action"
-                        .into())
-                    ),
-                )?;
-            let generation_entry = latest_record.entry.clone();
-            (original_action_hash, latest_action_hash, generation_entry)
-        } else {
-            return Err(
-                wasm_error!(WasmErrorInner::Guest("Expected entry details".into())),
-            );
-        };
-        let mut generation: Generation = match generation_entry {
-            RecordEntry::Present(entry) => entry.try_into()?,
-            _ => {
-                return Err(
-                    wasm_error!(WasmErrorInner::Guest("Entry is not present".into())),
-                );
-            }
-        };
-        generation.status = GenerationStatus::Processed;
-        let update_generation_input = UpdateGenerationInput {
-            original_generation_hash: original_action_hash,
-            previous_generation_hash: latest_action_hash,
-            updated_generation: generation,
-        };
-        update_generation(update_generation_input)?;
+    for base in issuance.generation_hashes.clone() {
+        create_link(base, issuance_hash.clone(), LinkTypes::GenerationToIssuances, ())?;
     }
     let record = get(issuance_hash.clone(), GetOptions::default())?
         .ok_or(
@@ -56,24 +12,7 @@ pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
                 WasmErrorInner::Guest(String::from("Could not find the newly created Issuance"))
             ),
         )?;
-    let path = Path::from("issuances");
-    create_link(
-        path.path_entry_hash()?,
-        issuance_hash.clone(),
-        LinkTypes::Issuances,
-        (),
-    )?;
     Ok(record)
-}
-fn get_latest_action_hash(entry_hash: ActionHash) -> ExternResult<Option<ActionHash>> {
-    let links = get_links(entry_hash.clone(), LinkTypes::GenerationUpdates, None)?;
-    let latest_link = links
-        .into_iter()
-        .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));
-    match latest_link {
-        Some(link) => Ok(Some(link.target.into_action_hash().unwrap())),
-        None => Ok(Some(entry_hash)),
-    }
 }
 #[hdk_extern]
 pub fn get_latest_issuance(
@@ -222,15 +161,6 @@ pub fn delete_issuance(original_issuance_hash: ActionHash) -> ExternResult<Actio
             }
         }
     }
-    let path = Path::from("issuances");
-    let links = get_links(path.path_entry_hash()?, LinkTypes::Issuances, None)?;
-    for link in links {
-        if let Some(hash) = link.target.into_action_hash() {
-            if hash.eq(&original_issuance_hash) {
-                delete_link(link.create_link_hash)?;
-            }
-        }
-    }
     delete_entry(original_issuance_hash)
 }
 #[hdk_extern]
@@ -262,13 +192,13 @@ pub fn get_oldest_delete_for_issuance(
 }
 #[hdk_extern]
 pub fn get_issuances_for_generation(
-    generation_hash: EntryHash,
+    generation_hash: ActionHash,
 ) -> ExternResult<Vec<Link>> {
     get_links(generation_hash, LinkTypes::GenerationToIssuances, None)
 }
 #[hdk_extern]
 pub fn get_deleted_issuances_for_generation(
-    generation_hash: EntryHash,
+    generation_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
     let details = get_link_details(
         generation_hash,
