@@ -147,6 +147,12 @@ function canAllocate() {
       <button type="submit">Submit URL</button>
     </form>
   </div>
+  <div class="wattbike-form-container">
+    <form action="/wattbike" method="post" target="_blank" class="wattbike-form">
+      <input type="url" name="url" placeholder="Enter URL" required />
+      <button type="submit">Submit URL</button>
+    </form>
+  </div>
 
     {#if generation.status.type === 'Complete' && totalJoulesGenerated == 0}
       <button on:click={cancelGeneration} class="cancel-button">Cancel</button>
@@ -193,6 +199,15 @@ function canAllocate() {
     align-items: flex-end;
   }
   .wattbike-form input {
+    margin-bottom: 4px;
+  }
+  .wattbike-form-container {
+    position: relative;
+    padding: 8px;
+    text-align: right;
+  }
+  .wattbike-form {
+    display: inline-block;
     margin-bottom: 4px;
   }
   .cancel-button {
