@@ -17,7 +17,11 @@ const router = express.Router()
 export default router
 
 router.post('/grant', async (req, res) => {
-  const {signingKey, cellId} = req.body
+  const {password, signingKey, cellId} = req.body
+  if (password !== process.env.ADMIN_SECRET) {
+    res.status(403).send('Forbidden');
+    return;
+  }
   try {
     const decodedSigningKey = decodeHashFromBase64(signingKey);
     const decodedCellId = [decodeHashFromBase64(cellId[0]), decodeHashFromBase64(cellId[1])]
@@ -42,9 +46,7 @@ router.get('/sensor_allocations', async (_, res) => {
   res.json(sensor_allocations)
 })
 
-router.post('/agent_ws', async (_, res) => {
-  //TODO check for password in the body that matches ADMIN_SECRET env var
-  //return 403 if it does not match
+router.post('/agent_ws', async (req, res) => {
   const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
   const agent_ws_url = await appAgentWsURL(adminWs) 
   await adminWs.client.close()

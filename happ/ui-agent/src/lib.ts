@@ -12,7 +12,6 @@ export function cellIdFromClient(client) {
 }
 
 export async function newAppAgentWebsocket(password) {
-  //TODO send the password in a post request
     let response = await fetch('http://' + VITE_AGENT_DOMAIN + '/agent_ws', {
       method: 'POST',
       headers: {
@@ -20,6 +19,9 @@ export async function newAppAgentWebsocket(password) {
       },
       body: JSON.stringify({ password })
     });
+    if (!response.ok) {
+      return null;
+    }
     let data = await response.json();
     let url = data.agent_ws_url;
     return await AppAgentWebsocket.connect(new URL(url), 'asset-validator');
@@ -64,7 +66,7 @@ export async function getAgentWsUrl() {
   }
   return response.json();
 }
-export async function createSigningCredentials(cellId) {
+export async function createSigningCredentials(cellId, password) {
     const [keyPair, signingKey] = await generateSigningKeyPair();
     const response = await fetch('http://' + VITE_AGENT_DOMAIN + '/grant', {
       method: 'POST',
@@ -72,10 +74,14 @@ export async function createSigningCredentials(cellId) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
+        password,
         signingKey: encodeHashToBase64(signingKey),
         cellId: [encodeHashToBase64(cellId[0]), encodeHashToBase64(cellId[1])]
       })
     });
+    if (!response.ok) {
+      return null;
+    }
     const data = await response.json();
     const capSecret = decodeHashFromBase64(data.capSecret);
     const signingCredentials = { capSecret, keyPair, signingKey};
