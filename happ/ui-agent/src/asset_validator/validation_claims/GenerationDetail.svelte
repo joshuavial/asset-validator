@@ -129,8 +129,8 @@ function canAllocate() {
 <div style="display: flex; flex-direction: column">
   <div style="display: flex; flex-direction: row">
     <span class="generation-span" style="flex: 1" on:click={toggleDetails}> 
-      {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}[fun bike] {/if}
-      {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}[work bike] {/if}
+      {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}[fun bike] {/if}
+      {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}[work bike] {/if}
       {generation.user_handle}:
       {generation.status.type}:
       {timeAgo}
@@ -146,21 +146,22 @@ function canAllocate() {
       <button on:click={cancelGeneration} class="cancel-button">Cancel</button>
     {/if}
 
-    {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}
-      <button on:click={() => clearSensorAllocation(SENSOR_2)}>Clear work bike allocation</button>
-    {:else}
-      {#if canAllocate()}
-        <button on:click={() => allocateSensorToGeneration(SENSOR_2)}>Allocate to work bike</button>
-      {/if}
-    {/if}
     {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}
-      <button on:click={() => clearSensorAllocation(SENSOR_1)}>Finish fun bike</button>
+      <button on:click={() => clearSensorAllocation(SENSOR_1)}>Clear work bike allocation</button>
     {:else}
       {#if canAllocate()}
-        <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate to fun bike</button>
+        <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate to work bike</button>
       {/if}
     {/if}
-
+    <!--
+    {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}
+      <button on:click={() => clearSensorAllocation(SENSOR_2)}>Finish fun bike</button>
+    {:else}
+      {#if canAllocate()}
+        <button on:click={() => allocateSensorToGeneration(SENSOR_2)}>Allocate to fun bike</button>
+      {/if}
+    {/if}
+    -->
 
     <p>User Address: {generation.user_address}</p>
     <CreateImageObservation generationRecord={record}/>
