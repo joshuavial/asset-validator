@@ -141,11 +141,9 @@ function canAllocate() {
   </div>
   {#if showDetails}
   <div class="details">
-  <div class="wattbike-form-container">
-    <form action="/wattbike" method="post" target="_blank" class="wattbike-form">
-      <input type="url" name="url" placeholder="Enter URL" required />
-      <button type="submit">Submit URL</button>
-    </form>
+  <div class="wattbike-api-container">
+    <input type="url" bind:value={wattbikeUrl} placeholder="Enter URL" required />
+    <button on:click={submitWattbikeUrl}>Submit URL</button>
   </div>
 
     {#if generation.status.type === 'Complete' && totalJoulesGenerated == 0}
@@ -187,13 +185,14 @@ function canAllocate() {
     right: 0;
     padding: 8px;
   }
-  .wattbike-form {
+  .wattbike-api-container {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
   }
-  .wattbike-form input {
-    margin-bottom: 4px;
+  .wattbike-api-container input {
+    margin-right: 8px;
   }
   .wattbike-form-container {
     position: relative;
@@ -231,3 +230,23 @@ function canAllocate() {
     background-color: #e6e6e6;
   }
 </style>
+let wattbikeUrl = '';
+
+async function submitWattbikeUrl() {
+  try {
+    const response = await fetch('/wattbike', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ url: wattbikeUrl })
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    // Handle the response from the API
+  } catch (error) {
+    console.error('Error submitting wattbike URL:', error);
+  }
+}
+
