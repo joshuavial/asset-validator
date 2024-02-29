@@ -38,7 +38,8 @@ app.post('/wattbike', async (req, res) => {
     await page.waitForSelector('.summary__segment h4 + .summary__value--large', { timeout: 10000 });
     const htmlContent = await page.content();
     const dom = new JSDOM(htmlContent);
-    const energyElement = dom.window.document.querySelector('.summary__segment h4 + .summary__value--large');
+    const energyElements = dom.window.document.querySelectorAll('.summary__segment h4 + .summary__value--large');
+    const energyElement = energyElements.length > 5 ? energyElements[5] : null; // Get the sixth element
     const energy = energyElement ? energyElement.textContent.trim() : 'Energy value not found';
     fs.writeFileSync('wattbike.html', htmlContent);
     console.log(`Energy value extracted: ${energy}`);
