@@ -17,7 +17,7 @@ export async function getAppAgentWs() {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const HAPP_PATH = path.join(__dirname, '../asset-validator.happ.dist')
+const HAPP_PATH = path.join(__dirname, '../happ/asset-validator.happ.dist')
 const AGENT_PUB_KEY_PATH = path.join(__dirname, 'agent-pub-key.txt');
 
 async function loadAgentPubKey() {

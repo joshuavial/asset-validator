@@ -46,6 +46,7 @@ async function uploadImage() {
           },
         },
       });
+      console.log(record);
       dispatch('image-uploaded', { observationHash: record.signed_action.hashed.hash });
     } catch (e) {
       errorSnackbar.labelText = `Error uploading the image: ${e}`;

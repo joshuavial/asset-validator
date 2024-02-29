@@ -42,8 +42,10 @@ router.get('/agent_ws', async (_, res) => {
 })
 
 router.post('/login_or_register', async(req, res) => {
-  const { handle, signingKey } = req.body;
-  const ethAddress = addressForKey(signingKey)
+  const { handle, signingKey, ethAddress } = req.body;
+  if (!ethAddress) {
+    ethAddress = addressForKey(signingKey)
+  }
   const decodedSigningKey = decodeHashFromBase64(signingKey);
   try {
     const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);

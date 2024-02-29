@@ -40,7 +40,7 @@ app.post('/wattbike', async (req, res) => {
     await page.goto(url);
     await page.goto(url);
     // Wait for the specific element that indicates the page has loaded
-    await page.waitForSelector('.summary__segment h4 + .summary__value--large', { timeout: 10000 });
+    await page.waitForSelector('.summary__segment h4 + .summary__value--large', { timeout: 60000 });
     const htmlContent = await page.content();
     const dom = new JSDOM(htmlContent);
     const energyElements = dom.window.document.querySelectorAll('.summary__segment h4 + .summary__value--large');

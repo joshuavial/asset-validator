@@ -12,7 +12,7 @@ import '@material/mwc-icon-button';
 
 import { submitWattbikeUrl} from '../../lib';
 
-import { updateGenerationStatus, get_observations_for_generation  } from '../../../../shared/lib/generations';
+import { updateGenerationStatus, get_observations_for_generation, } from '../../../../shared/lib/generations';
 
 const dispatch = createEventDispatcher();
 

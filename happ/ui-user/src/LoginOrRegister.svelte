@@ -76,9 +76,11 @@
     }
   });
 
-  async function register() {
-
+  function setEthAddress() {
     ethAddress = tempEthAddress;
+  }
+
+  async function register() {
     try {
         let payload = {
           handle,
@@ -158,7 +160,7 @@
         <div>
             If token proof isn't working submit this form with an email, ENS, or eth address. Just remember it will be public in the hApp.
             <input type="text" bind:value={tempEthAddress} placeholder="ethAddress, email, ENS" required>
-            <button on:click={register}>Register</button>
+            <button on:click={setEthAddress}>Register</button>
         </div>
   {/if}
 {/if}
