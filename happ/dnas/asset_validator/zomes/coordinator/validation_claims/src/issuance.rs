@@ -1,5 +1,6 @@
 use hdk::prelude::*;
 use validation_claims_integrity::*;
+use crate::generation::{update_generation, UpdateGenerationInput, get_latest_generation};
 #[hdk_extern]
 pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
     let issuance_hash = create_entry(&EntryTypes::Issuance(issuance.clone()))?;
@@ -8,7 +9,8 @@ pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
         // Get the latest generation
         let latest_generation_record = get_latest_generation(original_generation_hash.clone())?;
         if let Some(latest_generation) = latest_generation_record {
-            let mut updated_generation: Generation = latest_generation.entry().to_app_option()?.ok_or(
+            let entry_option = latest_generation.entry().to_app_option().map_err(|e| wasm_error!(WasmErrorInner::Serialize(e)))?;
+            let mut updated_generation: Generation = entry_option.ok_or(
                 wasm_error!(WasmErrorInner::Guest(String::from("Failed to deserialize generation")))
             )?;
             updated_generation.status = GenerationStatus::Processed;
@@ -18,6 +20,8 @@ pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
                 updated_generation,
             };
             update_generation(update_generation_input)?;
+        } else {
+            return Err(wasm_error!(WasmErrorInner::Guest(String::from("Failed to get latest generation"))));
         }
     }
     let record = get(issuance_hash.clone(), GetOptions::default())?
