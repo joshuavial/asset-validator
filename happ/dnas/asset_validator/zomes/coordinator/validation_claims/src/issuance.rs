@@ -3,8 +3,22 @@ use validation_claims_integrity::*;
 #[hdk_extern]
 pub fn create_issuance(issuance: Issuance) -> ExternResult<Record> {
     let issuance_hash = create_entry(&EntryTypes::Issuance(issuance.clone()))?;
-    for base in issuance.generation_hashes.clone() {
-        create_link(base, issuance_hash.clone(), LinkTypes::GenerationToIssuances, ())?;
+    for original_generation_hash in issuance.generation_hashes.clone() {
+        create_link(original_generation_hash.clone(), issuance_hash.clone(), LinkTypes::GenerationToIssuances, ())?;
+        // Get the latest generation
+        let latest_generation_record = get_latest_generation(original_generation_hash.clone())?;
+        if let Some(latest_generation) = latest_generation_record {
+            let mut updated_generation: Generation = latest_generation.entry().to_app_option()?.ok_or(
+                wasm_error!(WasmErrorInner::Guest(String::from("Failed to deserialize generation")))
+            )?;
+            updated_generation.status = GenerationStatus::Processed;
+            let update_generation_input = UpdateGenerationInput {
+                original_generation_hash: original_generation_hash.clone(),
+                previous_generation_hash: latest_generation.action_address().clone(),
+                updated_generation,
+            };
+            update_generation(update_generation_input)?;
+        }
     }
     let record = get(issuance_hash.clone(), GetOptions::default())?
         .ok_or(
