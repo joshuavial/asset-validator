@@ -42,7 +42,9 @@ router.get('/sensor_allocations', async (_, res) => {
   res.json(sensor_allocations)
 })
 
-router.get('/agent_ws', async (_, res) => {
+router.post('/agent_ws', async (_, res) => {
+  //TODO check for password in the body that matches ADMIN_SECRET env var
+  //return 403 if it does not match
   const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
   const agent_ws_url = await appAgentWsURL(adminWs) 
   await adminWs.client.close()

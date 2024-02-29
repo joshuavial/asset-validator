@@ -11,8 +11,15 @@ export function cellIdFromClient(client) {
     return client.cachedAppInfo.cell_info.asset_validator[0].provisioned.cell_id;
 }
 
-export async function newAppAgentWebsocket() {
-    let response = await fetch('http://' + VITE_AGENT_DOMAIN + '/agent_ws');
+export async function newAppAgentWebsocket(password) {
+  //TODO send the password in a post request
+    let response = await fetch('http://' + VITE_AGENT_DOMAIN + '/agent_ws', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ password })
+    });
     let data = await response.json();
     let url = data.agent_ws_url;
     return await AppAgentWebsocket.connect(new URL(url), 'asset-validator');
