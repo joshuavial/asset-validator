@@ -45,14 +45,14 @@ app.post('/wattbike', async (req, res) => {
     // Convert kcal to joules (1 kcal = 4184 J)
     energy = !isNaN(energy) ? energy * 4184 : 0;
 
-    // Extract event time
-    const eventTimeElement = dom.window.document.querySelector('.heading__user-date');
-    const eventTimeString = eventTimeElement ? eventTimeElement.textContent.match(/— (\d{2}\/\d{2}\/\d{2}, \d{2}:\d{2} [APM]{2}) —/)[1] : '';
+    // Extract duration
+    const durationElement = dom.window.document.querySelector('div[class="laps-summary-header__segment"] h3 + p');
+    const durationText = durationElement ? durationElement.textContent.trim() : '';
     // Extract duration
     const durationElement = dom.window.document.querySelector('h3[data-mh="header__segment-heading--primary"] + .summary__value--large');
     const durationText = durationElement ? durationElement.textContent.trim() : '';
 
-    console.log(`Event time extracted: ${eventTimeString}`);
+    console.log(`Duration extracted: ${durationText}`);
     console.log(`Duration extracted: ${durationText}`);
 
     console.log(`Energy value extracted: ${energyText} kcal which is ${energy} joules`);
