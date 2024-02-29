@@ -19,7 +19,6 @@
   let signingCredentials = writable<SigningCredentials | null>(null);
 
   let loading = true; 
- let password: string = '';
   let password: string | null = null;
 
   setContext(clientContext, {
@@ -55,15 +54,8 @@
       <button on:click={handlePasswordSubmit}>Submit</button>
     {/if}
   </div>
+
 {:else}
-
- {#if !client}
-   <div>
-     <input type="password" bind:value={password} placeholder="Enter your password" />
-     <button on:click={handlePasswordSubmit}>Submit</button>
-   </div>
- {:else}
-
 <nav>
   <ul>
     {#if $signingCredentials}
