@@ -79,7 +79,6 @@ app.post('/wattbike', async (req, res) => {
     res.status(500).send('Failed to fetch HTML content');
   }
 })
-}) 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
