@@ -47,14 +47,19 @@ app.post('/wattbike', async (req, res) => {
 
     // Extract duration
     const durationElement = dom.window.document.querySelector('div[class="laps-summary-header__segment"] h3 + p');
-    const durationText = durationElement ? durationElement.textContent.trim() : '';
+    const durationText = durationElement ? durationElement.textContent.trim() : '0:00';
 
-    //TODO durationText is in minutes, convert it into seconds
+    // Convert durationText from "HH:MM:SS" or "MM:SS" to seconds
+    const timeParts = durationText.split(':').map(Number);
+    const durationInSeconds = timeParts.length === 3
+      ? timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2]
+      : timeParts[0] * 60 + timeParts[1];
 
-    console.log(`Duration extracted: ${durationText}`);
+    console.log(`Duration extracted: ${durationText} (${durationInSeconds} seconds)`);
 
     console.log(`Energy value extracted: ${energyText} kcal which is ${energy} joules`);
     // Save the new observation
+    const observation = { timestamp: new Date(), energyJoules: energy, durationSeconds: durationInSeconds };
     const observation = { timestamp: new Date(), energyJoules: energy };
     await browser.close();
     res.send({ observation});
@@ -64,6 +69,7 @@ app.post('/wattbike', async (req, res) => {
     console.error('Error fetching HTML content:', error);
     res.status(500).send('Failed to fetch HTML content');
   }
+})
 }) 
 
 const __filename = fileURLToPath(import.meta.url);
