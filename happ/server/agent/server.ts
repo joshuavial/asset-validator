@@ -33,6 +33,9 @@ app.post('/wattbike', async (req, res) => {
     const browser = await chromium.launch();
     const page = await browser.newPage();
     await page.goto(url);
+    await page.goto(url);
+    // Wait for the specific element that indicates the page has loaded
+    await page.waitForSelector('.summary__segment h4 + .summary__value--large', { timeout: 10000 });
     const htmlContent = await page.content();
     const dom = new JSDOM(htmlContent);
     const energyElement = dom.window.document.querySelector('.summary__segment h4 + .summary__value--large');
