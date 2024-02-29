@@ -155,7 +155,7 @@
     </div>
         <div>
             If token proof isn't working submit this form with an email, ENS, or eth address. Just remember it will be public in the hApp.
-            <input type="text" bind:value={ethAddress} placeholder="ethAddress, email, ENS" required>
+            <input type="text" value={ethAddress} on:input={e => ethAddress = e.target.value} placeholder="ethAddress, email, ENS" required>
             <button on:click={register}>Register</button>
         </div>
   {/if}
