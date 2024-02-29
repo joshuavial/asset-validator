@@ -115,7 +115,7 @@ function canAllocate() {
 }
 
 function handleWattBike() {
-  submitWattbikeUrl(wattbikeUrl, encodeHashToBase64(hash));
+  submitWattbikeUrl(wattbikeUrl, encodeHashToBase64(hash), client);
 }
 </script>
 

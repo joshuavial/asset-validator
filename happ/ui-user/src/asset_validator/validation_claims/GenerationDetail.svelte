@@ -73,6 +73,8 @@ async function fetchGeneration() {
 </div>
 {:else if error}
 <span>Error fetching the generation: {error}</span>
+{:else if generation.status.type === 'Cancelled'}
+  <span></span>
 {:else}
 
 <div style="display: flex; flex-direction: column">

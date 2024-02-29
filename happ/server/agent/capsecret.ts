@@ -75,6 +75,7 @@ router.post('/observation', async(req, res) => {
       generation_hash: sensor_allocations[sensor],
       data: { EnergyObservation: { from, to, energy } }
     };
+    console.log(payload);
     const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
     const appAgentWs = await getAppAgentWS(adminWs);
     const cell_id = await getCellId('asset_validator', adminWs);
@@ -99,7 +100,7 @@ async function authoriseCell(role, adminWs) {
   await adminWs.authorizeSigningCredentials(cell_id);
 }
 
-async function getAppAgentWS(adminWs) {
+export async function getAppAgentWS(adminWs) {
   return await AppAgentWebsocket.connect(
     await appAgentWsURL(adminWs),
     'asset-validator'
@@ -119,10 +120,9 @@ async function grantCapSecret(adminWs, signingKey, cellId) {
     signingKey
   );
   return capSecret
-
 }
 
-async function getCellId(role, adminWs) {
+export async function getCellId(role, adminWs) {
   const appInterfaces = await adminWs.listApps({});
   const appInfo = appInterfaces[0];
   if (!(CellType.Provisioned in appInfo.cell_info[role][0])) {

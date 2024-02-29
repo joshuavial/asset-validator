@@ -1,7 +1,12 @@
 import 'dotenv/config'
 import express from 'express'
 import http from 'http'
-import fs from 'fs'
+import {getAppAgentWS, getCellId} from './capsecret'
+
+import { GrantedFunctionsType, AppAgentWebsocket, AdminWebsocket, CellType,  decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+
+const ADMIN_WS_PORT = process.env.WC_ADMIN_PORT
+const ADMIN_WS_URL = new URL(`ws://127.0.0.1:${ADMIN_WS_PORT}`);
 
 import path from 'path'
 import {fileURLToPath} from 'url'
@@ -24,7 +29,7 @@ import { chromium } from 'playwright';
 import { JSDOM } from 'jsdom';
 
 app.post('/wattbike', async (req, res) => {
-  const { url } = req.body;
+  const { url, generation_hash } = req.body;
   if (typeof url !== 'string' || !url) {
     res.status(400).send('Invalid URL');
     return;
@@ -66,15 +71,26 @@ app.post('/wattbike', async (req, res) => {
     // Calculate the 'from' timestamp by adding the duration in seconds to the 'to' timestamp
     const fromTimeStamp = startTimeStamp + durationInSeconds;
 
-    console.log(`Start time extracted: ${startTimeText} (${startTimeStamp})`);
-
-    console.log(`Duration extracted: ${durationText} (${durationInSeconds} seconds)`);
-
-    console.log(`Energy value extracted: ${energyText} kcal which is ${energy} joules`);
     // Save the new observation
-    const observation = { timestamp: new Date(), energyJoules: energy, from: fromTimeStamp, to: startTimeStamp };
+    let observedAt: number = Math.floor(Date.now() / 1000);
+    const payload = { observed_at: observedAt, generation_hash, data: {EnergyObservation: {
+      energy: energy, from: fromTimeStamp, to: startTimeStamp 
+    }}};
+
     await browser.close();
-    res.send({ observation});
+
+    const adminWs = await AdminWebsocket.connect(ADMIN_WS_URL);
+    const appAgentWs = await getAppAgentWS(adminWs);
+    const cell_id = await getCellId('asset_validator', adminWs);
+    await adminWs.authorizeSigningCredentials(cell_id);
+    const record = await appAgentWs.callZome({
+      cell_id,
+      cap_secret: null, // Ensure this is correct for your app
+      zome_name: 'validation_claims',
+      fn_name: 'create_observation',
+      payload,
+    });
+    res.send({ record });
     //await browser.close();
     //res.send({ energyText, energy, eventTimeString, durationText });
   } catch (error) {

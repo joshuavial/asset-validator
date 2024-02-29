@@ -5,7 +5,6 @@
   "main": "test.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start:user": "tsx watch user/index.ts",
     "start:agent": "tsx watch agent/index.ts"
   },
@@ -13,6 +12,7 @@
   "license": "ISC",
   "devDependencies": {
     "@holochain/client": "^0.16.5",
+    "@playwright/test": "^1.42.0",
     "@types/node": "^20.11.10",
     "ts-node": "^10.9.2",
     "tslib": "^2.6.2",
@@ -21,7 +21,10 @@
   },
   "dependencies": {
     "@msgpack/msgpack": "^3.0.0-beta2",
+    "axios": "^1.6.7",
     "cors": "^2.8.5",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "jsdom": "^24.0.0",
+    "playwright": "^1.42.0"
   }
 }

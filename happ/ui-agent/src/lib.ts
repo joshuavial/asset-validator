@@ -1,4 +1,4 @@
-import type { SigningCredentials, AppAgentClient } from '@holochain/client';
+import type { Record, SigningCredentials, AppAgentClient } from '@holochain/client';
 import { AppAgentWebsocket, encodeHashToBase64, decodeHashFromBase64, generateSigningKeyPair } from '@holochain/client';
 import { decode, encode } from '@msgpack/msgpack';
 
@@ -134,7 +134,7 @@ export async function allocateSensor(sensor: string, generationHash: string | nu
 }
 
 
-export async function submitWattbikeUrl(wattbikeUrl, generationHash) {
+export async function submitWattbikeUrl(wattbikeUrl, generationHash, client) {
   try {
     const response = await fetch('http://' + VITE_AGENT_DOMAIN + '/wattbike', {
       method: 'POST',
@@ -147,8 +147,7 @@ export async function submitWattbikeUrl(wattbikeUrl, generationHash) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const responseBody = await response.json();
-    console.log('Response Body:', responseBody);
-    // Handle the response from the API
+    console.log(responseBody);
   } catch (error) {
     console.error('Error submitting wattbike URL:', error);
   }
