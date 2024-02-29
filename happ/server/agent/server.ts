@@ -59,7 +59,6 @@ app.post('/wattbike', async (req, res) => {
 
     console.log(`Energy value extracted: ${energyText} kcal which is ${energy} joules`);
     // Save the new observation
-    const observation = { timestamp: new Date(), energyJoules: energy, durationSeconds: durationInSeconds };
     const observation = { timestamp: new Date(), energyJoules: energy };
     await browser.close();
     res.send({ observation});
