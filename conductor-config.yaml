@@ -14,7 +14,7 @@ network:
     tx5_max_ephemeral_udp_port: 65535 
 keystore:
   type: lair_server
-  connection_url: unix:///home/jv/clients/holo/asset-validator/socket?k=kHEK9GRyNQJQYJb3jf-3FZnhl1hH04aHUPWZFIyfvE0
+  connection_url: unix:///home/jv/clients/holo/asset-validator/socket?k=OYpeSqss9iza9cHf6BzTTxFdZiGcU_z04cVuD1i_qVs
 admin_interfaces:
   - driver:
       type: websocket
