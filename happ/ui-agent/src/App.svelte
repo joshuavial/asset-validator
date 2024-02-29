@@ -2,7 +2,7 @@
   import { onMount, setContext } from 'svelte';
   import { writable } from 'svelte/store';
   import type { AppAgentClient, SigningCredentials} from '@holochain/client';
-  import {setSigningCredentials} from '@holochain/client';
+  import { setSigningCredentials } from '@holochain/client';
   import '@material/mwc-circular-progress';
 
   import {cellIdFromClient, getSigningCredentials, createSigningCredentials, newAppAgentWebsocket} from './lib'
@@ -19,9 +19,11 @@
   let signingCredentials = writable<SigningCredentials | null>(null);
 
   let loading = true; 
+ let password: string = '';
 
   onMount(async () => {
-    client = await newAppAgentWebsocket()
+    // Removed the direct call to newAppAgentWebsocket to ask for a password first
+    // client = await newAppAgentWebsocket(password)
     const cellId = cellIdFromClient(client)
     let credentials = getSigningCredentials(cellId);
     if (!credentials) {
@@ -38,6 +40,28 @@
   let setTab = (newTab:string, _e=null) => {
     currentTab.set(newTab);
   }
+
+  // Function to handle password submission and websocket connection
+  async function handlePasswordSubmit() {
+    loading = true;
+    client = await newAppAgentWebsocket(password);
+    const cellId = cellIdFromClient(client);
+    let credentials = getSigningCredentials(cellId);
+    if (!credentials) {
+      credentials = await createSigningCredentials(cellId);
+    }
+    signingCredentials.set(credentials);
+    setSigningCredentials(cellId, credentials);
+    loading = false;
+  }
+
+
+ {#if !client}
+   <div>
+     <input type="password" bind:value={password} placeholder="Enter your password" />
+     <button on:click={handlePasswordSubmit}>Submit</button>
+   </div>
+ {:else}
 
 </script>
 
@@ -72,6 +96,10 @@
 </main>
 
 <style>
+  div {
+    margin: 1em;
+  }
+
   main {
     text-align: center;
     padding: 0.5em;
