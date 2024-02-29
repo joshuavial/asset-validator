@@ -63,13 +63,16 @@ app.post('/wattbike', async (req, res) => {
     // Convert the Date object to a Unix timestamp
     const startTimeStamp = Math.floor(startTime.getTime() / 1000);
 
+    // Calculate the 'from' timestamp by adding the duration in seconds to the 'to' timestamp
+    const fromTimeStamp = startTimeStamp + durationInSeconds;
+
     console.log(`Start time extracted: ${startTimeText} (${startTimeStamp})`);
 
     console.log(`Duration extracted: ${durationText} (${durationInSeconds} seconds)`);
 
     console.log(`Energy value extracted: ${energyText} kcal which is ${energy} joules`);
     // Save the new observation
-    const observation = { timestamp: new Date(), energyJoules: energy, startTime: startTimeStamp };
+    const observation = { timestamp: new Date(), energyJoules: energy, from: fromTimeStamp, to: startTimeStamp };
     await browser.close();
     res.send({ observation});
     //await browser.close();
