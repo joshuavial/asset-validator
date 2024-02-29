@@ -146,7 +146,8 @@ export async function submitWattbikeUrl(wattbikeUrl, generationHash) {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    //todo console the response body
+    const responseBody = await response.json();
+    console.log('Response Body:', responseBody);
     // Handle the response from the API
   } catch (error) {
     console.error('Error submitting wattbike URL:', error);
