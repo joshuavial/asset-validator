@@ -38,9 +38,9 @@ app.post('/wattbike', async (req, res) => {
     const energyElement = dom.window.document.querySelector('.summary__segment h4 + .summary__value--large');
     const energy = energyElement ? energyElement.textContent.trim() : 'Energy value not found';
     fs.writeFileSync('wattbike.html', htmlContent);
-    fs.writeFileSync('energy.txt', energy);
+    console.log(`Energy value extracted: ${energy}`);
     await browser.close();
-    res.send(`HTML content saved to wattbike.html and energy value extracted: ${energy}`);
+    res.send({ htmlContent, energy });
   } catch (error) {
     console.error('Error fetching HTML content:', error);
     res.status(500).send('Failed to fetch HTML content');
