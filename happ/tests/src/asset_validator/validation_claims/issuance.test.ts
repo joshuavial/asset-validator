@@ -4,7 +4,7 @@ import { runScenario, dhtSync, CallableCell } from '@holochain/tryorama';
 import { NewEntryAction, ActionHash, Record, AppBundleSource, fakeDnaHash, fakeActionHash, fakeAgentPubKey, fakeEntryHash } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 
-import { createIssuance, sampleIssuance } from './common.js';
+import { createIssuance, sampleIssuance, createGeneration, sampleGeneration } from './common.js';
 
 test('create Issuance', async () => {
   await runScenario(async scenario => {
@@ -237,5 +237,39 @@ test('create and delete Issuance', async () => {
     });
     assert.equal(deletedLinksToGenerations.length, 1);
 
+  });
+});
+
+test.only('create_issuance updates generation status to Processed', async () => {
+  await runScenario(async scenario => {
+    const testAppPath = process.cwd() + '/../workdir/asset-validator.happ';
+    const appSource = { appBundleSource: { path: testAppPath } };
+    const [alice] = await scenario.addPlayersWithApps([appSource]);
+    await scenario.shareAllAgents();
+
+    const generationSample = await sampleGeneration(alice.cells[0]);
+
+    // Alice creates a Generation
+    const generationRecord: Record = await createGeneration(alice.cells[0], generationSample);
+    assert.ok(generationRecord);
+
+    // Alice creates an Issuance with the Generation
+    const  issuancePayload = {
+      generation_hashes: [generationRecord.signed_action.hashed.hash],
+      quantity: 10,
+      status: {type: 'Created'}
+    }
+    const issuanceRecord: Record = await createIssuance(alice.cells[0], issuancePayload)
+    assert.ok(issuanceRecord);
+
+
+    // Check if the Generation status is updated to Processed
+    const readGenerationOutput: Record = await alice.cells[0].callZome({
+      zome_name: "validation_claims",
+      fn_name: "get_latest_generation",
+      payload: generationRecord.signed_action.hashed.hash,
+    });
+    const generation = decode(readGenerationOutput.entry.Present.entry);
+    assert.equal(generation.status.type, 'Processed');
   });
 });

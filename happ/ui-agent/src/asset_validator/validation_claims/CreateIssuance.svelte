@@ -37,8 +37,8 @@ onMount(async () => {
     generations = (await fetchGenerations(client))
       .filter(g => g.generation.status.type === 'Complete')
 
-    quantity = await calculateTotalJoules(generations, client);
     generationHashes = generations.map(g => g.hash);
+    quantity = await calculateTotalJoules(generations, client);
 
   } catch (e) {
     errorSnackbar.labelText = `Error fetching generations: ${e}`;
@@ -68,10 +68,6 @@ async function calculateTotalJoules(generations: Array<GenerationWithHash>, clie
   generationHashes = generations.map(g => g.hash);
   return totalJoules;
 }
-  }
-  //TODO if totalJoules = 0 remove this generation from generationHashes and generations
-  return totalJoules;
-}
 
 function validateIssuance() {
   return generationHashes.length > 0 && transaction !== '' && quantity > 0;
@@ -84,9 +80,6 @@ async function createIssuance() {
     quantity: parseInt(quantity),
     status: status!,
   };
-
-  console.log(issuanceEntry);
-  
 
   try {
     const record: Record = await client.callZome({

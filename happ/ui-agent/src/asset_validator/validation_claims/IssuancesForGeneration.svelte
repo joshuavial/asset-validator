@@ -44,7 +44,7 @@ onMount(async () => {
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching issuances: ${error.data.data}.</span>
+<span>Error fetching issuances: ${error}.</span>
 {:else if links.length === 0}
 <span>No issuances found for this generation.</span>
 {:else}

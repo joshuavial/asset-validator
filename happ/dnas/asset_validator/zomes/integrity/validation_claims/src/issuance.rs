@@ -1,5 +1,4 @@
 use hdi::prelude::*;
-use crate::generation::{self, UpdateGenerationInput};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(tag = "type")]
