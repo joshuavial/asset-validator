@@ -78,15 +78,19 @@
   async function register() {
 
     try {
+        let payload = {
+          handle,
+          signingKey: encodeHashToBase64(signingKey),
+        }
+        if (ethAddress) {
+          payload.ethAddress = ethAddress
+        }
       const response = await fetch('http://' + VITE_USER_DOMAIN + '/login_or_register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          handle,
-          signingKey: encodeHashToBase64(signingKey),
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
@@ -147,7 +151,13 @@
             <img src='http://localhost:5000/tokenproofIconWhite.png' alt="" class="secured-token-proof" /> Secured with tokenproof
           </div>
         </div>
+
     </div>
+        <div>
+            If token proof isn't working submit this form with an email, ENS, or eth address. Just remember it will be public in the hApp.
+            <input type="text" bind:value={ethAddress} placeholder="ethAddress, email, ENS" required>
+            <button on:click={register}>Register</button>
+        </div>
   {/if}
 {/if}
 
