@@ -55,11 +55,21 @@ app.post('/wattbike', async (req, res) => {
       ? timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2]
       : timeParts[0] * 60 + timeParts[1];
 
+    // Extract start time
+    const startTimeElement = dom.window.document.querySelector('.heading__user-date');
+    const startTimeText = startTimeElement ? startTimeElement.textContent.match(/— (\d{2}\/\d{2}\/\d{2}, \d{2}:\d{2} [APM]{2}) —/)[1] : '';
+    // Convert start time to a Date object
+    const startTime = startTimeText ? new Date(startTimeText.replace(/(\d{2})\/(\d{2})\/(\d{2}), (\d{2}):(\d{2}) ([APM]{2})/, '20$1-$2-$3T$4:$5:00')) : new Date();
+    // Convert the Date object to a Unix timestamp
+    const startTimeStamp = Math.floor(startTime.getTime() / 1000);
+
+    console.log(`Start time extracted: ${startTimeText} (${startTimeStamp})`);
+
     console.log(`Duration extracted: ${durationText} (${durationInSeconds} seconds)`);
 
     console.log(`Energy value extracted: ${energyText} kcal which is ${energy} joules`);
     // Save the new observation
-    const observation = { timestamp: new Date(), energyJoules: energy };
+    const observation = { timestamp: new Date(), energyJoules: energy, startTime: startTimeStamp };
     await browser.close();
     res.send({ observation});
     //await browser.close();
