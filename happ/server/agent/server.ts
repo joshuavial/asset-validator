@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import express from 'express'
 import http from 'http'
+import fs from 'fs'
 
 import path from 'path'
 import {fileURLToPath} from 'url'
@@ -32,7 +33,6 @@ app.post('/wattbike', async (req, res) => {
     const page = await browser.newPage();
     await page.goto(url);
     const htmlContent = await page.content();
-    const fs = require('fs');
     fs.writeFileSync('wattbike.html', htmlContent);
     await browser.close();
     res.send('HTML content saved to wattbike.html');
