@@ -133,3 +133,21 @@ export async function allocateSensor(sensor: string, generationHash: string | nu
   return response.json();
 }
 
+
+export async function submitWattbikeUrl(wattbikeUrl) {
+  try {
+    const response = await fetch('http://' + VITE_AGENT_DOMAIN + '/wattbike', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ url: wattbikeUrl })
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    // Handle the response from the API
+  } catch (error) {
+    console.error('Error submitting wattbike URL:', error);
+  }
+}

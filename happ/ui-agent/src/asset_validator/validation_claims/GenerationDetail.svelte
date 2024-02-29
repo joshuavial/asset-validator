@@ -45,7 +45,6 @@ let errorSnackbar: Snackbar;
 
 $: editing,  error, loading, record, generation, timeAgo, observations;
 let wattbikeUrl = '';
-let wattbikeUrl = '';
 let totalJoulesGeneratedFormatted: string;
 let totalJoulesGenerated: number;
 
