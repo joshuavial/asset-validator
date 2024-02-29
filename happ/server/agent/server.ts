@@ -44,6 +44,7 @@ app.post('/wattbike', async (req, res) => {
     let energy = parseFloat(energyText);
     // Convert kcal to joules (1 kcal = 4184 J)
     energy = !isNaN(energy) ? energy * 4184 : 0;
+
     // Extract event time
     const eventTimeElement = dom.window.document.querySelector('.heading__user-date');
     const eventTimeString = eventTimeElement ? eventTimeElement.textContent.match(/— (\d{2}\/\d{2}\/\d{2}, \d{2}:\d{2} [APM]{2}) —/)[1] : '';
@@ -59,8 +60,8 @@ app.post('/wattbike', async (req, res) => {
     const observation = { timestamp: new Date(), energyJoules: energy };
     await browser.close();
     res.send({ observation});
-    await browser.close();
-    res.send({ energyText, energy, eventTimeString, durationText });
+    //await browser.close();
+    //res.send({ energyText, energy, eventTimeString, durationText });
   } catch (error) {
     console.error('Error fetching HTML content:', error);
     res.status(500).send('Failed to fetch HTML content');
