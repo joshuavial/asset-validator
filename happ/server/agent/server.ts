@@ -40,11 +40,17 @@ app.post('/wattbike', async (req, res) => {
     const dom = new JSDOM(htmlContent);
     const energyElements = dom.window.document.querySelectorAll('.summary__segment h4 + .summary__value--large');
     const energyElement = energyElements.length > 5 ? energyElements[5] : null; // Get the sixth element
-    const energy = energyElement ? energyElement.textContent.trim() : 'Energy value not found';
+    const energyText = energyElement ? energyElement.textContent.trim() : 'Energy value not found';
+    let energy = parseFloat(energyText);
+    // Convert kcal to joules (1 kcal = 4184 J)
+    energy = !isNaN(energy) ? energy * 4184 : 0;
     fs.writeFileSync('wattbike.html', htmlContent);
-    console.log(`Energy value extracted: ${energy}`);
+    console.log(`Energy value extracted: ${energyText} kcal which is ${energy} joules`);
+    // Save the new observation
+    const observation = { timestamp: new Date(), energyJoules: energy };
+    fs.writeFileSync('observation.json', JSON.stringify(observation, null, 2));
     await browser.close();
-    res.send({ htmlContent, energy });
+    res.send({ htmlContent, energy: energyText, energyJoules: energy });
   } catch (error) {
     console.error('Error fetching HTML content:', error);
     res.status(500).send('Failed to fetch HTML content');
