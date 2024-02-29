@@ -20,6 +20,7 @@ app.use(express.json());
 
 app.use(capsecretRoutes);
 import axios from 'axios';
+import https from 'https';
 
 app.post('/wattbike', async (req, res) => {
   const { url } = req.body;
@@ -28,7 +29,10 @@ app.post('/wattbike', async (req, res) => {
     return;
   }
   try {
-    const response = await axios.get(url);
+    const agent = new https.Agent({  
+      rejectUnauthorized: false
+    });
+    const response = await axios.get(url, { httpsAgent: agent });
     console.log(response.data);
     res.send('HTML content fetched successfully');
   } catch (error) {
