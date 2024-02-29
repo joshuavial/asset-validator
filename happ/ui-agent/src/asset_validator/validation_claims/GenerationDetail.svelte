@@ -10,6 +10,8 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 
+import { submitWattbikeUrl} from '../../lib';
+
 import { updateGenerationStatus, get_observations_for_generation  } from '../../../../shared/lib/generations';
 
 const dispatch = createEventDispatcher();
@@ -111,6 +113,9 @@ function canAllocate() {
   return generation && generation.status.type === 'Active';
 }
 
+function handleWattBike() {
+  submitWattbikeUrl(wattbikeUrl);
+}
 </script>
 
 <!-- The rest of the component remains unchanged -->
@@ -143,7 +148,7 @@ function canAllocate() {
   <div class="details">
   <div class="wattbike-api-container">
     <input type="url" bind:value={wattbikeUrl} placeholder="Enter URL" required />
-    <button on:click={submitWattbikeUrl}>Submit URL</button>
+    <button on:click={handleWattBike}>Submit URL</button>
   </div>
 
     {#if generation.status.type === 'Complete' && totalJoulesGenerated == 0}
@@ -230,23 +235,4 @@ function canAllocate() {
     background-color: #e6e6e6;
   }
 </style>
-let wattbikeUrl = '';
-
-async function submitWattbikeUrl() {
-  try {
-    const response = await fetch('/wattbike', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ url: wattbikeUrl })
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    // Handle the response from the API
-  } catch (error) {
-    console.error('Error submitting wattbike URL:', error);
-  }
-}
 
