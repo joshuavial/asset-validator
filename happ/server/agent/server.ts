@@ -19,7 +19,7 @@ app.options('*', cors());
 app.use(express.json());
 
 app.use(capsecretRoutes);
-import { chromium } from 'playwright';
+import axios from 'axios';
 
 app.post('/wattbike', async (req, res) => {
   const { url } = req.body;
@@ -28,12 +28,8 @@ app.post('/wattbike', async (req, res) => {
     return;
   }
   try {
-    const browser = await chromium.launch();
-    const page = await browser.newPage();
-    await page.goto(url);
-    const content = await page.content();
-    console.log(content);
-    await browser.close();
+    const response = await axios.get(url);
+    console.log(response.data);
     res.send('HTML content fetched successfully');
   } catch (error) {
     console.error('Error fetching HTML content:', error);
