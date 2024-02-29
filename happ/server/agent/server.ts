@@ -48,11 +48,9 @@ app.post('/wattbike', async (req, res) => {
     // Extract duration
     const durationElement = dom.window.document.querySelector('div[class="laps-summary-header__segment"] h3 + p');
     const durationText = durationElement ? durationElement.textContent.trim() : '';
-    // Extract duration
-    const durationElement = dom.window.document.querySelector('h3[data-mh="header__segment-heading--primary"] + .summary__value--large');
-    const durationText = durationElement ? durationElement.textContent.trim() : '';
 
-    console.log(`Duration extracted: ${durationText}`);
+    //TODO durationText is in minutes, convert it into seconds
+
     console.log(`Duration extracted: ${durationText}`);
 
     console.log(`Energy value extracted: ${energyText} kcal which is ${energy} joules`);
