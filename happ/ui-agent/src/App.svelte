@@ -18,6 +18,12 @@
   let currentTab = writable('generations');
   let signingCredentials = writable<SigningCredentials | null>(null);
 
+  let logout = () => {
+    localStorage.clear();
+    // Additional logic to reset the application state may be added here
+    window.location.reload(); // Optionally reload the page to reset the app state
+  };
+
   let loading = true; 
   let password: string | null = null;
 
@@ -61,6 +67,8 @@
     {#if $signingCredentials}
       <li><button on:click={(e) => setTab('generations', e)}>Human Power</button></li>
       <li><button on:click={(e) => setTab('issuances', e)}>Issuances</button></li>
+      <li><button on:click={logout}>Logout</button></li>
+      <li><button on:click={logout}>Logout</button></li>
     {/if}
   </ul>
 </nav>
