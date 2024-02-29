@@ -20,7 +20,6 @@
 
   let logout = () => {
     localStorage.clear();
-    // Additional logic to reset the application state may be added here
     window.location.reload(); // Optionally reload the page to reset the app state
   };
 
@@ -38,36 +37,29 @@
     client = await newAppAgentWebsocket();
     const cellId = cellIdFromClient(client);
     let credentials = getSigningCredentials(cellId);
-    if (!credentials && password !== null) {
-      credentials = await createSigningCredentials(cellId, password);
-    }
     if (credentials) {
       signingCredentials.set(credentials);
       setSigningCredentials(cellId, credentials);
-    } else {
-      password = ''; // Prompt for password if credentials are not found
-    }
+    } 
     loading = false;
   });
 
+  async function handlePasswordSubmit() {
+    const cellId = cellIdFromClient(client);
+    let credentials = await createSigningCredentials(cellId, password);
+    if (credentials) {
+      signingCredentials.set(credentials);
+      setSigningCredentials(cellId, credentials);
+    } 
+  }
 
 </script>
 
-{#if !client}
-  <div>
-    {#if password !== null}
-      <input type="password" bind:value={password} placeholder="Enter your password" />
-      <button on:click={handlePasswordSubmit}>Submit</button>
-    {/if}
-  </div>
-
-{:else}
 <nav>
   <ul>
     {#if $signingCredentials}
       <li><button on:click={(e) => setTab('generations', e)}>Human Power</button></li>
       <li><button on:click={(e) => setTab('issuances', e)}>Issuances</button></li>
-      <li><button on:click={logout}>Logout</button></li>
       <li><button on:click={logout}>Logout</button></li>
     {/if}
   </ul>
@@ -89,11 +81,13 @@
      {/if}
     </div>
     {:else}
-      <Welcome />
+  <div>
+      <input type="password" bind:value={password} placeholder="Enter your password" on:keydown={(e) => e.key === 'Enter' && handlePasswordSubmit()} />
+      <button on:click={handlePasswordSubmit}>Submit</button>
+  </div>
     {/if}
   {/if}
 </main>
-{/if}
 
 <style>
   div {
