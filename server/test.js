@@ -9,16 +9,20 @@ const ADMIN_URL = `ws://127.0.0.1:${adminPort}`;
 const WS_URL = `ws://127.0.0.1:${appPort}`;
 
 import { AppAgentWebsocket as WS} from '@holochain/client';
+import {getAppAgentWs} from './lib.js'
+
+
 
 async function main() {
   try {
+		const {cell_id, appAgentWs, adminWs} = await getAppAgentWs();
+		const info1 = await appAgentWs.appInfo();
+		console.log('info 1: ',info1);
     const client = await WS.connect(WS_URL, 'asset-validator');
     console.log('Connected to the Holochain conductor.');
-    const info = await client.appInfo();
-    console.log(info);
-    console.log(client);
-    const cred = client.getSigningCredentials();
-    console.log(cred)
+		const info2 = await client.appInfo();
+		console.log('info 2: ',info2);
+
   } catch (error) {
     console.error('Error:', error);
   }
