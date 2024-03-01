@@ -28,7 +28,7 @@ app.use(capsecretRoutes);
 
 app.post('/waiver', (req, res) => {
   const {waiver} = req.body;
-  fs.appendFile('waiver.txt', `${waiver}\n`, (err) => {
+  fs.appendFile('waiver.txt', `${JSON.stringify(waiver)}\n`, (err) => {
     if (err) {
       console.error('Error appending to waiver.txt:', err);
       res.status(500).send('Error writing waiver');

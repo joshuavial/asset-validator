@@ -6,7 +6,7 @@
   import '@material/mwc-circular-progress';
 
   import {cellIdFromClient, getSigningCredentials, createSigningCredentials, newAppAgentWebsocket} from './lib'
-  import Generations from './Generations.svelte';
+  import Generations from './asset_validator/validation_claims/Generations.svelte'
 
   import Issuances from './asset_validator/validation_claims/Issuances.svelte';
 

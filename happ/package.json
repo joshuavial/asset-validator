@@ -32,7 +32,9 @@
     "npm": ">=7.0.0"
   },
   "dependencies": {
+    "@stablelib/base64": "^1.0.1",
     "dotenv": "^16.4.1",
-    "jsqr": "^1.4.0"
+    "jsqr": "^1.4.0",
+    "tweetnacl": "^1.0.3"
   }
 }

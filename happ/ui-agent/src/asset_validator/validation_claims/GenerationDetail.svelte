@@ -136,7 +136,7 @@ function handleWattBike() {
   <div style="display: flex; flex-direction: row">
     <span class="generation-span" style="flex: 1" on:click={toggleDetails}> 
       {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}[fun bike] {/if}
-      {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}[work bike] {/if}
+      {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}[OTG] {/if}
       {generation.user_handle}:
       {generation.status.type}:
       {timeAgo}
@@ -157,10 +157,10 @@ function handleWattBike() {
     {/if}
 
     {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}
-      <button on:click={() => clearSensorAllocation(SENSOR_1)}>Clear work bike allocation</button>
+      <button on:click={() => clearSensorAllocation(SENSOR_1)}>Clear OTG allocation</button>
     {:else}
       {#if canAllocate()}
-        <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate to work bike</button>
+        <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate OTG bike</button>
       {/if}
     {/if}
     <!--

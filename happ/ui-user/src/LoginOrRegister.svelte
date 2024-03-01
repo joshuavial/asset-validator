@@ -95,7 +95,7 @@
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(waiver)
+      body: JSON.stringify({waiver})
     }).then(response => {
       if (response.status === 200) {
         showContent = true;

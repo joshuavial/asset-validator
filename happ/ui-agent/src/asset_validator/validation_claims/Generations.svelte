@@ -73,7 +73,7 @@ async function fetchGenerations() {
 <span>No generations found.</span>
 {:else}
 <div style="display: flex; flex-direction: column">
-  <h2>All Generations</h2>
+  <h2>Last 10 Generations</h2>
   {#each hashes as hash}
     <div style="margin-bottom: 8px;">
       <GenerationDetail {hash} {sensorAllocations} on:generation-deleted={() => fetchGenerations()} on:allocate-sensor={allocateSensorToGeneration}></GenerationDetail>
