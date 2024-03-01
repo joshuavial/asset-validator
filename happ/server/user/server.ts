@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import express from 'express'
 import http from 'http'
+import fs from 'fs'
 
 import path from 'path'
 import {fileURLToPath} from 'url'
@@ -24,6 +25,11 @@ app.use(express.json());
 
 addTokenProofRoutes(app, wss);
 app.use(capsecretRoutes);
+
+app.post('/waiver', (req, res) => {
+  const {waiver} = req.body;
+  //todo append waiver to waiver.txt
+})
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
