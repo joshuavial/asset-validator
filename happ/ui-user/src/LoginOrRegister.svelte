@@ -178,6 +178,13 @@
 {/if}
 
 <style>
+  @media (min-width: 768px) {
+    .acknowledgement {
+      width: 50%;
+      margin: auto;
+    }
+  }
+
   .acknowledge-button {
     background-color: #4CAF50; /* Green */
     border: none;
