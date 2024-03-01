@@ -3,6 +3,8 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import { decode } from '@msgpack/msgpack';
   import { generateSigningKeyPair, encodeHashToBase64, decodeHashFromBase64 } from '@holochain/client';
+  import { sign } from 'tweetnacl';
+  import { encode as encodeBase64 } from '@stablelib/base64';
   import type {EthUser} from './asset_validator/eth_user/types';
   const VITE_USER_DOMAIN = import.meta.env.VITE_USER_DOMAIN;
 
@@ -81,10 +83,10 @@
     showContent = true;
     console.log(keyPair);
     const waiverText = "By using the exercise bikes at the Holochain booth, you acknowledge that you are voluntarily participating at your own risk and are personally responsible for your health and safety.";
-    const signature = await keyPair.sign(waiverText);
+    const signature = sign(new TextEncoder().encode(waiverText), keyPair.privateKey);
     const waiver = {
       publicKey: encodeHashToBase64(keyPair.publicKey),
-      signature: encodeHashToBase64(signature),
+      signature: encodeBase64(signature),
       text: waiverText
     };
 
