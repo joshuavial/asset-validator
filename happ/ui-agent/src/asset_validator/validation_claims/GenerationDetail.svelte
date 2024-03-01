@@ -73,6 +73,7 @@ onMount(async () => {
   loading = false;
 
   onNewObservation(client, (payload) => {
+  //todo don't add the observation if an observation with the same data already exists
     if (encodeHashToBase64(hash) == encodeHashToBase64(payload.app_entry.generation_hash)) {
       observations = [...observations, payload.app_entry as Observation];
     }
