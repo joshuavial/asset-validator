@@ -77,8 +77,9 @@
     }
   });
 
-  function acknowledgeRisk() {
+  async function acknowledgeRisk() {
     showContent = true;
+    console.log(keyPair);
     const waiverText = "By using the exercise bikes at the Holochain booth, you acknowledge that you are voluntarily participating at your own risk and are personally responsible for your health and safety.";
     const signature = await keyPair.sign(waiverText);
     const waiver = {
