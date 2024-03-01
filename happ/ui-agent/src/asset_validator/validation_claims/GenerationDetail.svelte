@@ -74,10 +74,7 @@ onMount(async () => {
 
   onNewObservation(client, (payload) => {
     const newObservation = payload.app_entry as Observation;
-    const observationExists = observations.some(obs => 
-      obs.data.EnergyObservation?.energy === newObservation.data.EnergyObservation?.energy &&
-      obs.data.ImageObservation?.image_data === newObservation.data.ImageObservation?.image_data
-    );
+    const observationExists = observations.some(obs => obs.observed_at === newObservation.observed_at);
     if (!observationExists && encodeHashToBase64(hash) === encodeHashToBase64(payload.app_entry.generation_hash)) {
       observations = [...observations, newObservation];
     }
