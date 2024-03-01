@@ -79,9 +79,30 @@
 
   function acknowledgeRisk() {
     showContent = true;
-    //todo sign the waiver text with the keypair
-    //store the public key, signature and text into a waiver object and post it to user domain /waiver 
-    //if the route returns 200 showContent
+    const waiverText = "By using the exercise bikes at the Holochain booth, you acknowledge that you are voluntarily participating at your own risk and are personally responsible for your health and safety.";
+    const signature = await keyPair.sign(waiverText);
+    const waiver = {
+      publicKey: encodeHashToBase64(keyPair.publicKey),
+      signature: encodeHashToBase64(signature),
+      text: waiverText
+    };
+
+    fetch('http://' + VITE_USER_DOMAIN + '/waiver', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(waiver)
+    }).then(response => {
+      if (response.status === 200) {
+        showContent = true;
+      } else {
+        throw new Error('Failed to submit waiver');
+      }
+    }).catch(error => {
+      errorMessage = error.message;
+      showContent = false;
+    });
   }
 
   function setEthAddress() {
