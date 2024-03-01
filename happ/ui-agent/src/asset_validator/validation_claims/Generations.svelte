@@ -56,7 +56,7 @@ async function fetchGenerations() {
       fn_name: 'get_generations',
       payload: null,
     });
-    hashes = links.map(l => l.target);
+    hashes = links.map(l => l.target).slice(0, 10);
   } catch (e) {
     error = e;
   }
