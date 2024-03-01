@@ -1,0 +1,19 @@
+tracing_override: null
+environment_path: /home/jv/.local/share/holochain/databases
+keystore:
+  type: lair_server_in_proc
+dpki: null
+admin_interfaces:
+  - driver:
+      type: websocket
+      port: 1234
+network:
+  transport_pool:
+    - type: webrtc
+      signal_url: wss://signal.holo.host
+  network_type: quic_bootstrap
+  tuning_params:
+    tx5_min_ephemeral_udp_port: 40000
+    tx5_max_ephemeral_udp_port: 65535
+db_sync_strategy: Fast
+tracing_scope: null
