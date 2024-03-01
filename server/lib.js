@@ -7,6 +7,9 @@ import { dirname } from 'path';
 export async function getAppAgentWs() {
   const installed_app_id = "asset-validator";
   const adminWs = await AdminWebsocket.connect(new URL("ws://localhost:1234"));
+	const apps = await adminWs.listApps({status_filter: 'running'})
+	console.log(apps[0].cell_info.asset_validator[0][CellType.Provisioned].dna_modifiers);
+  process.exit();
   const appInfo = await findOrInstallHapp(adminWs, installed_app_id);
   const cell_id = await activateCell(appInfo, adminWs);
   const appAgentWs = await appAgentWebsocket(adminWs, installed_app_id);

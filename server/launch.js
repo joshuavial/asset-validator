@@ -9,6 +9,8 @@ app.use(bodyParser.json())
 
 const {cell_id, appAgentWs, adminWs} = await getAppAgentWs()
 
+adminWs.listApps().then(apps => console.log(apps))
+
 app.get('/network', async (_, res) => {
   const response = await adminWs.dumpNetworkStats();
   res.json(JSON.parse(response))

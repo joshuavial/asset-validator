@@ -11,6 +11,8 @@ import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 import EditIssuance from './EditIssuance.svelte'; 
 
+import {formatTimeAgo} from '../../../../shared/lib';
+
 const dispatch = createEventDispatcher();
 
 export let issuanceHash: ActionHash;
@@ -24,6 +26,7 @@ let record: Record | undefined;
 let issuance: Issuance | undefined;
 
 let editing = false;
+let dna_hash = '';
 
 let errorSnackbar: Snackbar;
   
@@ -51,6 +54,17 @@ async function fetchIssuance() {
       payload: issuanceHash,
     });
     if (record) {
+      issuance = decode((record.entry as any).Present.entry) as Issuance;
+    }
+    let dna_hash_record = await client.callZome({
+      cap_secret: null,
+      role_name: 'asset_validator',
+      zome_name: 'validation_claims',
+      fn_name: 'get_dna_hash',
+      payload: issuanceHash,
+    });
+    console.log(dna_hash_record);
+    if (dna_hash_record) {
       issuance = decode((record.entry as any).Present.entry) as Issuance;
     }
   } catch (e) {
@@ -100,9 +114,13 @@ async function deleteIssuance() {
 
 <div style="display: flex; flex-direction: column">
   <div style="display: flex; flex-direction: row">
-    <span style="flex: 1"></span>
-    <mwc-icon-button style="margin-left: 8px" icon="edit" on:click={() => { editing = true; } }></mwc-icon-button>
-    <mwc-icon-button style="margin-left: 8px" icon="delete" on:click={() => deleteIssuance()}></mwc-icon-button>
+    {#if issuance.status.type == 'Created'}
+
+      <span style="flex: 1">{issuance.quantity.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })} tokens scheduled for issuance { formatTimeAgo(record.signed_action.hashed.content.timestamp)}
+      </span>
+    {:else}
+    <span style="flex: 1">{issuance.quantity} tokens issued</span>
+    {/if}
   </div>
 
 </div>
