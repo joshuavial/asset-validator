@@ -79,6 +79,9 @@
 
   function acknowledgeRisk() {
     showContent = true;
+    //todo sign the waiver text with the keypair
+    //store the public key, signature and text into a waiver object and post it to user domain /waiver 
+    //if the route returns 200 showContent
   }
 
   function setEthAddress() {
