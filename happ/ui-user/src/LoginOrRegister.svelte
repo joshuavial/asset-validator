@@ -1,4 +1,5 @@
 <script lang="ts">
+  let showContent = false;
   import { createEventDispatcher, onMount } from 'svelte';
   import { decode } from '@msgpack/msgpack';
   import { generateSigningKeyPair, encodeHashToBase64, decodeHashFromBase64 } from '@holochain/client';
@@ -76,6 +77,10 @@
     }
   });
 
+  function acknowledgeRisk() {
+    showContent = true;
+  }
+
   function setEthAddress() {
     ethAddress = tempEthAddress;
   }
@@ -112,6 +117,12 @@
   }
 </script>
 
+{#if !showContent}
+<div class="acknowledgement">
+  <p>By using the exercise bikes at the Holochain booth, you acknowledge that you are voluntarily participating at your own risk and are personally responsible for your health and safety.</p>
+  <button on:click={acknowledgeRisk} class="acknowledge-button">OK</button>
+</div>
+{:else}
 {#if ethAddress}
 
 <form on:submit|preventDefault={register}>
@@ -164,8 +175,27 @@
         </div>
   {/if}
 {/if}
+{/if}
 
 <style>
+  .acknowledge-button {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+  }
+
+  .acknowledgement {
+    text-align: center;
+    padding: 20px;
+  }
+
   .error {
     color: red;
   }
