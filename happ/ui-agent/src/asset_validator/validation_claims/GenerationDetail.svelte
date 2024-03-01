@@ -73,9 +73,13 @@ onMount(async () => {
   loading = false;
 
   onNewObservation(client, (payload) => {
-  //todo don't add the observation if an observation with the same data already exists
-    if (encodeHashToBase64(hash) == encodeHashToBase64(payload.app_entry.generation_hash)) {
-      observations = [...observations, payload.app_entry as Observation];
+    const newObservation = payload.app_entry as Observation;
+    const observationExists = observations.some(obs => 
+      obs.data.EnergyObservation?.energy === newObservation.data.EnergyObservation?.energy &&
+      obs.data.ImageObservation?.image_data === newObservation.data.ImageObservation?.image_data
+    );
+    if (!observationExists && encodeHashToBase64(hash) === encodeHashToBase64(payload.app_entry.generation_hash)) {
+      observations = [...observations, newObservation];
     }
   });
 });
