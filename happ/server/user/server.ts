@@ -28,7 +28,14 @@ app.use(capsecretRoutes);
 
 app.post('/waiver', (req, res) => {
   const {waiver} = req.body;
-  //todo append waiver to waiver.txt
+  fs.appendFile('waiver.txt', `${waiver}\n`, (err) => {
+    if (err) {
+      console.error('Error appending to waiver.txt:', err);
+      res.status(500).send('Error writing waiver');
+      return;
+    }
+    res.status(200).send('Waiver recorded');
+  });
 })
 
 const __filename = fileURLToPath(import.meta.url);
