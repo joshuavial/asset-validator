@@ -124,10 +124,11 @@ async function addKWHours() {
     return;
   }
   const joules = parseFloat(kwh) * 3600000; // Convert kWh to joules
+  const now = Math.floor(Date.now() / 1000);
   const payload = {
-    observed_at: Math.floor(Date.now() / 1000),
+    observed_at: now,
     generation_hash: hash,
-    data: { EnergyObservation: { from: new Date().toISOString(), to: new Date().toISOString(), energy: joules.toString() } }
+    data: { EnergyObservation: { from: now, to: now, energy: joules } }
   };
   try {
     const response = await client.callZome({
