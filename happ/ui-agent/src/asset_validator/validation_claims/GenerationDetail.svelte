@@ -123,23 +123,28 @@ async function addKWHours() {
     errorSnackbar.show();
     return;
   }
+  const sensor = sensorAllocations[SENSOR_1] ? SENSOR_1 : SENSOR_2;
+  const generationHash = sensorAllocations[sensor];
+  if (!generationHash) {
+    errorSnackbar.labelText = 'No generation allocated to this sensor.';
+    errorSnackbar.show();
+    return;
+  }
+  const payload = {
+    observed_at: Math.floor(Date.now() / 1000),
+    generation_hash: generationHash,
+    data: { EnergyObservation: { from: new Date().toISOString(), to: new Date().toISOString(), energy: kwh } }
+  };
   try {
-    const response = await fetch('/observation', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: new Date().toISOString(),
-        to: new Date().toISOString(),
-        energy: kwh,
-        sensor: sensorAllocations[SENSOR_1] ? SENSOR_1 : SENSOR_2,
-      }),
+    const response = await client.callZome({
+      cap_secret: null,
+      cell_id: client.cellId,
+      zome_name: 'validation_claims',
+      fn_name: 'create_observation',
+      provenance: client.cellId[1],
+      payload: payload,
     });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const newObservation = await response.json();
+    const newObservation = decode(response.entry.Present.entry);
     observations = [...observations, newObservation];
     kwh = ''; // Reset the input field after successful submission
   } catch (error) {
