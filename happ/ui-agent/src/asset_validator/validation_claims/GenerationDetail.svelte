@@ -45,6 +45,7 @@ let errorSnackbar: Snackbar;
 
 $: editing,  error, loading, record, generation, timeAgo, observations;
 let wattbikeUrl = '';
+let kwh = '';
 let totalJoulesGeneratedFormatted: string;
 let totalJoulesGenerated: number;
 
@@ -116,6 +117,10 @@ function canAllocate() {
   return generation && generation.status.type === 'Active';
 }
 
+function addKWHours() {
+  console.log(kwh);
+}
+
 function handleWattBike() {
   submitWattbikeUrl(wattbikeUrl, encodeHashToBase64(hash), client);
 }
@@ -154,10 +159,15 @@ function handleWattBike() {
     <button on:click={handleWattBike}>Submit URL</button>
   </div>
 
+  <div class="otgbike-api-container">
+    <input type="number" bind:value={kwh} placeholder="Enter watt hours" required />
+    <button on:click={addKWHours}>Add kWh</button>
+  </div>
+
     {#if generation.status.type === 'Complete' && totalJoulesGenerated == 0}
       <button on:click={cancelGeneration} class="cancel-button">Cancel</button>
     {/if}
-
+<!--
     {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}
       <button on:click={() => clearSensorAllocation(SENSOR_1)}>Clear OTG allocation</button>
     {:else}
@@ -165,6 +175,7 @@ function handleWattBike() {
         <button on:click={() => allocateSensorToGeneration(SENSOR_1)}>Allocate OTG bike</button>
       {/if}
     {/if}
+-->
     <!--
     {#if sensorAllocations[SENSOR_2] == encodeHashToBase64(hash)}
       <button on:click={() => clearSensorAllocation(SENSOR_2)}>Finish fun bike</button>
