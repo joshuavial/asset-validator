@@ -117,8 +117,36 @@ function canAllocate() {
   return generation && generation.status.type === 'Active';
 }
 
-function addKWHours() {
-  console.log(kwh);
+async function addKWHours() {
+  if (!kwh) {
+    errorSnackbar.labelText = 'Please enter a valid number of watt hours.';
+    errorSnackbar.show();
+    return;
+  }
+  try {
+    const response = await fetch('/observation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: new Date().toISOString(),
+        to: new Date().toISOString(),
+        energy: kwh,
+        sensor: sensorAllocations[SENSOR_1] ? SENSOR_1 : SENSOR_2,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const newObservation = await response.json();
+    observations = [...observations, newObservation];
+    kwh = ''; // Reset the input field after successful submission
+  } catch (error) {
+    console.error('Error submitting watt hours:', error);
+    errorSnackbar.labelText = 'Error submitting watt hours. Please try again.';
+    errorSnackbar.show();
+  }
 }
 
 function handleWattBike() {
