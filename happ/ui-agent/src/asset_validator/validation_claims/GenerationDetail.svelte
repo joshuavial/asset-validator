@@ -10,7 +10,7 @@ import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
 
-import { submitWattbikeUrl} from '../../lib';
+import { submitWattbikeUrl, cellIdFromClient} from '../../lib';
 
 import { updateGenerationStatus, get_observations_for_generation, } from '../../../../shared/lib/generations';
 
@@ -123,26 +123,18 @@ async function addKWHours() {
     errorSnackbar.show();
     return;
   }
-  const sensor = sensorAllocations[SENSOR_1] ? SENSOR_1 : SENSOR_2;
-  const generationHash = sensorAllocations[sensor];
-  if (!generationHash) {
-    errorSnackbar.labelText = 'No generation allocated to this sensor.';
-    errorSnackbar.show();
-    return;
-  }
   const joules = parseFloat(kwh) * 3600000; // Convert kWh to joules
   const payload = {
     observed_at: Math.floor(Date.now() / 1000),
-    generation_hash: generationHash,
+    generation_hash: hash,
     data: { EnergyObservation: { from: new Date().toISOString(), to: new Date().toISOString(), energy: joules.toString() } }
   };
   try {
     const response = await client.callZome({
       cap_secret: null,
-      cell_id: client.cellId,
+      cell_id: cellIdFromClient(client),
       zome_name: 'validation_claims',
       fn_name: 'create_observation',
-      provenance: client.cellId[1],
       payload: payload,
     });
     const newObservation = decode(response.entry.Present.entry);
