@@ -2,22 +2,36 @@
 import { onMount, getContext } from 'svelte';
 import { clientContext } from './contexts';
 import type { Link } from '@holochain/client';
+import { decode } from '@msgpack/msgpack';
+import type { EthUser } from './asset_validator/eth_user/types';
 
 let client = (getContext(clientContext) as any).getClient();
-let ethUsersLinks: Link[] = [];
+let ethUsers: EthUser[] = [];
 let loading = true;
 let error: any = undefined;
 
 onMount(async () => {
   try {
-    const result = await client.callZome({
+    const links = await client.callZome({
       cap_secret: null,
       role_name: 'asset_validator',
       zome_name: 'eth_user',
       fn_name: 'get_eth_users',
       payload: null,
     });
-    ethUsersLinks = result;
+    for (const link of links) {
+      const ethUserRecord = await client.callZome({
+        cap_secret: null,
+        role_name: 'asset_validator',
+        zome_name: 'eth_user',
+        fn_name: 'get_eth_user',
+        payload: link.target,
+      });
+      if (ethUserRecord) {
+        const ethUser = decode((ethUserRecord.entry as any).Present.entry) as EthUser;
+        ethUsers.push(ethUser);
+      }
+    }
   } catch (e) {
     error = e;
   } finally {
@@ -33,8 +47,8 @@ onMount(async () => {
 {:else}
 <div>
   <h1>Eth Users</h1>
-  {#each ethUsersLinks as link}
-    <p>{link.target}</p>
+  {#each ethUsers as user}
+    <p>{user.eth_address} - {user.handle}</p>
   {/each}
 </div>
 {/if}
