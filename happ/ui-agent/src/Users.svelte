@@ -6,7 +6,7 @@ import { decode } from '@msgpack/msgpack';
 import type { EthUser } from './asset_validator/eth_user/types';
 
 let client = (getContext(clientContext) as any).getClient();
-let ethUsers: EthUser[] = [];
+let ethUsers: Map<string, EthUser> = new Map();
 let loading = true;
 let error: any = undefined;
 
@@ -29,7 +29,7 @@ onMount(async () => {
       });
       if (ethUserRecord) {
         const ethUser = decode((ethUserRecord.entry as any).Present.entry) as EthUser;
-        ethUsers.push(ethUser);
+        ethUsers.set(ethUser.eth_address, ethUser); // Use eth_address as the key for uniqueness
       }
     }
   } catch (e) {
@@ -47,7 +47,7 @@ onMount(async () => {
 {:else}
 <div>
   <h1>Eth Users</h1>
-  {#each ethUsers as user}
+  {#each Array.from(ethUsers.values()) as user}
     <p>{user.eth_address} - {user.handle}</p>
   {/each}
 </div>
