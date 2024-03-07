@@ -21,8 +21,6 @@ let error: any = undefined;
 
 let record: Record | undefined;
 let ethUser: EthUser | undefined;
-
-
   
 $:  error, loading, record, ethUser;
 

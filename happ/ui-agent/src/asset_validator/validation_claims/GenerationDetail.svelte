@@ -45,7 +45,7 @@ let errorSnackbar: Snackbar;
 
 $: editing,  error, loading, record, generation, timeAgo, observations;
 let wattbikeUrl = '';
-let kwh = '';
+let wh = '';
 let totalJoulesGeneratedFormatted: string;
 let totalJoulesGenerated: number;
 
@@ -100,11 +100,11 @@ function toggleDetails() {
   showDetails = !showDetails;
 }
 
-async function cancelGeneration() {
-  const confirmCancel = confirm('Are you sure you want to cancel this generation?');
+async function updateGeneration(status='Cancelled') {
+  const confirmCancel = confirm('Are you sure you want to update this generation to ' + status + '?');
   if (confirmCancel) {
     try {
-      await updateGenerationStatus(client, hash, {generation, hash: record.signed_action.hashed.hash}, 'Cancelled');
+      await updateGenerationStatus(client, hash, {generation, hash: record.signed_action.hashed.hash}, status);
       // Refresh the generation details or emit an event to notify the parent component
       // This part of the code depends on how you want to handle the update in the UI
     } catch (error) {
@@ -117,13 +117,13 @@ function canAllocate() {
   return generation && generation.status.type === 'Active';
 }
 
-async function addKWHours() {
-  if (!kwh) {
+async function addWHours() {
+  if (!wh) {
     errorSnackbar.labelText = 'Please enter a valid number of watt hours.';
     errorSnackbar.show();
     return;
   }
-  const joules = parseFloat(kwh) * 3600000; // Convert kWh to joules
+  const joules = parseFloat(wh) * 3600; // Convert kWh to joules
   const now = Math.floor(Date.now() / 1000);
   const payload = {
     observed_at: now,
@@ -138,9 +138,7 @@ async function addKWHours() {
       fn_name: 'create_observation',
       payload: payload,
     });
-    const newObservation = decode(response.entry.Present.entry);
-    observations = [...observations, newObservation];
-    kwh = ''; // Reset the input field after successful submission
+    wh = ''; // Reset the input field after successful submission
   } catch (error) {
     console.error('Error submitting watt hours:', error);
     errorSnackbar.labelText = 'Error submitting watt hours. Please try again.';
@@ -187,13 +185,12 @@ function handleWattBike() {
   </div>
 
   <div class="otgbike-api-container">
-    <input type="number" bind:value={kwh} placeholder="Enter watt hours" required />
-    <button on:click={addKWHours}>Add kWh</button>
+    <input type="number" bind:value={wh} placeholder="Enter watt hours" required />
+    <button on:click={addWHours}>Add Wh</button>
   </div>
 
-    {#if generation.status.type === 'Complete' && totalJoulesGenerated == 0}
-      <button on:click={cancelGeneration} class="cancel-button">Cancel</button>
-    {/if}
+  <button on:click={() => updateGeneration('Complete')} class="complete-button">Complete</button>
+  <button on:click={() => updateGeneration('Cancelled')} class="cancel-button">Cancel</button>
 <!--
     {#if sensorAllocations[SENSOR_1] == encodeHashToBase64(hash)}
       <button on:click={() => clearSensorAllocation(SENSOR_1)}>Clear OTG allocation</button>
@@ -253,6 +250,12 @@ function handleWattBike() {
     align-self: flex-end;
     margin-left: auto;
     background-color: red;
+    color: white;
+  }
+  .complete-button {
+    align-self: flex-end;
+    margin-left: auto;
+    background-color: blue;
     color: white;
   }
   .details {

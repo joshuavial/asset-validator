@@ -9,6 +9,7 @@
   import Generations from './asset_validator/validation_claims/Generations.svelte'
 
   import Issuances from './asset_validator/validation_claims/Issuances.svelte';
+  import Users from './Users.svelte';
 
   import { clientContext } from './contexts';
   import Welcome from './Welcome.svelte';
@@ -60,6 +61,7 @@
     {#if $signingCredentials}
       <li><button on:click={(e) => setTab('generations', e)}>Human Power</button></li>
       <li><button on:click={(e) => setTab('issuances', e)}>Issuances</button></li>
+      <li><button on:click={(e) => setTab('users', e)}>Users</button></li>
       <li><button on:click={logout}>Logout</button></li>
     {/if}
   </ul>
@@ -78,6 +80,9 @@
       {/if}
      {#if $currentTab === 'issuances'}
        <Issuances />
+     {/if}
+     {#if $currentTab === 'users'}
+       <Users />
      {/if}
     </div>
     {:else}

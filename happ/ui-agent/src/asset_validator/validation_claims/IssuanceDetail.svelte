@@ -56,17 +56,6 @@ async function fetchIssuance() {
     if (record) {
       issuance = decode((record.entry as any).Present.entry) as Issuance;
     }
-    let dna_hash_record = await client.callZome({
-      cap_secret: null,
-      role_name: 'asset_validator',
-      zome_name: 'validation_claims',
-      fn_name: 'get_dna_hash',
-      payload: issuanceHash,
-    });
-    console.log(dna_hash_record);
-    if (dna_hash_record) {
-      issuance = decode((record.entry as any).Present.entry) as Issuance;
-    }
   } catch (e) {
     error = e;
   }
@@ -99,7 +88,7 @@ async function deleteIssuance() {
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
 {:else if error}
-<span>Error fetching the issuance: {error.data.data}</span>
+<span>Error fetching the issuance: {error}</span>
 {:else if editing}
 <EditIssuance
   originalIssuanceHash={ issuanceHash}

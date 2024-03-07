@@ -16,9 +16,9 @@ import {getAppAgentWs} from './lib.js'
 async function main() {
   try {
 		const {cell_id, appAgentWs, adminWs} = await getAppAgentWs();
-		const dnas = await appAgentWs.listDnas();
+		const dnas = await adminWs.listDnas();
+    console.log('hi');
 		console.log(dnas);
-		console.log(dnas[0].properties);
     const client = await WS.connect(WS_URL, 'asset-validator');
     console.log('Connected to the Holochain conductor.');
 		const info2 = await client.appInfo();

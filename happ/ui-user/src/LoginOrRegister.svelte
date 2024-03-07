@@ -166,7 +166,7 @@
   <button type="submit">Register</button>
 </form>
 {:else }
-  {#if isMobile}
+  {#if isMobile && false}
     <p>
       To authenticate, please ensure you have tokenProof installed on your device and click the button below.
     </p>
